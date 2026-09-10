@@ -62,6 +62,7 @@ deps.txt
 logcat.txt
 /releases
 /files
+.screenshot-review/
 /misc
 /other
 /TODO.txt
