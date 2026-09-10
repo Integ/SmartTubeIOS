@@ -33,7 +33,7 @@ final class PlayerMoreMenuDuplicationUITests: XCTestCase {
             "--uitesting",
             "--uitesting-disable-tos-player-on-ios",
             "--uitesting-deeplink-video=dQw4w9WgXcQ",
-            "--uitesting-open-more-menu"
+            "--uitesting-open-more-menu",
         ]
         if showControls { args.append("--uitesting-show-controls") }
         app.launchArguments = args

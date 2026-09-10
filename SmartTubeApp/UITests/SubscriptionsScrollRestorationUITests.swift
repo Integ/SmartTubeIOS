@@ -30,7 +30,10 @@ final class SubscriptionsScrollRestorationUITests: XCTestCase {
     override func setUpWithError() throws {
         continueAfterFailure = false
         app = XCUIApplication()
-        app.launchArguments += ["--uitesting", "--uitesting-disable-tos-player-on-ios", "--uitesting-inject-recommended-ids=dQw4w9WgXcQ,9bZkp7q19f0,MCv4EyEFgVg,pPvd8UxmCGY,fKopy74weus,jNQXAC9IVRw,kJQP7kiw5Fk,OPf0YbXqDm0,RgKAFK5djSk,2vjPBrBU-HM"]
+        app.launchArguments += [
+            "--uitesting", "--uitesting-disable-tos-player-on-ios",
+            "--uitesting-inject-recommended-ids=dQw4w9WgXcQ,9bZkp7q19f0,MCv4EyEFgVg,pPvd8UxmCGY,fKopy74weus,jNQXAC9IVRw,kJQP7kiw5Fk,OPf0YbXqDm0,RgKAFK5djSk,2vjPBrBU-HM",
+        ]
         app.launch()
     }
 
@@ -63,7 +66,8 @@ final class SubscriptionsScrollRestorationUITests: XCTestCase {
         //    has occurred and the Home feed is rendering.
         let feedScrollView = app.descendants(matching: .any)["home.sectionContainer"]
         guard feedScrollView.waitForExistence(timeout: 30) else {
-            try captureAndSkip("home.sectionContainer did not appear within 30 s — Home feed may not have loaded", in: app)
+            try captureAndSkip(
+                "home.sectionContainer did not appear within 30 s — Home feed may not have loaded", in: app)
         }
 
         // 4. Wait for at least one video card inside the section feed.
@@ -83,7 +87,8 @@ final class SubscriptionsScrollRestorationUITests: XCTestCase {
         // 5. Verify the feed has actually scrolled: the first card should now be
         //    off-screen above the viewport (its maxY should be near or below 0).
         let firstCardMaxYAfterScroll = firstCard.frame.maxY
-        XCTAssertLessThan(firstCardMaxYAfterScroll, 100,
+        XCTAssertLessThan(
+            firstCardMaxYAfterScroll, 100,
             "First card should be off-screen after 2 fast swipes — feed may not have scrolled")
 
         // 6. Tap the card near the vertical centre of the visible feed area via a
@@ -94,8 +99,9 @@ final class SubscriptionsScrollRestorationUITests: XCTestCase {
 
         // 7. Wait for PlayerView to open.
         let titleLabel = app.staticTexts["player.titleLabel"].firstMatch
-        XCTAssertTrue(titleLabel.waitForExistence(timeout: 15),
-                      "player.titleLabel must appear — PlayerView did not open")
+        XCTAssertTrue(
+            titleLabel.waitForExistence(timeout: 15),
+            "player.titleLabel must appear — PlayerView did not open")
 
         // 8. Navigate back via the always-accessible (but visually invisible) back
         //    button in the player's top-left overlay.
@@ -104,18 +110,19 @@ final class SubscriptionsScrollRestorationUITests: XCTestCase {
         backButton.tap()
 
         // 9. Wait for the chip bar to reappear — confirms we're back on the feed.
-        XCTAssertTrue(chipBar.waitForExistence(timeout: 5),
-                      "Chip bar must reappear after back navigation")
+        XCTAssertTrue(
+            chipBar.waitForExistence(timeout: 5),
+            "Chip bar must reappear after back navigation")
 
         // 10. Assert: scroll position was restored.
         //     The first card must still be off-screen (< 100 pt maxY), meaning the
         //     feed was not reset to the top of the list.
-        Thread.sleep(forTimeInterval: 1.0)   // let onAppear + proxy.scrollTo settle
+        Thread.sleep(forTimeInterval: 1.0)  // let onAppear + proxy.scrollTo settle
         let firstCardMaxYAfterBack = firstCard.frame.maxY
         XCTAssertLessThan(
             firstCardMaxYAfterBack, 100,
-            "First card maxY=\(Int(firstCardMaxYAfterBack)) — scroll was reset to top " +
-            "instead of being restored to offset \(Int(firstCardMaxYAfterScroll))"
+            "First card maxY=\(Int(firstCardMaxYAfterBack)) — scroll was reset to top "
+                + "instead of being restored to offset \(Int(firstCardMaxYAfterScroll))"
         )
     }
 
@@ -131,8 +138,9 @@ final class SubscriptionsScrollRestorationUITests: XCTestCase {
         }
         // iPad iOS 18 sidebar: tab items render as buttons outside the tab bar.
         let sidebarButton = app.buttons[label].firstMatch
-        XCTAssertTrue(sidebarButton.waitForExistence(timeout: timeout),
-                      "'\(label)' navigation item not found in tab bar or sidebar")
+        XCTAssertTrue(
+            sidebarButton.waitForExistence(timeout: timeout),
+            "'\(label)' navigation item not found in tab bar or sidebar")
         sidebarButton.tap()
     }
 
@@ -140,7 +148,7 @@ final class SubscriptionsScrollRestorationUITests: XCTestCase {
     private func scrollChipIntoView(_ chip: XCUIElement, in chipBar: XCUIElement) {
         let screenWidth = app.windows.firstMatch.frame.width
         let near = chipBar.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5))
-        let far  = chipBar.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5))
+        let far = chipBar.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5))
 
         for _ in 0..<8 {
             let frame = chip.frame

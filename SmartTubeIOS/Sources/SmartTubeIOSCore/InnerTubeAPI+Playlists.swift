@@ -38,12 +38,14 @@ extension InnerTubeAPI {
 
     public func fetchPlaylistVideos(playlistId: String, continuationToken: String? = nil) async throws -> VideoGroup {
         let isAuth = authToken != nil
-        var body = makeBody(client: isAuth ? tvClientContext : webClientContext,
-                            continuationToken: continuationToken)
+        var body = makeBody(
+            client: isAuth ? tvClientContext : webClientContext,
+            continuationToken: continuationToken)
         if continuationToken == nil {
             body["browseId"] = "VL\(playlistId)"
         }
-        let data = isAuth
+        let data =
+            isAuth
             ? try await postTV(endpoint: "browse", body: body)
             : try await post(endpoint: "browse", body: body)
         return try parseVideoGroup(from: data, title: nil)
@@ -59,8 +61,8 @@ extension InnerTubeAPI {
         // `gridPlaylistRenderer` / `compactPlaylistRenderer` (TVHTML5 library).
         func extractPlaylist(from renderer: [String: Any]) -> PlaylistInfo? {
             guard let id = renderer["playlistId"] as? String,
-                  let title = (renderer["title"] as? [String: Any]).flatMap({ extractText($0) })
-                           ?? (renderer["title"] as? String)
+                let title = (renderer["title"] as? [String: Any]).flatMap({ extractText($0) })
+                    ?? (renderer["title"] as? String)
             else { return nil }
             // Thumbnails may be at renderer["thumbnails"][0]["thumbnails"] (WEB)
             // or renderer["thumbnail"]["thumbnails"] (TV grid).
@@ -71,8 +73,12 @@ extension InnerTubeAPI {
             // Video count may be a plain string or in a text object.
             let count: Int? =
                 (renderer["videoCount"] as? String).flatMap { Int($0) }
-                ?? (renderer["videoCountText"] as? [String: Any]).flatMap { extractText($0) }.flatMap { extractNumber($0) }
-                ?? (renderer["videoCountShortText"] as? [String: Any]).flatMap { extractText($0) }.flatMap { extractNumber($0) }
+                ?? (renderer["videoCountText"] as? [String: Any]).flatMap { extractText($0) }.flatMap {
+                    extractNumber($0)
+                }
+                ?? (renderer["videoCountShortText"] as? [String: Any]).flatMap { extractText($0) }.flatMap {
+                    extractNumber($0)
+                }
             return PlaylistInfo(id: id, title: title, videoCount: count, thumbnailURL: thumbURL)
         }
 
@@ -82,28 +88,31 @@ extension InnerTubeAPI {
         func extractPlaylistFromTile(_ tile: [String: Any]) -> PlaylistInfo? {
             func findBrowseId(_ cmd: [String: Any]) -> String? {
                 if let ep = cmd["browseEndpoint"] as? [String: Any],
-                   let bid = ep["browseId"] as? String { return bid }
+                    let bid = ep["browseId"] as? String
+                {
+                    return bid
+                }
                 for v in cmd.values {
                     if let nested = v as? [String: Any], let bid = findBrowseId(nested) { return bid }
                 }
                 return nil
             }
             guard let cmd = tile["onSelectCommand"] as? [String: Any],
-                  let rawId = findBrowseId(cmd),
-                  rawId.hasPrefix("VL")
+                let rawId = findBrowseId(cmd),
+                rawId.hasPrefix("VL")
             else { return nil }
             let id = String(rawId.dropFirst(2))
 
             let metadata = (tile["metadata"] as? [String: Any])?["tileMetadataRenderer"] as? [String: Any]
             guard let titleRaw = metadata?["title"],
-                  let title = (titleRaw as? [String: Any]).flatMap({ extractText($0) }) ?? (titleRaw as? String)
+                let title = (titleRaw as? [String: Any]).flatMap({ extractText($0) }) ?? (titleRaw as? String)
             else { return nil }
 
             let thumbSources =
                 // tileHeaderRenderer.thumbnail.thumbnails
                 ((tile["header"] as? [String: Any])?["tileHeaderRenderer"] as? [String: Any])
-                    .flatMap { $0["thumbnail"] as? [String: Any] }
-                    .flatMap { $0["thumbnails"] as? [[String: Any]] }
+                .flatMap { $0["thumbnail"] as? [String: Any] }
+                .flatMap { $0["thumbnails"] as? [[String: Any]] }
                 // direct tile.thumbnail.thumbnails
                 ?? (tile["thumbnail"] as? [String: Any]).flatMap { $0["thumbnails"] as? [[String: Any]] }
                 // tile.thumbnails[0].thumbnails (WEB-style)
@@ -124,20 +133,24 @@ extension InnerTubeAPI {
                 thumbDict.flatMap { $0["thumbnails"] as? [[String: Any]] }
                 // collectionThumbnailRenderer.details[0].thumbnails
                 ?? (thumbDict?["collectionThumbnailRenderer"] as? [String: Any])
-                    .flatMap { $0["details"] as? [[String: Any]] }
-                    .flatMap { $0.first?["thumbnails"] as? [[String: Any]] }
+                .flatMap { $0["details"] as? [[String: Any]] }
+                .flatMap { $0.first?["thumbnails"] as? [[String: Any]] }
                 // thumbnailRenderer.thumbnails
                 ?? (renderer["thumbnailRenderer"] as? [String: Any])
-                    .flatMap { $0["thumbnails"] as? [[String: Any]] }
+                .flatMap { $0["thumbnails"] as? [[String: Any]] }
                 // header.specialCollectionHeaderRenderer.thumbnail.thumbnails
                 ?? ((renderer["header"] as? [String: Any])?["specialCollectionHeaderRenderer"] as? [String: Any])
-                    .flatMap { $0["thumbnail"] as? [String: Any] }
-                    .flatMap { $0["thumbnails"] as? [[String: Any]] }
+                .flatMap { $0["thumbnail"] as? [String: Any] }
+                .flatMap { $0["thumbnails"] as? [[String: Any]] }
             let thumbURL = thumbSources?.last.flatMap { $0["url"] as? String }.flatMap { URL(string: $0) }
-            tubeLog.notice("specialCollectionRenderer id=\(id, privacy: .public) keys=\(renderer.keys.sorted().joined(separator: ","), privacy: .public) thumbURL=\(thumbURL?.absoluteString ?? "nil", privacy: .public)")
+            tubeLog.notice(
+                "specialCollectionRenderer id=\(id, privacy: .public) keys=\(renderer.keys.sorted().joined(separator: ","), privacy: .public) thumbURL=\(thumbURL?.absoluteString ?? "nil", privacy: .public)"
+            )
             let count: Int? =
                 (renderer["videoCountText"] as? [String: Any]).flatMap { extractText($0) }.flatMap { extractNumber($0) }
-                ?? (renderer["totalCountText"] as? [String: Any]).flatMap { extractText($0) }.flatMap { extractNumber($0) }
+                ?? (renderer["totalCountText"] as? [String: Any]).flatMap { extractText($0) }.flatMap {
+                    extractNumber($0)
+                }
                 ?? (renderer["videoCount"] as? String).flatMap { Int($0) }
             return PlaylistInfo(id: id, title: title, videoCount: count, thumbnailURL: thumbURL)
         }
@@ -146,14 +159,17 @@ extension InnerTubeAPI {
             if let dict = obj as? [String: Any] {
                 let rendererKeys = ["playlistRenderer", "gridPlaylistRenderer", "compactPlaylistRenderer"]
                 if let key = rendererKeys.first(where: { dict[$0] is [String: Any] }),
-                   let renderer = dict[key] as? [String: Any],
-                   let info = extractPlaylist(from: renderer) {
+                    let renderer = dict[key] as? [String: Any],
+                    let info = extractPlaylist(from: renderer)
+                {
                     playlists.append(info)
                 } else if let tile = dict["tileRenderer"] as? [String: Any],
-                          let info = extractPlaylistFromTile(tile) {
+                    let info = extractPlaylistFromTile(tile)
+                {
                     playlists.append(info)
                 } else if let renderer = dict["specialCollectionRenderer"] as? [String: Any],
-                          let info = extractSpecialCollection(from: renderer) {
+                    let info = extractSpecialCollection(from: renderer)
+                {
                     playlists.append(info)
                 } else {
                     for value in dict.values { walk(value) }

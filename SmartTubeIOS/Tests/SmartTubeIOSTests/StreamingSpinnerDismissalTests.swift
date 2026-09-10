@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - StreamingSpinnerDismissalTests
@@ -48,8 +49,9 @@ struct StreamingSpinnerDismissalTests {
         let cached = await VideoPreloadCache.shared.consume(
             videoId: "spinner-test-\(Int.random(in: 0..<Int.max))"
         )
-        #expect(cached.playerInfo == nil,
-                "Cache miss must return nil playerInfo — forces full AVPlayer lifecycle")
+        #expect(
+            cached.playerInfo == nil,
+            "Cache miss must return nil playerInfo — forces full AVPlayer lifecycle")
     }
 
     @Test("VideoPreloadCache stores and retrieves playerInfo independently of isLoading state")
@@ -67,7 +69,8 @@ struct StreamingSpinnerDismissalTests {
         )
         await VideoPreloadCache.shared.store(playerInfo: info, for: videoId)
         let cached = await VideoPreloadCache.shared.consume(videoId: videoId)
-        #expect(cached.playerInfo != nil,
-                "Stored playerInfo should be retrievable — confirms cache is healthy post-fix")
+        #expect(
+            cached.playerInfo != nil,
+            "Stored playerInfo should be retrievable — confirms cache is healthy post-fix")
     }
 }

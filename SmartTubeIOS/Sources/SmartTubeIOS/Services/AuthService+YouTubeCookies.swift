@@ -41,12 +41,14 @@ extension AuthService {
         // Diagnostic + gaiaId extraction: tokeninfo returns `sub` (numeric Gaia ID) when `openid`
         // scope is present. Required for the MultiBearer Multilogin request format.
         if let infoURL = URL(string: "https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=\(token)"),
-           let (infoData, _) = try? await URLSession.shared.data(from: infoURL) {
+            let (infoData, _) = try? await URLSession.shared.data(from: infoURL)
+        {
             let infoStr = String(data: infoData, encoding: .utf8) ?? "<non-UTF8>"
             authLog.notice("[cookies] tokeninfo=\(infoStr)")
             // Extract gaiaId from `sub` claim (only present when openid scope is in token)
             if let infoJSON = try? JSONSerialization.jsonObject(with: infoData) as? [String: Any],
-               let sub = infoJSON["sub"] as? String, !sub.isEmpty {
+                let sub = infoJSON["sub"] as? String, !sub.isEmpty
+            {
                 gaiaId = sub
                 authLog.notice("[cookies] gaiaId=\(sub) — MultiBearer Multilogin enabled")
             } else {
@@ -55,12 +57,14 @@ extension AuthService {
         }
 
         // Step 1 — get uberauth via OAuthLogin endpoint (no-redirect session)
-        let oauthLoginURL = URL(string: "https://accounts.google.com/accounts/OAuthLogin?source=youtube&issueuberauth=1")!
+        let oauthLoginURL = URL(
+            string: "https://accounts.google.com/accounts/OAuthLogin?source=youtube&issueuberauth=1")!
         var req1 = URLRequest(url: oauthLoginURL)
         req1.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
         let config = URLSessionConfiguration.ephemeral
-        let noRedirectSession = URLSession(configuration: config, delegate: NoRedirectDelegate.shared, delegateQueue: nil)
+        let noRedirectSession = URLSession(
+            configuration: config, delegate: NoRedirectDelegate.shared, delegateQueue: nil)
 
         let response1: URLResponse
         do {
@@ -71,12 +75,15 @@ extension AuthService {
         }
 
         guard let http1 = response1 as? HTTPURLResponse,
-              (300..<400).contains(http1.statusCode),
-              let location = http1.value(forHTTPHeaderField: "Location"),
-              let mergeURL = URL(string: location) else {
+            (300..<400).contains(http1.statusCode),
+            let location = http1.value(forHTTPHeaderField: "Location"),
+            let mergeURL = URL(string: location)
+        else {
             let code = (response1 as? HTTPURLResponse)?.statusCode ?? 0
             let wwwAuth = (response1 as? HTTPURLResponse)?.value(forHTTPHeaderField: "WWW-Authenticate") ?? "none"
-            authLog.notice("[cookies] OAuthLogin did not redirect (HTTP \(code)) WWW-Authenticate=\(wwwAuth) — trying Multilogin fallback")
+            authLog.notice(
+                "[cookies] OAuthLogin did not redirect (HTTP \(code)) WWW-Authenticate=\(wwwAuth) — trying Multilogin fallback"
+            )
             await fetchSAPISIDViaMultilogin(token: token)
             return
         }
@@ -117,7 +124,9 @@ extension AuthService {
     ///
     /// Reference: chromium/src/google_apis/gaia/gaia_auth_fetcher.cc StartOAuthMultilogin()
     private func fetchSAPISIDViaMultilogin(token: String) async {
-        guard let url = URL(string: "https://accounts.google.com/oauth/multilogin?source=ChromiumBrowser&reuseCookies=0") else { return }
+        guard
+            let url = URL(string: "https://accounts.google.com/oauth/multilogin?source=ChromiumBrowser&reuseCookies=0")
+        else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         // Current Chromium format: MultiBearer {token}:{gaiaId}
@@ -157,11 +166,12 @@ extension AuthService {
             body = String(body.dropFirst(4)).trimmingCharacters(in: .whitespacesAndNewlines)
         }
         guard let jsonData = body.data(using: .utf8),
-              let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
-              (json["status"] as? String) == "OK",
-              let cookies = json["cookies"] as? [[String: Any]],
-              let entry = cookies.first(where: { $0["name"] as? String == "SAPISID" }),
-              let value = entry["value"] as? String, !value.isEmpty else {
+            let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
+            (json["status"] as? String) == "OK",
+            let cookies = json["cookies"] as? [[String: Any]],
+            let entry = cookies.first(where: { $0["name"] as? String == "SAPISID" }),
+            let value = entry["value"] as? String, !value.isEmpty
+        else {
             authLog.notice("[cookies] Multilogin response missing SAPISID — unavailable")
             return
         }

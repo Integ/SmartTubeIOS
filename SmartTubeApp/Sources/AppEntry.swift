@@ -1,7 +1,7 @@
-import SwiftUI
 import FirebaseCore
 import SmartTubeIOS
 import SmartTubeIOSCore
+import SwiftUI
 import os
 
 /// Unified entry point for iOS, iPadOS and macOS.
@@ -39,11 +39,11 @@ struct AppEntry: App {
     }
     #endif
 
-    private static let appGroup             = "group.com.void.smarttube"
-    private static let pendingKey           = "pendingVideoID"
+    private static let appGroup = "group.com.void.smarttube"
+    private static let pendingKey = "pendingVideoID"
     private static let pendingWatchLaterKey = "pendingWatchLaterVideoID"
-    private static let pendingQueueKey      = "pendingQueueVideoID"
-    private static let pendingRSSFeedKey    = "pendingRSSFeedURL"
+    private static let pendingQueueKey = "pendingQueueVideoID"
+    private static let pendingRSSFeedKey = "pendingRSSFeedURL"
 
     init() {
         FirebaseApp.configure()
@@ -55,20 +55,21 @@ struct AppEntry: App {
             return BotGuardClient()
         }()
         let api = InnerTubeAPI(authToken: nil, poTokenProvider: poTokenProvider)
-        _api             = State(initialValue: api)
-        _authService     = State(initialValue: AuthService())
+        _api = State(initialValue: api)
+        _authService = State(initialValue: AuthService())
         _browseViewModel = State(initialValue: BrowseViewModel(api: api))
-        _settingsStore   = State(initialValue: settingsStore)
+        _settingsStore = State(initialValue: settingsStore)
         #if os(iOS)
         let playerStateStore = PlayerStateStore(api: api)
         let tosPlayerStateStore = TOSPlayerStateStore()
-        _playerStateStore    = State(initialValue: playerStateStore)
+        _playerStateStore = State(initialValue: playerStateStore)
         _tosPlayerStateStore = State(initialValue: tosPlayerStateStore)
-        _playerRouter = State(initialValue: PlayerRouter(
-            playerState: playerStateStore,
-            tosState: tosPlayerStateStore,
-            settingsStore: settingsStore
-        ))
+        _playerRouter = State(
+            initialValue: PlayerRouter(
+                playerState: playerStateStore,
+                tosState: tosPlayerStateStore,
+                settingsStore: settingsStore
+            ))
         #endif
         _cardDownloadService = State(initialValue: VideoDownloadService(api: api))
 
@@ -76,7 +77,8 @@ struct AppEntry: App {
         // single named stream-fetching client.  Written here (main thread, before any
         // concurrent work) so the nonisolated(unsafe) static is safe to read later.
         if let arg = ProcessInfo.processInfo.arguments
-                .first(where: { $0.hasPrefix("--uitesting-force-stream-method=") }) {
+            .first(where: { $0.hasPrefix("--uitesting-force-stream-method=") })
+        {
             let method = String(arg.dropFirst("--uitesting-force-stream-method=".count))
             if !method.isEmpty {
                 StreamMethodProbeSupport.forcedStreamMethod = method
@@ -216,9 +218,9 @@ struct AppEntry: App {
                     .environment(\.innerTubeAPI, api)
                     .environment(cardDownloadService)
                     #if os(iOS)
-                    .environment(playerStateStore)
-                    .environment(tosPlayerStateStore)
-                    .environment(playerRouter)
+                .environment(playerStateStore)
+                .environment(tosPlayerStateStore)
+                .environment(playerRouter)
                     #endif
                     .onChange(of: authService.accessToken, initial: true) { _, newToken in
                         #if os(iOS)
@@ -279,14 +281,14 @@ struct AppEntry: App {
                         signOutIfNeeded()
                     }
                     #if os(iOS)
-                    .alert(item: $watchLaterAlert) { item in
-                        Alert(
-                            title: Text(item.title),
-                            message: Text(item.message),
-                            dismissButton: .default(Text("OK"))
-                        )
-                    }
-                    #endif
+                .alert(item: $watchLaterAlert) { item in
+                    Alert(
+                        title: Text(item.title),
+                        message: Text(item.message),
+                        dismissButton: .default(Text("OK"))
+                    )
+                }
+                #endif
             }
         }
         #endif
@@ -323,8 +325,8 @@ struct AppEntry: App {
     @MainActor
     private func consumePendingVideoID() {
         guard let defaults = UserDefaults(suiteName: Self.appGroup),
-              let videoID = defaults.string(forKey: Self.pendingKey),
-              !videoID.isEmpty
+            let videoID = defaults.string(forKey: Self.pendingKey),
+            !videoID.isEmpty
         else { return }
 
         defaults.removeObject(forKey: Self.pendingKey)
@@ -338,8 +340,8 @@ struct AppEntry: App {
     @MainActor
     private func consumePendingWatchLaterID() {
         guard let defaults = UserDefaults(suiteName: Self.appGroup),
-              let videoID = defaults.string(forKey: Self.pendingWatchLaterKey),
-              !videoID.isEmpty
+            let videoID = defaults.string(forKey: Self.pendingWatchLaterKey),
+            !videoID.isEmpty
         else { return }
 
         defaults.removeObject(forKey: Self.pendingWatchLaterKey)
@@ -375,8 +377,8 @@ struct AppEntry: App {
     @MainActor
     private func consumePendingQueueVideoID() {
         guard let defaults = UserDefaults(suiteName: Self.appGroup),
-              let videoID = defaults.string(forKey: Self.pendingQueueKey),
-              !videoID.isEmpty
+            let videoID = defaults.string(forKey: Self.pendingQueueKey),
+            !videoID.isEmpty
         else { return }
 
         defaults.removeObject(forKey: Self.pendingQueueKey)
@@ -392,9 +394,9 @@ struct AppEntry: App {
     @MainActor
     private func consumePendingRSSFeedURL() {
         guard let defaults = UserDefaults(suiteName: Self.appGroup),
-              let urlString = defaults.string(forKey: Self.pendingRSSFeedKey),
-              !urlString.isEmpty,
-              let feedURL = URL(string: urlString)
+            let urlString = defaults.string(forKey: Self.pendingRSSFeedKey),
+            !urlString.isEmpty,
+            let feedURL = URL(string: urlString)
         else { return }
 
         defaults.removeObject(forKey: Self.pendingRSSFeedKey)
@@ -430,7 +432,7 @@ struct AppEntry: App {
             // causing DASH quality-switch tests to fail even on an authenticated simulator.
             if authService.isSignedIn, authService.accessToken == nil {
                 for _ in 0..<50 {
-                    try? await Task.sleep(nanoseconds: 100_000_000)   // 100 ms
+                    try? await Task.sleep(nanoseconds: 100_000_000)  // 100 ms
                     if authService.accessToken != nil { break }
                 }
             }
@@ -442,7 +444,7 @@ struct AppEntry: App {
                 // with a brief 0.5 s settling delay so landscapePlayerCover is registered.
                 // Use the video ID as the placeholder title so player.titleLabel has
                 // non-empty text immediately (empty Text is pruned from the AX tree).
-                try? await Task.sleep(nanoseconds: 500_000_000)   // 0.5 s
+                try? await Task.sleep(nanoseconds: 500_000_000)  // 0.5 s
                 browseViewModel.deepLinkedVideo = Video(id: videoID, title: videoID, channelTitle: "")
             } else {
                 await UIApplication.shared.open(deepLink)
@@ -556,13 +558,17 @@ struct AppEntry: App {
                 let token = try await client.token(for: videoID)
                 let hasMinter = client.lastRunHasMinter
                 let itLen = client.lastRunIntegrityTokenLen
-                probeLog.notice("[BotGuardProbe] ✅ PIPELINE COMPLETE tokenLen=\(token.count) hasMinter=\(hasMinter) integrityTokenLen=\(itLen) videoId=\(videoID)")
+                probeLog.notice(
+                    "[BotGuardProbe] ✅ PIPELINE COMPLETE tokenLen=\(token.count) hasMinter=\(hasMinter) integrityTokenLen=\(itLen) videoId=\(videoID)"
+                )
                 if let url = resultURL {
-                    let result = "SUCCESS\ntokenLen=\(token.count)\nhasMinter=\(hasMinter)\nintegrityTokenLen=\(itLen)\nvideoId=\(videoID)\n"
+                    let result =
+                        "SUCCESS\ntokenLen=\(token.count)\nhasMinter=\(hasMinter)\nintegrityTokenLen=\(itLen)\nvideoId=\(videoID)\n"
                     try? result.write(to: url, atomically: true, encoding: .utf8)
                 }
             } catch {
-                probeLog.notice("[BotGuardProbe] ❌ PIPELINE FAILED error=\(String(describing: error)) videoId=\(videoID)")
+                probeLog.notice(
+                    "[BotGuardProbe] ❌ PIPELINE FAILED error=\(String(describing: error)) videoId=\(videoID)")
                 if let url = resultURL {
                     let result = "FAILED\nerror=\(error)\nvideoId=\(videoID)\n"
                     try? result.write(to: url, atomically: true, encoding: .utf8)
@@ -592,14 +598,15 @@ struct AppEntry: App {
         let ids = raw.split(separator: ",").map(String.init).filter { !$0.isEmpty }
         guard !ids.isEmpty else { return stubShorts }
         return ids.enumerated().map { idx, id in
-            Video(id: id, title: "Short \(idx + 1)", channelTitle: "Test Channel",
-                  channelId: "UCBcRF18a7Qf58cCRy5xuWwQ", isShort: true)
+            Video(
+                id: id, title: "Short \(idx + 1)", channelTitle: "Test Channel",
+                channelId: "UCBcRF18a7Qf58cCRy5xuWwQ", isShort: true)
         }
     }
 
     static let stubShorts: [Video] = [
-        Video(id: "short-1", title: "Short One",   channelTitle: "Channel A", isShort: true),
-        Video(id: "short-2", title: "Short Two",   channelTitle: "Channel B", isShort: true),
+        Video(id: "short-1", title: "Short One", channelTitle: "Channel A", isShort: true),
+        Video(id: "short-2", title: "Short Two", channelTitle: "Channel B", isShort: true),
         Video(id: "short-3", title: "Short Three", channelTitle: "Channel C", isShort: true),
     ]
 }

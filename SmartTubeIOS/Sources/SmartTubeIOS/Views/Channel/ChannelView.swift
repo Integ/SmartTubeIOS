@@ -1,5 +1,5 @@
-import SwiftUI
 import SmartTubeIOSCore
+import SwiftUI
 
 // MARK: - ChannelView
 //
@@ -9,7 +9,7 @@ import SmartTubeIOSCore
 // MARK: - ChannelFilter
 
 private enum ChannelFilter: String, CaseIterable {
-    case all    = "All"
+    case all = "All"
     case shorts = "Shorts"
 }
 
@@ -86,7 +86,8 @@ public struct ChannelView: View {
                     } label: {
                         Label(
                             isExcluded ? "Remove SponsorBlock Exclusion" : "Exclude from SponsorBlock",
-                            systemImage: isExcluded ? "person.crop.circle.badge.checkmark" : "person.crop.circle.badge.minus"
+                            systemImage: isExcluded
+                                ? "person.crop.circle.badge.checkmark" : "person.crop.circle.badge.minus"
                         )
                     }
                 }
@@ -98,7 +99,8 @@ public struct ChannelView: View {
                     } label: {
                         Label(
                             isExcluded ? "Remove SponsorBlock Exclusion" : "Exclude from SponsorBlock",
-                            systemImage: isExcluded ? "person.crop.circle.badge.checkmark" : "person.crop.circle.badge.minus"
+                            systemImage: isExcluded
+                                ? "person.crop.circle.badge.checkmark" : "person.crop.circle.badge.minus"
                         )
                     }
                     .accessibilityIdentifier("channel.sponsorBlockButton")
@@ -147,7 +149,7 @@ public struct ChannelView: View {
 
     private var filteredVideos: [Video] {
         switch filter {
-        case .all:    return vm.videos.filter { !store.settings.hideShorts || !$0.isShort }
+        case .all: return vm.videos.filter { !store.settings.hideShorts || !$0.isShort }
         case .shorts: return vm.videos.filter { $0.isShort }
         }
     }
@@ -230,7 +232,7 @@ public struct ChannelView: View {
         return LazyVGrid(columns: columns, spacing: 8) {
             ForEach(videos) { video in
                 VideoCardView(video: video)
-                    .aspectRatio(9/16, contentMode: .fit)
+                    .aspectRatio(9 / 16, contentMode: .fit)
                     .onTapGesture { selectShort(video, from: videos) }
                     .onAppear {
                         if video.id == vm.videos.last?.id { vm.loadMore() }

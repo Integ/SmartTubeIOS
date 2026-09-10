@@ -17,7 +17,9 @@ final class TOSSwipeNavigationNoOpTests: XCTestCase {
         vm.onPlayNext = { _ in didCallPlayNext = true }
         // relatedVideos is empty by default — playNext must not fire onPlayNext
         vm.playNext()
-        XCTAssertFalse(didCallPlayNext, "playNext() must no-op when relatedVideos is empty — safe for always-enabled overlay (#263)")
+        XCTAssertFalse(
+            didCallPlayNext,
+            "playNext() must no-op when relatedVideos is empty — safe for always-enabled overlay (#263)")
     }
 
     func testPlayPreviousIsNoOpWhenHasPreviousFalse() {
@@ -26,7 +28,9 @@ final class TOSSwipeNavigationNoOpTests: XCTestCase {
         vm.onPlayPrevious = { didCallPlayPrevious = true }
         // hasPrevious defaults to false — playPrevious must not fire onPlayPrevious
         vm.playPrevious()
-        XCTAssertFalse(didCallPlayPrevious, "playPrevious() must no-op when hasPrevious=false — safe for always-enabled overlay (#263)")
+        XCTAssertFalse(
+            didCallPlayPrevious,
+            "playPrevious() must no-op when hasPrevious=false — safe for always-enabled overlay (#263)")
     }
 }
 #endif

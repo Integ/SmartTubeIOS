@@ -112,7 +112,8 @@ public final class PlayerStateStore {
 
     /// Load `video` (if not already loaded) and present the full-screen player.
     public func play(video: Video) {
-        storeLog.notice("[PlayerStateStore] play — id=\(video.id) currentPresentation=\(String(describing: self.presentation))")
+        storeLog.notice(
+            "[PlayerStateStore] play — id=\(video.id) currentPresentation=\(String(describing: self.presentation))")
         // Stamp intended_video_id immediately — before load() runs and before the
         // breadcrumb buffer can fill. Comparing with active_video_id in a report
         // reveals prefetch-race / wrong-card-tap scenarios.
@@ -137,7 +138,8 @@ public final class PlayerStateStore {
         presentation = .miniPlayer
         let action = dismissPlayerAction
         dismissPlayerAction = nil
-        storeLog.notice("[PlayerStateStore] minimize — presentation set to .miniPlayer, dismissPlayerAction=\(action != nil)")
+        storeLog.notice(
+            "[PlayerStateStore] minimize — presentation set to .miniPlayer, dismissPlayerAction=\(action != nil)")
         action?()
     }
 

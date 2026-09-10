@@ -103,23 +103,27 @@ final class LibraryUITests: XCTestCase {
     func testHistorySegmentVisible() throws {
         UITestHelpers.tapTab(named: "Library", in: app)
         let picker = app.segmentedControls["library.sectionPicker"]
-        XCTAssertTrue(picker.waitForExistence(timeout: 5),
-                      "library.sectionPicker should appear")
-        XCTAssertTrue(picker.buttons["History"].exists,
-                      "'History' segment must be present in the library picker")
+        XCTAssertTrue(
+            picker.waitForExistence(timeout: 5),
+            "library.sectionPicker should appear")
+        XCTAssertTrue(
+            picker.buttons["History"].exists,
+            "'History' segment must be present in the library picker")
     }
 
     func testHistoryNavigationDoesNotCrash() throws {
         try openHistorySegment()
         Thread.sleep(forTimeInterval: 2)
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App should still be running after opening History in Library")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App should still be running after opening History in Library")
     }
 
     func testHistorySegmentShowsFeed() throws {
         try openHistorySegment()
         guard UITestHelpers.waitForVideoCards(in: app, timeout: 20) != nil else {
-            try captureAndSkip("No video cards loaded within 20 s — account may not be signed in or has empty history", in: app)
+            try captureAndSkip(
+                "No video cards loaded within 20 s — account may not be signed in or has empty history", in: app)
         }
     }
 
@@ -148,7 +152,8 @@ final class LibraryUITests: XCTestCase {
             .matching(NSPredicate(format: "identifier BEGINSWITH 'video.card.'"))
             .count
 
-        XCTAssertGreaterThanOrEqual(countAfter, countBefore,
+        XCTAssertGreaterThanOrEqual(
+            countAfter, countBefore,
             "Scrolling down should not reduce video card count (pagination should add more)")
     }
 
@@ -157,8 +162,9 @@ final class LibraryUITests: XCTestCase {
         guard let firstCard = UITestHelpers.waitForVideoCards(in: app, timeout: 20) else {
             try captureAndSkip("No video cards in History — signed-in account with history required", in: app)
         }
-        XCTAssertTrue(UITestHelpers.openPlayer(from: firstCard, in: app),
-                      "player.titleLabel must appear after tapping a video in Library History")
+        XCTAssertTrue(
+            UITestHelpers.openPlayer(from: firstCard, in: app),
+            "player.titleLabel must appear after tapping a video in Library History")
         let errorBanner = app.otherElements["player.errorBanner"].firstMatch
         if errorBanner.exists {
             try captureAndSkip("player.errorBanner appeared — network issue on this simulator clone", in: app)
@@ -208,7 +214,9 @@ final class LibraryUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 1.0)
         let firstCardMaxYAfterBack = firstCard.frame.maxY
         guard firstCardMaxYAfterBack < 100 else {
-            try captureAndSkip("Scroll position not restored — first card reappeared on-screen (timing or animation-dependent)", in: app)
+            try captureAndSkip(
+                "Scroll position not restored — first card reappeared on-screen (timing or animation-dependent)",
+                in: app)
         }
     }
 
@@ -217,23 +225,27 @@ final class LibraryUITests: XCTestCase {
     func testSubscriptionsSegmentVisible() throws {
         UITestHelpers.tapTab(named: "Library", in: app)
         let picker = app.segmentedControls["library.sectionPicker"]
-        XCTAssertTrue(picker.waitForExistence(timeout: 5),
-                      "library.sectionPicker should appear")
-        XCTAssertTrue(picker.buttons["Subs"].exists,
-                      "'Subs' segment must be present in the library picker")
+        XCTAssertTrue(
+            picker.waitForExistence(timeout: 5),
+            "library.sectionPicker should appear")
+        XCTAssertTrue(
+            picker.buttons["Subs"].exists,
+            "'Subs' segment must be present in the library picker")
     }
 
     func testSubscriptionsNavigationDoesNotCrash() throws {
         try openSubscriptionsSegment()
         Thread.sleep(forTimeInterval: 2)
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App should still be running after opening Subscriptions in Library")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App should still be running after opening Subscriptions in Library")
     }
 
     func testSubscriptionsSegmentShowsFeed() throws {
         try openSubscriptionsSegment()
         guard UITestHelpers.waitForVideoCards(in: app, timeout: 20) != nil else {
-            try captureAndSkip("No video cards loaded within 20 s — account may not be signed in or has no subscriptions", in: app)
+            try captureAndSkip(
+                "No video cards loaded within 20 s — account may not be signed in or has no subscriptions", in: app)
         }
     }
 
@@ -262,7 +274,8 @@ final class LibraryUITests: XCTestCase {
             .matching(NSPredicate(format: "identifier BEGINSWITH 'video.card.'"))
             .count
 
-        XCTAssertGreaterThanOrEqual(countAfter, countBefore,
+        XCTAssertGreaterThanOrEqual(
+            countAfter, countBefore,
             "Scrolling down should not reduce the video card count (pagination should add more)")
     }
 
@@ -271,8 +284,9 @@ final class LibraryUITests: XCTestCase {
         guard let firstCard = UITestHelpers.waitForVideoCards(in: app, timeout: 20) else {
             try captureAndSkip("No video cards in Subscriptions — signed-in account required", in: app)
         }
-        XCTAssertTrue(UITestHelpers.openPlayer(from: firstCard, in: app),
-                      "player.titleLabel must appear after tapping a video in Library Subscriptions")
+        XCTAssertTrue(
+            UITestHelpers.openPlayer(from: firstCard, in: app),
+            "player.titleLabel must appear after tapping a video in Library Subscriptions")
         let errorBanner = app.otherElements["player.errorBanner"].firstMatch
         if errorBanner.exists {
             try captureAndSkip("player.errorBanner appeared — network issue on this simulator clone", in: app)
@@ -322,7 +336,9 @@ final class LibraryUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 1.0)
         let firstCardMaxYAfterBack = firstCard.frame.maxY
         guard firstCardMaxYAfterBack < 100 else {
-            try captureAndSkip("Scroll position not restored — first card reappeared on-screen (timing or animation-dependent)", in: app)
+            try captureAndSkip(
+                "Scroll position not restored — first card reappeared on-screen (timing or animation-dependent)",
+                in: app)
         }
     }
 
@@ -331,8 +347,9 @@ final class LibraryUITests: XCTestCase {
     func testLibraryTabOpens() {
         UITestHelpers.tapTab(named: "Library", in: app)
         let picker = app.segmentedControls["library.sectionPicker"]
-        XCTAssertTrue(picker.waitForExistence(timeout: 5),
-                      "library.sectionPicker should appear after opening Library")
+        XCTAssertTrue(
+            picker.waitForExistence(timeout: 5),
+            "library.sectionPicker should appear after opening Library")
     }
 
     func testLibraryPlaylistsSegmentIsReachable() throws {
@@ -341,11 +358,13 @@ final class LibraryUITests: XCTestCase {
 
     func testPlaylistsScreenShowsContentOrSignInPrompt() throws {
         try openPlaylistsSegment()
-        let contentOrEmpty = app.scrollViews.firstMatch.waitForExistence(timeout: 5)
+        let contentOrEmpty =
+            app.scrollViews.firstMatch.waitForExistence(timeout: 5)
             || app.staticTexts["Nothing here yet"].waitForExistence(timeout: 5)
             || app.staticTexts["Sign in to see your library"].waitForExistence(timeout: 5)
-        XCTAssertTrue(contentOrEmpty,
-                      "Playlists screen should show content, an empty state, or a sign-in prompt")
+        XCTAssertTrue(
+            contentOrEmpty,
+            "Playlists screen should show content, an empty state, or a sign-in prompt")
     }
 
     func testNoErrorAlertOnPlaylistsLoad() throws {
@@ -357,14 +376,16 @@ final class LibraryUITests: XCTestCase {
     func testLibraryPlaylistsNavigationDoesNotCrash() throws {
         try openPlaylistsSegment()
         Thread.sleep(forTimeInterval: 2)
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App should still be running after navigating to Playlists")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App should still be running after navigating to Playlists")
     }
 
     func testPlaylistsFeedPopulates() throws {
         try openPlaylistsSegment()
         guard UITestHelpers.waitForVideoCards(in: app, timeout: 20) != nil else {
-            try captureAndSkip("No playlist items loaded within 20 s — account may not be signed in or has no playlists", in: app)
+            try captureAndSkip(
+                "No playlist items loaded within 20 s — account may not be signed in or has no playlists", in: app)
         }
     }
 
@@ -375,8 +396,9 @@ final class LibraryUITests: XCTestCase {
         }
         firstCard.tap()
         let navBar = app.navigationBars.firstMatch
-        XCTAssertTrue(navBar.waitForExistence(timeout: 10),
-                      "A navigation bar should appear when opening a playlist")
+        XCTAssertTrue(
+            navBar.waitForExistence(timeout: 10),
+            "A navigation bar should appear when opening a playlist")
     }
 
     func testPlaylistViewShowsVideoCardsOrEmpty() throws {
@@ -389,10 +411,12 @@ final class LibraryUITests: XCTestCase {
         let feed = app.scrollViews["playlistView.feed"]
         let emptyState = app.staticTexts["No videos in this playlist"]
 
-        let feedOrEmpty = feed.waitForExistence(timeout: 15)
+        let feedOrEmpty =
+            feed.waitForExistence(timeout: 15)
             || emptyState.waitForExistence(timeout: 15)
-        XCTAssertTrue(feedOrEmpty,
-                      "PlaylistView should show either a feed (playlistView.feed) or an empty state")
+        XCTAssertTrue(
+            feedOrEmpty,
+            "PlaylistView should show either a feed (playlistView.feed) or an empty state")
     }
 
     func testTappingVideoInPlaylistOpensPlayer() throws {
@@ -409,8 +433,9 @@ final class LibraryUITests: XCTestCase {
         guard let videoCard = UITestHelpers.waitForVideoCards(in: app, timeout: 20) else {
             try captureAndSkip("No video cards inside playlist — playlist may be empty", in: app)
         }
-        XCTAssertTrue(UITestHelpers.openPlayer(from: videoCard, in: app),
-                      "player.titleLabel should appear after tapping a video in a playlist")
+        XCTAssertTrue(
+            UITestHelpers.openPlayer(from: videoCard, in: app),
+            "player.titleLabel should appear after tapping a video in a playlist")
         let errorBanner = app.otherElements["player.errorBanner"].firstMatch
         if errorBanner.exists {
             try captureAndSkip("player.errorBanner appeared — network issue on this simulator clone", in: app)
@@ -470,7 +495,9 @@ final class LibraryUITests: XCTestCase {
 
         let firstCardMaxYAfterBack = firstCard.frame.maxY
         guard firstCardMaxYAfterBack < 100 else {
-            try captureAndSkip("Scroll position not restored — first card reappeared on-screen (timing or animation-dependent)", in: app)
+            try captureAndSkip(
+                "Scroll position not restored — first card reappeared on-screen (timing or animation-dependent)",
+                in: app)
         }
     }
 
@@ -493,7 +520,8 @@ final class LibraryUITests: XCTestCase {
         let cards = app.descendants(matching: .any).matching(cardsPredicate)
         let initialCount = cards.count
         guard initialCount >= 15 else {
-            try captureAndSkip("Playlist has fewer than 15 videos — pagination won't trigger (got \(initialCount))", in: app)
+            try captureAndSkip(
+                "Playlist has fewer than 15 videos — pagination won't trigger (got \(initialCount))", in: app)
         }
 
         for _ in 0..<6 {
@@ -504,8 +532,10 @@ final class LibraryUITests: XCTestCase {
         let morePredicate = NSPredicate(format: "count > \(initialCount)")
         let moreExpectation = XCTNSPredicateExpectation(predicate: morePredicate, object: cards)
         let result = XCTWaiter().wait(for: [moreExpectation], timeout: 10)
-        XCTAssertEqual(result, .completed,
-            "Playlist should load more videos after scrolling to the bottom (initial: \(initialCount), after scroll: \(cards.count))")
+        XCTAssertEqual(
+            result, .completed,
+            "Playlist should load more videos after scrolling to the bottom (initial: \(initialCount), after scroll: \(cards.count))"
+        )
     }
 
     // MARK: - Playlists navigation tests (structural, no sign-in required)
@@ -541,7 +571,8 @@ final class LibraryUITests: XCTestCase {
         XCTAssertTrue(picker.waitForExistence(timeout: 5))
         picker.buttons["Playlists"].tap()
 
-        let contentOrEmpty = app.scrollViews.firstMatch.waitForExistence(timeout: 5)
+        let contentOrEmpty =
+            app.scrollViews.firstMatch.waitForExistence(timeout: 5)
             || app.staticTexts["Nothing here yet"].waitForExistence(timeout: 5)
             || app.staticTexts["Sign in to see your library"].waitForExistence(timeout: 5)
         XCTAssertTrue(contentOrEmpty, "Playlists screen should show content, an empty state, or a sign-in prompt")

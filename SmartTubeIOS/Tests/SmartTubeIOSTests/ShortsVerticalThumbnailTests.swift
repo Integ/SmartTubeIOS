@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - Shorts Vertical Thumbnail Misclassification Tests
@@ -68,7 +69,7 @@ struct ShortsVerticalThumbnailTests {
             ],
             "navigationEndpoint": [
                 "watchEndpoint": ["videoId": "longFormPortrait"]
-            ]
+            ],
         ]
         let api = InnerTubeAPI()
         let group = try await api.parseVideoGroupForTesting(
@@ -99,7 +100,7 @@ struct ShortsVerticalThumbnailTests {
             ],
             "navigationEndpoint": [
                 "watchEndpoint": ["videoId": "genuineShort"]
-            ]
+            ],
         ]
         let api = InnerTubeAPI()
         let group = try await api.parseVideoGroupForTesting(
@@ -128,7 +129,7 @@ struct ShortsVerticalThumbnailTests {
             ],
             "navigationEndpoint": [
                 "watchEndpoint": ["videoId": "unknownDuration"]
-            ]
+            ],
         ]
         let api = InnerTubeAPI()
         let group = try await api.parseVideoGroupForTesting(
@@ -158,14 +159,14 @@ struct ShortsVerticalThumbnailTests {
                     "lines": [
                         ["lineRenderer": ["items": [["lineItemRenderer": ["text": ["simpleText": "Docs Channel"]]]]]],
                         ["lineRenderer": ["items": [["lineItemRenderer": ["text": ["simpleText": "1:35:20"]]]]]],
-                    ]
+                    ],
                 ]
             ],
             "thumbnail": [
                 "thumbnails": [
                     ["url": "https://example.com/thumb.jpg", "width": 180, "height": 320]
                 ]
-            ]
+            ],
         ]
         let api = InnerTubeAPI()
         let group = try await api.parseVideoGroupForTesting(

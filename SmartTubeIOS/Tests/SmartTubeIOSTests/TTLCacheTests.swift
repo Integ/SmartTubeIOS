@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - TTLCacheTests
@@ -67,7 +68,7 @@ struct TTLCacheTests {
         clock.advance(1)
         cache.set(2, for: "b")
         clock.advance(1)
-        cache.set(3, for: "c") // should evict "a", the oldest
+        cache.set(3, for: "c")  // should evict "a", the oldest
         #expect(cache.get("a") == nil)
         #expect(cache.get("b") == 2)
         #expect(cache.get("c") == 3)
@@ -81,7 +82,7 @@ struct TTLCacheTests {
         clock.advance(1)
         cache.set(2, for: "b")
         clock.advance(1)
-        cache.set(99, for: "a") // update, not insert — "b" should survive
+        cache.set(99, for: "a")  // update, not insert — "b" should survive
         #expect(cache.get("a") == 99)
         #expect(cache.get("b") == 2)
     }

@@ -1,4 +1,5 @@
 import SwiftUI
+
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -21,11 +22,11 @@ import UIKit
 ///   window-level recognizers don't block WKWebView's own touch handling.
 /// - `require(toFail:)` keeps the tap from firing until a vertical pan is ruled out.
 struct SwipeGestureOverlay: UIViewRepresentable {
-    var onSwipeUp:        () -> Void
-    var onSwipeDown:      () -> Void
-    var onTap:            (CGPoint) -> Void
-    var onTwoFingerTap:   () -> Void = {}
-    var onPanChanged:     ((CGFloat) -> Void)?
+    var onSwipeUp: () -> Void
+    var onSwipeDown: () -> Void
+    var onTap: (CGPoint) -> Void
+    var onTwoFingerTap: () -> Void = {}
+    var onPanChanged: ((CGFloat) -> Void)?
     var onSwipeCancelled: (() -> Void)?
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
@@ -43,8 +44,9 @@ struct SwipeGestureOverlay: UIViewRepresentable {
         tap.delegate = context.coordinator
         tap.require(toFail: pan)
 
-        let twoFingerTap = UITapGestureRecognizer(target: context.coordinator,
-                                                   action: #selector(Coordinator.handleTwoFingerTap))
+        let twoFingerTap = UITapGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handleTwoFingerTap))
         twoFingerTap.numberOfTouchesRequired = 2
         twoFingerTap.cancelsTouchesInView = false
         twoFingerTap.delegate = context.coordinator
@@ -63,8 +65,10 @@ struct SwipeGestureOverlay: UIViewRepresentable {
 
         init(_ parent: SwipeGestureOverlay) { self.parent = parent }
 
-        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
-                                shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        func gestureRecognizer(
+            _ gestureRecognizer: UIGestureRecognizer,
+            shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+        ) -> Bool {
             true
         }
 

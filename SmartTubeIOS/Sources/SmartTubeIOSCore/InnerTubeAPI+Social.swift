@@ -88,7 +88,9 @@ extension InnerTubeAPI {
         body["videoId"] = videoId
         let nextData = try await post(endpoint: "next", body: body)
         guard let token = parseFeedbackToken(iconType: iconType, from: nextData) else {
-            tubeLog.warning("sendFeedbackForVideo: no \(iconType, privacy: .public) token in /next for videoId=\(videoId, privacy: .public)")
+            tubeLog.warning(
+                "sendFeedbackForVideo: no \(iconType, privacy: .public) token in /next for videoId=\(videoId, privacy: .public)"
+            )
             return
         }
         try await sendFeedback(token: token)
@@ -102,10 +104,11 @@ extension InnerTubeAPI {
             guard found == nil, depth < 50 else { return }
             if let dict = obj as? [String: Any] {
                 if let svc = dict["menuServiceItemRenderer"] as? [String: Any],
-                   let endpoint = svc["serviceEndpoint"] as? [String: Any],
-                   let token = (endpoint["feedbackEndpoint"] as? [String: Any])?["feedbackToken"] as? String,
-                   let type = (svc["icon"] as? [String: Any])?["iconType"] as? String,
-                   type == iconType {
+                    let endpoint = svc["serviceEndpoint"] as? [String: Any],
+                    let token = (endpoint["feedbackEndpoint"] as? [String: Any])?["feedbackToken"] as? String,
+                    let type = (svc["icon"] as? [String: Any])?["iconType"] as? String,
+                    type == iconType
+                {
                     found = token
                     return
                 }
@@ -137,18 +140,22 @@ extension InnerTubeAPI {
             // (async let cannot be used here: [String:Any] is not Sendable in Swift 6.)
             var webBody = makeBody(client: webClientContext)
             webBody["videoId"] = videoId
-            let tvData  = try await postTV(endpoint: "next", body: tvBody)
+            let tvData = try await postTV(endpoint: "next", body: tvBody)
             let webData = try await post(endpoint: "next", body: webBody)
-            let videos   = parseRelatedVideos(from: webData)   // WEB client has compactVideoRenderer; TV client does not
-            let status   = parseLikeStatus(from: tvData)
+            let videos = parseRelatedVideos(from: webData)  // WEB client has compactVideoRenderer; TV client does not
+            let status = parseLikeStatus(from: tvData)
             let chapters = parseChapters(from: webData)
-            tubeLog.notice("fetchNextInfo (auth) → related=\(videos.count, privacy: .public) chapters=\(chapters.count, privacy: .public)")
+            tubeLog.notice(
+                "fetchNextInfo (auth) → related=\(videos.count, privacy: .public) chapters=\(chapters.count, privacy: .public)"
+            )
             return NextInfo(relatedVideos: videos, likeStatus: status, chapters: chapters)
         } else {
-            let data     = try await post(endpoint: "next", body: tvBody)
-            let videos   = parseRelatedVideos(from: data)
+            let data = try await post(endpoint: "next", body: tvBody)
+            let videos = parseRelatedVideos(from: data)
             let chapters = parseChapters(from: data)
-            tubeLog.notice("fetchNextInfo (anon) → related=\(videos.count, privacy: .public) chapters=\(chapters.count, privacy: .public)")
+            tubeLog.notice(
+                "fetchNextInfo (anon) → related=\(videos.count, privacy: .public) chapters=\(chapters.count, privacy: .public)"
+            )
             return NextInfo(relatedVideos: videos, likeStatus: .none, chapters: chapters)
         }
     }
@@ -170,7 +177,8 @@ extension InnerTubeAPI {
         let commentsBody = makeBody(client: webClientContext, continuationToken: token)
         let commentsData = try await post(endpoint: "next", body: commentsBody)
         let comments = parseComments(from: commentsData)
-        tubeLog.notice("fetchComments videoId=\(videoId, privacy: .public) → \(comments.count, privacy: .public) comments")
+        tubeLog.notice(
+            "fetchComments videoId=\(videoId, privacy: .public) → \(comments.count, privacy: .public) comments")
         return comments
     }
 
@@ -190,18 +198,20 @@ extension InnerTubeAPI {
                 // Strategy 1: direct likeStatus string (videoPrimaryInfoRenderer on WEB)
                 if let statusStr = dict["likeStatus"] as? String {
                     switch statusStr {
-                    case "LIKE":    found = .like
+                    case "LIKE": found = .like
                     case "DISLIKE": found = .dislike
-                    default:        found = LikeStatus.none
+                    default: found = LikeStatus.none
                     }
                     return
                 }
                 // Strategy 2: segmentedLikeDislikeButtonRenderer (WEB + TV clients)
                 if let seg = dict["segmentedLikeDislikeButtonRenderer"] as? [String: Any] {
-                    let liked = (seg["likeButton"] as? [String: Any])
+                    let liked =
+                        (seg["likeButton"] as? [String: Any])
                         .flatMap { $0["toggleButtonRenderer"] as? [String: Any] }
                         .flatMap { $0["isToggled"] as? Bool } ?? false
-                    let disliked = (seg["dislikeButton"] as? [String: Any])
+                    let disliked =
+                        (seg["dislikeButton"] as? [String: Any])
                         .flatMap { $0["toggleButtonRenderer"] as? [String: Any] }
                         .flatMap { $0["isToggled"] as? Bool } ?? false
                     found = liked ? .like : disliked ? .dislike : LikeStatus.none
@@ -228,7 +238,8 @@ extension InnerTubeAPI {
                 // Collect any *Renderer keys for diagnostics
                 for k in dict.keys where k.hasSuffix("Renderer") { rendererKeysFound.insert(k) }
                 if let r = dict["compactVideoRenderer"] as? [String: Any],
-                   let v = parseVideoRenderer(r) {
+                    let v = parseVideoRenderer(r)
+                {
                     videos.append(v)
                 } else {
                     for value in dict.values { walk(value, depth: depth + 1) }
@@ -238,7 +249,9 @@ extension InnerTubeAPI {
             }
         }
         walk(json)
-        tubeLog.notice("[parseRelatedVideos] found=\(videos.count, privacy: .public) rendererKeys=\(rendererKeysFound.sorted().joined(separator: ","), privacy: .public)")
+        tubeLog.notice(
+            "[parseRelatedVideos] found=\(videos.count, privacy: .public) rendererKeys=\(rendererKeysFound.sorted().joined(separator: ","), privacy: .public)"
+        )
         return Array(videos.prefix(25))
     }
 
@@ -259,9 +272,10 @@ extension InnerTubeAPI {
                     // how JSONSerialization bridges the JSON number — handle all three.
                     let startTime: TimeInterval? = {
                         if let watchEndpoint = (renderer["onTap"] as? [String: Any])
-                            .flatMap({ $0["watchEndpoint"] as? [String: Any] }) {
+                            .flatMap({ $0["watchEndpoint"] as? [String: Any] })
+                        {
                             let raw = watchEndpoint["startTimeSeconds"]
-                            if let n = raw as? Int    { return TimeInterval(n) }
+                            if let n = raw as? Int { return TimeInterval(n) }
                             if let n = raw as? Double { return n }
                             if let n = raw as? NSNumber { return n.doubleValue }
                             if let s = raw as? String { return TimeInterval(s) }
@@ -307,9 +321,10 @@ extension InnerTubeAPI {
                 guard depth < 50 else { return }
                 if let dict = obj as? [String: Any] {
                     if let contItem = dict["continuationItemRenderer"] as? [String: Any],
-                       let endpoint = contItem["continuationEndpoint"] as? [String: Any],
-                       let cmd = endpoint["continuationCommand"] as? [String: Any],
-                       let t = cmd["token"] as? String {
+                        let endpoint = contItem["continuationEndpoint"] as? [String: Any],
+                        let cmd = endpoint["continuationCommand"] as? [String: Any],
+                        let t = cmd["token"] as? String
+                    {
                         found = t
                         return
                     }
@@ -333,13 +348,15 @@ extension InnerTubeAPI {
         // The comment list in onResponseReceivedEndpoints now holds only `commentViewModel`
         // key-references; the actual data is in entity mutations.
         if let frameworkUpdates = json["frameworkUpdates"] as? [String: Any],
-           let entityBatch = frameworkUpdates["entityBatchUpdate"] as? [String: Any],
-           let mutations = entityBatch["mutations"] as? [[String: Any]] {
+            let entityBatch = frameworkUpdates["entityBatchUpdate"] as? [String: Any],
+            let mutations = entityBatch["mutations"] as? [[String: Any]]
+        {
             for mutation in mutations {
                 guard let payload = mutation["payload"] as? [String: Any],
-                      let cep = payload["commentEntityPayload"] as? [String: Any] else { continue }
+                    let cep = payload["commentEntityPayload"] as? [String: Any]
+                else { continue }
                 let properties = cep["properties"] as? [String: Any]
-                let author     = cep["author"] as? [String: Any]
+                let author = cep["author"] as? [String: Any]
 
                 let id = properties?["commentId"] as? String ?? UUID().uuidString
                 let authorName = author?["displayName"] as? String ?? ""
@@ -349,15 +366,16 @@ extension InnerTubeAPI {
                 let toolbarState = properties?["toolbarState"] as? [String: Any]
                 let likeCount = toolbarState?["likeCountNotliked"] as? String ?? ""
                 let isLiked = (toolbarState?["likeState"] as? String) == "LIKE_STATE_LIKED"
-                comments.append(Comment(
-                    id: id,
-                    author: authorName,
-                    authorAvatarURL: avatarURL,
-                    text: text,
-                    likeCount: likeCount,
-                    publishedTime: publishedTime,
-                    isLiked: isLiked
-                ))
+                comments.append(
+                    Comment(
+                        id: id,
+                        author: authorName,
+                        authorAvatarURL: avatarURL,
+                        text: text,
+                        likeCount: likeCount,
+                        publishedTime: publishedTime,
+                        isLiked: isLiked
+                    ))
             }
             if !comments.isEmpty {
                 tubeLog.notice("parseComments: entity format → \(comments.count, privacy: .public) comments")
@@ -378,15 +396,16 @@ extension InnerTubeAPI {
                     let likeCount = (cr["voteCount"] as? [String: Any]).flatMap { extractText($0) } ?? ""
                     let publishedTime = (cr["publishedTimeText"] as? [String: Any]).flatMap { extractText($0) } ?? ""
                     let isLiked = cr["isLiked"] as? Bool ?? false
-                    comments.append(Comment(
-                        id: id,
-                        author: author,
-                        authorAvatarURL: avatarURL,
-                        text: text,
-                        likeCount: likeCount,
-                        publishedTime: publishedTime,
-                        isLiked: isLiked
-                    ))
+                    comments.append(
+                        Comment(
+                            id: id,
+                            author: author,
+                            authorAvatarURL: avatarURL,
+                            text: text,
+                            likeCount: likeCount,
+                            publishedTime: publishedTime,
+                            isLiked: isLiked
+                        ))
                     return
                 }
                 for v in dict.values { walk(v, depth: depth + 1) }
@@ -396,7 +415,8 @@ extension InnerTubeAPI {
         }
         walk(json)
         if !comments.isEmpty {
-            tubeLog.notice("parseComments: legacy commentRenderer format → \(comments.count, privacy: .public) comments")
+            tubeLog.notice(
+                "parseComments: legacy commentRenderer format → \(comments.count, privacy: .public) comments")
         } else {
             let topKeys = Array(json.keys.prefix(6))
             tubeLog.notice("parseComments: 0 comments — top-level keys: \(topKeys, privacy: .public)")

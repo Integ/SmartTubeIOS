@@ -1,6 +1,7 @@
-import SwiftUI
 import CoreImage
 import CoreImage.CIFilterBuiltins
+import SwiftUI
+
 #if os(macOS)
 import AppKit
 #endif
@@ -226,10 +227,12 @@ public struct SignInView: View {
                 VStack(spacing: 6) {
                     Text("Activate SmartTube")
                         .font(.title2).fontWeight(.bold)
-                    Text("On this device, tap the button below — the sign-in page opens with your code already filled in.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
+                    Text(
+                        "On this device, tap the button below — the sign-in page opens with your code already filled in."
+                    )
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
                 }
 
                 // Primary CTA: opens the activation URL with user_code pre-filled.

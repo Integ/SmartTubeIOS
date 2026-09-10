@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - AppSettingsMigrationTests
@@ -28,37 +29,37 @@ struct AppSettingsMigrationTests {
     func oldJSONMissingNewFieldDecodeSucceeds() throws {
         // JSON without `settingsVersion` (a field added in the current version)
         let json = """
-        {
-            "preferredQuality": "1080p",
-            "playbackSpeed": 1.5,
-            "autoplayEnabled": false,
-            "backgroundPlaybackEnabled": false,
-            "landscapeAlwaysPlay": true,
-            "pipEnabled": false,
-            "miniPlayerEnabled": true,
-            "seekBackSeconds": 15,
-            "seekForwardSeconds": 45,
-            "controlsHideTimeout": 6,
-            "videoGravityMode": "fill",
-            "loopEnabled": true,
-            "shuffleEnabled": false,
-            "defaultSection": "subscriptions",
-            "compactThumbnails": true,
-            "hideShorts": true,
-            "perDeviceRecommendationsEnabled": false,
-            "themeName": "Dark",
-            "enabledSections": ["home", "subscriptions"],
-            "historyState": "disabled",
-            "sponsorBlockEnabled": false,
-            "sponsorBlockActions": {},
-            "sponsorBlockMinSegmentDuration": 2.5,
-            "sponsorBlockExcludedChannels": {},
-            "deArrowEnabled": true,
-            "audioOnlyMode": true,
-            "preferH264": true,
-            "iCloudSyncEnabled": true
-        }
-        """.data(using: .utf8)!
+            {
+                "preferredQuality": "1080p",
+                "playbackSpeed": 1.5,
+                "autoplayEnabled": false,
+                "backgroundPlaybackEnabled": false,
+                "landscapeAlwaysPlay": true,
+                "pipEnabled": false,
+                "miniPlayerEnabled": true,
+                "seekBackSeconds": 15,
+                "seekForwardSeconds": 45,
+                "controlsHideTimeout": 6,
+                "videoGravityMode": "fill",
+                "loopEnabled": true,
+                "shuffleEnabled": false,
+                "defaultSection": "subscriptions",
+                "compactThumbnails": true,
+                "hideShorts": true,
+                "perDeviceRecommendationsEnabled": false,
+                "themeName": "Dark",
+                "enabledSections": ["home", "subscriptions"],
+                "historyState": "disabled",
+                "sponsorBlockEnabled": false,
+                "sponsorBlockActions": {},
+                "sponsorBlockMinSegmentDuration": 2.5,
+                "sponsorBlockExcludedChannels": {},
+                "deArrowEnabled": true,
+                "audioOnlyMode": true,
+                "preferH264": true,
+                "iCloudSyncEnabled": true
+            }
+            """.data(using: .utf8)!
 
         let settings = try JSONDecoder().decode(AppSettings.self, from: json)
 
@@ -84,7 +85,9 @@ struct AppSettingsMigrationTests {
         #expect(settings.iCloudSyncEnabled == true)
 
         // Missing field must decode to 0 (the pre-migration sentinel)
-        #expect(settings.settingsVersion == 0, "Old JSON without settingsVersion should decode as 0 (migration sentinel), not fail")
+        #expect(
+            settings.settingsVersion == 0,
+            "Old JSON without settingsVersion should decode as 0 (migration sentinel), not fail")
     }
 
     // MARK: - Type-mismatched field → default for that field, others preserved
@@ -95,43 +98,45 @@ struct AppSettingsMigrationTests {
     func typeMismatchedFieldFallsToDefault() throws {
         // controlsHideTimeout stored as a string (invalid) — was Int
         let json = """
-        {
-            "preferredQuality": "720p",
-            "playbackSpeed": 2.0,
-            "autoplayEnabled": true,
-            "backgroundPlaybackEnabled": false,
-            "landscapeAlwaysPlay": false,
-            "pipEnabled": true,
-            "miniPlayerEnabled": true,
-            "seekBackSeconds": 10,
-            "seekForwardSeconds": 30,
-            "controlsHideTimeout": "bad_value",
-            "videoGravityMode": "fit",
-            "loopEnabled": false,
-            "shuffleEnabled": false,
-            "defaultSection": "home",
-            "compactThumbnails": false,
-            "hideShorts": false,
-            "perDeviceRecommendationsEnabled": true,
-            "themeName": "System",
-            "enabledSections": [],
-            "historyState": "enabled",
-            "sponsorBlockEnabled": true,
-            "sponsorBlockActions": {},
-            "sponsorBlockMinSegmentDuration": 0,
-            "sponsorBlockExcludedChannels": {},
-            "deArrowEnabled": false,
-            "audioOnlyMode": false,
-            "preferH264": false,
-            "iCloudSyncEnabled": false,
-            "settingsVersion": 1
-        }
-        """.data(using: .utf8)!
+            {
+                "preferredQuality": "720p",
+                "playbackSpeed": 2.0,
+                "autoplayEnabled": true,
+                "backgroundPlaybackEnabled": false,
+                "landscapeAlwaysPlay": false,
+                "pipEnabled": true,
+                "miniPlayerEnabled": true,
+                "seekBackSeconds": 10,
+                "seekForwardSeconds": 30,
+                "controlsHideTimeout": "bad_value",
+                "videoGravityMode": "fit",
+                "loopEnabled": false,
+                "shuffleEnabled": false,
+                "defaultSection": "home",
+                "compactThumbnails": false,
+                "hideShorts": false,
+                "perDeviceRecommendationsEnabled": true,
+                "themeName": "System",
+                "enabledSections": [],
+                "historyState": "enabled",
+                "sponsorBlockEnabled": true,
+                "sponsorBlockActions": {},
+                "sponsorBlockMinSegmentDuration": 0,
+                "sponsorBlockExcludedChannels": {},
+                "deArrowEnabled": false,
+                "audioOnlyMode": false,
+                "preferH264": false,
+                "iCloudSyncEnabled": false,
+                "settingsVersion": 1
+            }
+            """.data(using: .utf8)!
 
         let settings = try JSONDecoder().decode(AppSettings.self, from: json)
 
         // Type-mismatched field falls to default (4 seconds)
-        #expect(settings.controlsHideTimeout == 4, "Type-mismatched field must fall to its default, not crash/reset all settings")
+        #expect(
+            settings.controlsHideTimeout == 4,
+            "Type-mismatched field must fall to its default, not crash/reset all settings")
 
         // All other stored values must survive
         #expect(settings.preferredQuality == .q720)

@@ -110,9 +110,7 @@ public struct PlayerInfo: Sendable {
         // Adaptive video-only streams also have video/mp4 but only one codec, so the
         // `", "` check correctly excludes them (they have no audio and can't be played).
         let muxed = formats.filter {
-            $0.mimeType.hasPrefix("video/mp4") &&
-            $0.mimeType.contains(", ") &&
-            $0.url != nil
+            $0.mimeType.hasPrefix("video/mp4") && $0.mimeType.contains(", ") && $0.url != nil
         }
         return muxed.sorted { ($0.bitrate ?? 0) > ($1.bitrate ?? 0) }.first?.url
     }
@@ -123,9 +121,7 @@ public struct PlayerInfo: Sendable {
     /// Returns nil if no muxed MP4 with a plain URL is available.
     public var bestMuxedDownloadURL: URL? {
         let muxed = formats.filter {
-            $0.mimeType.hasPrefix("video/mp4") &&
-            $0.mimeType.contains(", ") &&
-            $0.url != nil
+            $0.mimeType.hasPrefix("video/mp4") && $0.mimeType.contains(", ") && $0.url != nil
         }
         return muxed.sorted { ($0.bitrate ?? 0) > ($1.bitrate ?? 0) }.first?.url
     }
@@ -134,9 +130,7 @@ public struct PlayerInfo: Sendable {
     /// Used together with bestAdaptiveAudioURL for the merge fallback.
     public var bestAdaptiveVideoURL: URL? {
         let videoOnly = formats.filter {
-            $0.mimeType.hasPrefix("video/mp4") &&
-            !$0.mimeType.contains(", ") &&
-            $0.url != nil
+            $0.mimeType.hasPrefix("video/mp4") && !$0.mimeType.contains(", ") && $0.url != nil
         }
         return videoOnly.sorted { ($0.bitrate ?? 0) > ($1.bitrate ?? 0) }.first?.url
     }
@@ -145,8 +139,7 @@ public struct PlayerInfo: Sendable {
     /// Used together with bestAdaptiveVideoURL for the merge fallback.
     public var bestAdaptiveAudioURL: URL? {
         let audioOnly = formats.filter {
-            $0.mimeType.hasPrefix("audio/mp4") &&
-            $0.url != nil
+            $0.mimeType.hasPrefix("audio/mp4") && $0.url != nil
         }
         return audioOnly.sorted { ($0.bitrate ?? 0) > ($1.bitrate ?? 0) }.first?.url
     }
@@ -158,9 +151,7 @@ public struct PlayerInfo: Sendable {
     /// and route directly to the WKWebView HLS path.
     public var containsSabrFormats: Bool {
         let adaptiveVideos = formats.filter {
-            $0.mimeType.hasPrefix("video/mp4") &&
-            !$0.mimeType.contains(", ") &&
-            $0.url != nil
+            $0.mimeType.hasPrefix("video/mp4") && !$0.mimeType.contains(", ") && $0.url != nil
         }
         guard !adaptiveVideos.isEmpty else { return false }
         return adaptiveVideos.allSatisfy {
@@ -175,9 +166,7 @@ public struct PlayerInfo: Sendable {
     /// composition and route to the WKWebView HLS path (which uses spc= auth instead).
     public var containsRqhAdaptiveFormats: Bool {
         let adaptiveVideos = formats.filter {
-            $0.mimeType.hasPrefix("video/mp4") &&
-            !$0.mimeType.contains(", ") &&
-            $0.url != nil
+            $0.mimeType.hasPrefix("video/mp4") && !$0.mimeType.contains(", ") && $0.url != nil
         }
         guard !adaptiveVideos.isEmpty else { return false }
         return adaptiveVideos.allSatisfy {
@@ -263,13 +252,14 @@ public enum APIError: LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .httpError(let code):      return "HTTP error \(code)"
-        case .decodingError(let msg):   return "Decoding error: \(msg)"
-        case .notAuthenticated:          return "You are not signed in"
-        case .unavailable(let reason):   return reason
-        case .invalidURL(let endpoint):  return "Could not build URL for endpoint: \(endpoint)"
+        case .httpError(let code): return "HTTP error \(code)"
+        case .decodingError(let msg): return "Decoding error: \(msg)"
+        case .notAuthenticated: return "You are not signed in"
+        case .unavailable(let reason): return reason
+        case .invalidURL(let endpoint): return "Could not build URL for endpoint: \(endpoint)"
         case .ipBlocked:
-            return "YouTube is temporarily blocking this network. Disable your VPN, try a different VPN server, or wait a few minutes and retry."
+            return
+                "YouTube is temporarily blocking this network. Disable your VPN, try a different VPN server, or wait a few minutes and retry."
         case .signInRequired:
             return "This video is age-restricted or requires sign in to watch."
         }

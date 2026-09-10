@@ -64,7 +64,10 @@ public final class CaptionsManager {
 
     /// Updates `currentCaptionCue` for the given playback position.
     public func updateCaptionCue(for time: TimeInterval) {
-        guard !captionCues.isEmpty else { currentCaptionCue = nil; return }
+        guard !captionCues.isEmpty else {
+            currentCaptionCue = nil
+            return
+        }
         currentCaptionCue = captionCues.last(where: { $0.startTime <= time && $0.endTime > time })
     }
 }

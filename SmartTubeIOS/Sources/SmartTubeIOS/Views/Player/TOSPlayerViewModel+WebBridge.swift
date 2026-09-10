@@ -24,8 +24,8 @@ extension TOSPlayerViewModel {
     ///   this is the missing link that fixes `play/seekTo/setPlaybackRate`.
     func handleScriptMessage(_ body: String, frameInfo: WKFrameInfo) {
         guard let data = body.data(using: .utf8),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let type = json["type"] as? String
+            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let type = json["type"] as? String
         else {
             tosLog.debug("[ytCallback] unparseable message: \(body)")
             return
@@ -52,7 +52,9 @@ extension TOSPlayerViewModel {
             // `embedFrameInfo`'s doc comment for the full root-cause story.
             if embedFrameInfo == nil {
                 embedFrameInfo = frameInfo
-                tosLog.notice("[frame] captured embed iframe frameInfo — isMainFrame=\(frameInfo.isMainFrame, privacy: .public) url=\(frameInfo.request.url?.absoluteString ?? "nil", privacy: .public)")
+                tosLog.notice(
+                    "[frame] captured embed iframe frameInfo — isMainFrame=\(frameInfo.isMainFrame, privacy: .public) url=\(frameInfo.request.url?.absoluteString ?? "nil", privacy: .public)"
+                )
             }
             isReady = true
             let readyDuration = (json["duration"] as? Double) ?? 0
@@ -78,7 +80,9 @@ extension TOSPlayerViewModel {
             // always silently started at 1× regardless of the saved preference until now.
             if settings.playbackSpeed != 1.0 {
                 setPlaybackRate(settings.playbackSpeed)
-                tosLog.notice("[ytCallback] applied saved playback speed \(self.settings.playbackSpeed, format: .fixed(precision: 2))×")
+                tosLog.notice(
+                    "[ytCallback] applied saved playback speed \(self.settings.playbackSpeed, format: .fixed(precision: 2))×"
+                )
             }
             #if os(iOS)
             // #283: duration is known now — Now Playing info (lock screen, Control
@@ -115,13 +119,17 @@ extension TOSPlayerViewModel {
             // playback was observed (see pollVideo's doc comment).
             let unmutedAt = (json["t"] as? Double) ?? -1
             let stillMuted = (json["muted"] as? Bool) ?? true
-            tosLog.notice("[ytCallback] 🔊 auto-unmuted at t=\(unmutedAt, format: .fixed(precision: 2))s — video.muted now \(stillMuted, privacy: .public)")
+            tosLog.notice(
+                "[ytCallback] 🔊 auto-unmuted at t=\(unmutedAt, format: .fixed(precision: 2))s — video.muted now \(stillMuted, privacy: .public)"
+            )
 
         case "muteChange":
             let nowMuted = (json["muted"] as? Bool) ?? false
             let wasMuted = (json["prevMuted"] as? Bool) ?? !nowMuted
             let muteT = (json["t"] as? Double) ?? 0
-            tosLog.notice("[ytCallback] 🔇 muteChange \(wasMuted, privacy: .public)→\(nowMuted, privacy: .public) at t=\(muteT, format: .fixed(precision: 2))s")
+            tosLog.notice(
+                "[ytCallback] 🔇 muteChange \(wasMuted, privacy: .public)→\(nowMuted, privacy: .public) at t=\(muteT, format: .fixed(precision: 2))s"
+            )
 
         case "pageHidden":
             tosLog.notice("[ytCallback] 📴 page hidden (app backgrounded)")
@@ -143,17 +151,23 @@ extension TOSPlayerViewModel {
         case "bgRemute":
             let bgrT = (json["t"] as? Double) ?? 0
             let retries = (json["retriesArmed"] as? Int) ?? 0
-            tosLog.notice("[ytCallback] 🔇 bgRemute — iOS re-muted after background at t=\(bgrT, format: .fixed(precision: 2))s — arming \(retries, privacy: .public) retry polls")
+            tosLog.notice(
+                "[ytCallback] 🔇 bgRemute — iOS re-muted after background at t=\(bgrT, format: .fixed(precision: 2))s — arming \(retries, privacy: .public) retry polls"
+            )
 
         case "userMute":
             let umT = (json["t"] as? Double) ?? 0
-            tosLog.notice("[ytCallback] 🔇 userMute — video.muted=true without background event at t=\(umT, format: .fixed(precision: 2))s (treating as user action, no retry)")
+            tosLog.notice(
+                "[ytCallback] 🔇 userMute — video.muted=true without background event at t=\(umT, format: .fixed(precision: 2))s (treating as user action, no retry)"
+            )
 
         case "pollUnmuted":
             let puT = (json["t"] as? Double) ?? 0
             let puRetries = (json["retriesLeft"] as? Int) ?? 0
             let puMuted = (json["muted"] as? Bool) ?? true
-            tosLog.notice("[ytCallback] 🔊 pollUnmuted at t=\(puT, format: .fixed(precision: 2))s muted=\(puMuted, privacy: .public) retriesLeft=\(puRetries, privacy: .public)")
+            tosLog.notice(
+                "[ytCallback] 🔊 pollUnmuted at t=\(puT, format: .fixed(precision: 2))s muted=\(puMuted, privacy: .public) retriesLeft=\(puRetries, privacy: .public)"
+            )
 
         case "tick":
             let t = (json["t"] as? Double) ?? 0
@@ -190,7 +204,9 @@ extension TOSPlayerViewModel {
                 )
             }
             if newState != playerState {
-                tosLog.notice("[ytCallback] tick state: \(self.playerState.rawValue) → \(s) at t=\(t, format: .fixed(precision: 1))s")
+                tosLog.notice(
+                    "[ytCallback] tick state: \(self.playerState.rawValue) → \(s) at t=\(t, format: .fixed(precision: 1))s"
+                )
                 CFNotificationCenterPostNotification(
                     CFNotificationCenterGetDarwinNotifyCenter(),
                     CFNotificationName("com.void.smarttube.tosplayer.state.\(s)" as CFString),
@@ -211,7 +227,9 @@ extension TOSPlayerViewModel {
             // so the two signals share the same notion of "actually playing".
             if !hasReceivedTimeAdvanced, newState == .playing, t > 0.1 {
                 hasReceivedTimeAdvanced = true
-                tosLog.notice("[ytCallback] 🎬 time advanced — t=\(t, format: .fixed(precision: 2))s, state=\(s) — firing timeadvanced notification")
+                tosLog.notice(
+                    "[ytCallback] 🎬 time advanced — t=\(t, format: .fixed(precision: 2))s, state=\(s) — firing timeadvanced notification"
+                )
                 CFNotificationCenterPostNotification(
                     CFNotificationCenterGetDarwinNotifyCenter(),
                     CFNotificationName("com.void.smarttube.tosplayer.timeadvanced" as CFString),
@@ -230,14 +248,28 @@ extension TOSPlayerViewModel {
             let errText = (json["text"] as? String) ?? ""
             let errName: String
             switch code {
-            case 2:        errName = "invalid-param";          playerError = .iframeError(code)
-            case 5:        errName = "html5-not-supported";    playerError = .iframeError(code)
-            case 100:      errName = "video-not-found";        playerError = .notFound
-            case 101, 150: errName = "embedding-disabled";     playerError = .embeddingDisabled
-            case 153:      errName = "player-config-error";    playerError = .iframeError(code)
-            default:       errName = "unknown(\(code))";       playerError = .iframeError(code)
+            case 2:
+                errName = "invalid-param"
+                playerError = .iframeError(code)
+            case 5:
+                errName = "html5-not-supported"
+                playerError = .iframeError(code)
+            case 100:
+                errName = "video-not-found"
+                playerError = .notFound
+            case 101, 150:
+                errName = "embedding-disabled"
+                playerError = .embeddingDisabled
+            case 153:
+                errName = "player-config-error"
+                playerError = .iframeError(code)
+            default:
+                errName = "unknown(\(code))"
+                playerError = .iframeError(code)
             }
-            tosLog.notice("[ytCallback] ❌ player error \(code) (\(errName)) text='\(errText)' isFatal=\(self.playerError?.isFatal ?? false)")
+            tosLog.notice(
+                "[ytCallback] ❌ player error \(code) (\(errName)) text='\(errText)' isFatal=\(self.playerError?.isFatal ?? false)"
+            )
             CFNotificationCenterPostNotification(
                 CFNotificationCenterGetDarwinNotifyCenter(),
                 CFNotificationName("com.void.smarttube.tosplayer.error.\(code)" as CFString),
@@ -333,4 +365,4 @@ extension TOSPlayerViewModel {
         }
     }
 }
-#endif // !os(tvOS)
+#endif  // !os(tvOS)

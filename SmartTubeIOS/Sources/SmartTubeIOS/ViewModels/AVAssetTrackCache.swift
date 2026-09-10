@@ -28,8 +28,10 @@ final class AVAssetTrackCache: @unchecked Sendable {
         lock.withLock { audioMap[url] }
     }
 
-    func store(videoTracks vt: [AVAssetTrack], audioTracks at: [AVAssetTrack],
-               videoURL: URL, audioURL: URL) {
+    func store(
+        videoTracks vt: [AVAssetTrack], audioTracks at: [AVAssetTrack],
+        videoURL: URL, audioURL: URL
+    ) {
         lock.withLock {
             videoMap[videoURL] = vt
             audioMap[audioURL] = at

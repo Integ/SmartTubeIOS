@@ -1,5 +1,5 @@
-import SwiftUI
 import SmartTubeIOSCore
+import SwiftUI
 
 // MARK: - HomeView
 //
@@ -47,13 +47,15 @@ public struct HomeView: View {
     #endif
     private var visibleSections: [BrowseSection] {
         let types = store.settings.enabledSections
-        var all: [BrowseSection] = types.isEmpty
+        var all: [BrowseSection] =
+            types.isEmpty
             ? BrowseSection.defaultSections
             : types.compactMap { type in BrowseSection.allSections.first { $0.type == type } }
         // Always keep a "Recommended" chip directly after the "Home" chip so the
         // user can filter to only recommended videos regardless of settings.
         if !all.contains(where: { $0.type == .recommended }),
-           let homeIdx = all.firstIndex(where: { $0.type == .home }) {
+            let homeIdx = all.firstIndex(where: { $0.type == .home })
+        {
             all.insert(BrowseSection(type: .recommended), at: homeIdx + 1)
         }
         if store.settings.hideShorts {
@@ -77,21 +79,21 @@ public struct HomeView: View {
             #endif
             contentArea
                 #if !os(iOS)
-                .navigationDestination(item: $selectedVideo) { video in
-                    #if os(macOS)
-                    if store.settings.useTOSPlayerOnMac && tosPlayerFallbackVideoId != video.id {
-                        TOSPlayerView(video: video, api: api) {
-                            tosPlayerFallbackVideoId = video.id
-                        }
-                        .environment(store)
-                        .onDisappear { tosPlayerFallbackVideoId = nil }
-                    } else {
-                        PlayerView(video: video, api: api)
+            .navigationDestination(item: $selectedVideo) { video in
+                #if os(macOS)
+                if store.settings.useTOSPlayerOnMac && tosPlayerFallbackVideoId != video.id {
+                    TOSPlayerView(video: video, api: api) {
+                        tosPlayerFallbackVideoId = video.id
                     }
-                    #else
+                    .environment(store)
+                    .onDisappear { tosPlayerFallbackVideoId = nil }
+                } else {
                     PlayerView(video: video, api: api)
-                    #endif
                 }
+                #else
+                PlayerView(video: video, api: api)
+                #endif
+            }
                 #endif
                 .navigationDestination(item: $selectedPlaylist) { stub in
                     PlaylistView(playlistId: stub.id, playlistTitle: stub.title, api: api)
@@ -100,8 +102,8 @@ public struct HomeView: View {
                     ChannelView(channelId: dest.channelId)
                 }
                 #if os(tvOS)
-                .focusSection()
-                #endif
+            .focusSection()
+            #endif
         }
         #if os(iOS)
         // Player cover is centralised in MainTabView; deep-link handled there too.
@@ -361,7 +363,9 @@ public struct HomeView: View {
         } else if selectedSection.type == .recommended {
             pinnedShorts = sectionVM.recommendedShortsVideos.filter { !hideLiveShorts || !($0.isLive && $0.isShort) }
         } else {
-            pinnedShorts = sectionVM.videoGroups.flatMap(\.videos).filter(\.isShort).filter { !hideLiveShorts || !($0.isLive && $0.isShort) }
+            pinnedShorts = sectionVM.videoGroups.flatMap(\.videos).filter(\.isShort).filter {
+                !hideLiveShorts || !($0.isLive && $0.isShort)
+            }
         }
 
         let rowGroups: [VideoGroup] = sectionVM.videoGroups.filter { $0.layout == .row }.map { g in
@@ -515,7 +519,7 @@ public struct HomeView: View {
             let isShortsSectionActive = selectedSection.type == .shorts
             let applyHide = store.settings.hideShorts && selectedSection.type != .history
             guard !applyHide,
-                  let trigger = sectionVM.videoGroups.last?.videos.last
+                let trigger = sectionVM.videoGroups.last?.videos.last
             else { return }
 
             let allVideos = sectionVM.videoGroups.flatMap(\.videos)
@@ -531,7 +535,7 @@ public struct HomeView: View {
                     } else if !hasMorePages {
                         needsMoreShorts = false  // no more pages — stop
                     } else {
-                        shouldTrigger = true     // page had nothing new — fetch another
+                        shouldTrigger = true  // page had nothing new — fetch another
                     }
                 }
             } else {
@@ -544,7 +548,7 @@ public struct HomeView: View {
                     } else if !hasMorePages {
                         needsMoreShorts = false  // no more pages — stop
                     } else {
-                        shouldTrigger = true     // page had no new shorts — fetch another
+                        shouldTrigger = true  // page had no new shorts — fetch another
                     }
                 }
 
@@ -556,7 +560,7 @@ public struct HomeView: View {
                     } else if !hasMorePages {
                         needsMoreNonShorts = false  // no more pages — stop
                     } else {
-                        shouldTrigger = true         // page had no new regulars — fetch another
+                        shouldTrigger = true  // page had no new regulars — fetch another
                     }
                 }
             }
@@ -615,7 +619,8 @@ public struct HomeView: View {
                     .multilineTextAlignment(.center)
                 Button("Sign In") { showSignIn = true }
                     .buttonStyle(.borderedProminent)
-            } else if !auth.isSignedIn && (selectedSection.type == .subscriptions || selectedSection.type == .channels) {
+            } else if !auth.isSignedIn && (selectedSection.type == .subscriptions || selectedSection.type == .channels)
+            {
                 Image(systemName: "person.badge.plus")
                     .font(.system(size: 60))
                     .foregroundStyle(.secondary)

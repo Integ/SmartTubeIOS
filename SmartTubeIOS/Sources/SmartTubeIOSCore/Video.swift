@@ -4,13 +4,13 @@ import Foundation
 
 /// Mirrors the Android `Video` data model.
 public struct Video: Identifiable, Hashable, Codable, Sendable {
-    public let id: String                   // videoId
+    public let id: String  // videoId
     public var title: String
     public var channelTitle: String
     public var channelId: String?
     public var description: String?
     public var thumbnailURL: URL?
-    public var duration: TimeInterval?      // seconds
+    public var duration: TimeInterval?  // seconds
     public var viewCount: Int?
     public var publishedAt: Date?
     /// Raw relative-date text from the API (e.g. "2 years ago", "3 months ago").
@@ -25,14 +25,14 @@ public struct Video: Identifiable, Hashable, Codable, Sendable {
     /// (ustreamerConfig, reelWatchEndpoint, etc.) whose portrait thumbnail slot
     /// on YouTube's CDN returns a blank black image rather than a real thumb.
     public var hasPortraitThumbnail: Bool
-    public var watchProgress: Double?       // 0.0 – 1.0
+    public var watchProgress: Double?  // 0.0 – 1.0
     public var playlistId: String?
     public var playlistIndex: Int?
     public var badges: [String]
     // Feed feedback tokens (session-scoped, from InnerTube menuRenderer)
     public var notInterestedToken: String?  // "Not interested" — hide this video
-    public var dontLikeToken: String?       // "Don't like this video"
-    public var hideChannelToken: String?    // "Don't recommend channel"
+    public var dontLikeToken: String?  // "Don't like this video"
+    public var hideChannelToken: String?  // "Don't recommend channel"
     // MARK: DeArrow overrides (applied from VideoPreloadCache after cache consume)
     public var deArrowTitle: String?
     public var deArrowThumbnailTimestamp: Double?
@@ -126,9 +126,9 @@ public extension Video {
     var formattedViewCount: String {
         guard let viewCount else { return "" }
         switch viewCount {
-        case 0..<1_000:       return "\(viewCount) views"
+        case 0..<1_000: return "\(viewCount) views"
         case 1_000..<1_000_000: return String(format: "%.1fK views", Double(viewCount) / 1_000)
-        default:              return String(format: "%.1fM views", Double(viewCount) / 1_000_000)
+        default: return String(format: "%.1fM views", Double(viewCount) / 1_000_000)
         }
     }
 

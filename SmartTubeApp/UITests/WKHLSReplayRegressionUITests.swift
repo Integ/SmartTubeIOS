@@ -110,8 +110,8 @@ final class WKHLSReplayRegressionUITests: XCTestCase {
         }
 
         // Record the card identifier and extract the video ID.
-        let cardID = firstCard.identifier                              // "video.card.uN7uKLsGRWw"
-        let videoId = String(cardID.dropFirst("video.card.".count))   // "uN7uKLsGRWw"
+        let cardID = firstCard.identifier  // "video.card.uN7uKLsGRWw"
+        let videoId = String(cardID.dropFirst("video.card.".count))  // "uN7uKLsGRWw"
 
         // Wait for prewarm.done.<videoId> — fires only when this exact card's HLS URL is
         // cached. The VideoCardView retry loop (fix18) guarantees it eventually fires even
@@ -171,7 +171,9 @@ final class WKHLSReplayRegressionUITests: XCTestCase {
             if readyResult == .completed {
                 print("[WKHLSReplay] cycle \(cycle)  \(label)  \(String(format: "%.2f", elapsed))s")
             } else {
-                print("[WKHLSReplay] cycle \(cycle)  \(label)  \(String(format: "%.2f", elapsed))s (readyToPlay not received within 10 s — video stalled)")
+                print(
+                    "[WKHLSReplay] cycle \(cycle)  \(label)  \(String(format: "%.2f", elapsed))s (readyToPlay not received within 10 s — video stalled)"
+                )
             }
             replayTimings.append((cycle: cycle, elapsed: elapsed))
 
@@ -180,8 +182,9 @@ final class WKHLSReplayRegressionUITests: XCTestCase {
             // the UIKit modal accessibility tree settles (~1.5 s); if it was already settled by
             // the time we reach here (elapsed > 1.5 s) the wait returns immediately.
             guard titleLabel.waitForExistence(timeout: max(25.0 - elapsed, 5.0)) else {
-                XCTFail("Cycle \(cycle): player.titleLabel did not appear within 25 s " +
-                        "(tap-to-player timeout — possible stale-session 403 regression)")
+                XCTFail(
+                    "Cycle \(cycle): player.titleLabel did not appear within 25 s "
+                        + "(tap-to-player timeout — possible stale-session 403 regression)")
                 return
             }
 
@@ -189,8 +192,8 @@ final class WKHLSReplayRegressionUITests: XCTestCase {
             let errorBanner = app.otherElements["player.errorBanner"].firstMatch
             XCTAssertFalse(
                 errorBanner.exists,
-                "Cycle \(cycle): player.errorBanner visible — stale CDN session may have " +
-                "served wrong content before 403 (regression: stop() must evict wkHLS cache)"
+                "Cycle \(cycle): player.errorBanner visible — stale CDN session may have "
+                    + "served wrong content before 403 (regression: stop() must evict wkHLS cache)"
             )
 
             // 4. Assert the title matches what we expect (no wrong video).
@@ -198,8 +201,8 @@ final class WKHLSReplayRegressionUITests: XCTestCase {
                 let actualTitle = titleLabel.label
                 XCTAssertEqual(
                     actualTitle, expected,
-                    "Cycle \(cycle): player title '\(actualTitle)' ≠ expected '\(expected)' — " +
-                    "stale wkHLS session served a different video's content before 403"
+                    "Cycle \(cycle): player title '\(actualTitle)' ≠ expected '\(expected)' — "
+                        + "stale wkHLS session served a different video's content before 403"
                 )
             }
 
@@ -268,7 +271,8 @@ final class WKHLSReplayRegressionUITests: XCTestCase {
             print("[WKHLSReplay] cycle \(cycle): stop complete — wkHLS cache evicted")
         }
 
-        let timingSummary = replayTimings.map { "c\($0.cycle)=\(String(format: "%.2f", $0.elapsed))s" }.joined(separator: " ")
+        let timingSummary = replayTimings.map { "c\($0.cycle)=\(String(format: "%.2f", $0.elapsed))s" }.joined(
+            separator: " ")
         print("[WKHLSReplay] results: \(timingSummary)")
         print("[WKHLSReplay] all \(totalCycles) cycles passed — no stale-session 403 regression")
     }
@@ -281,8 +285,9 @@ final class WKHLSReplayRegressionUITests: XCTestCase {
     private func firstNonShortVideoCard(timeout: TimeInterval) -> XCUIElement? {
         let predicate = NSPredicate(format: "identifier BEGINSWITH 'video.card.'")
         let cards = app.descendants(matching: .any).matching(predicate)
-        let any = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count > 0"),
-                                            object: cards)
+        let any = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "count > 0"),
+            object: cards)
         guard XCTWaiter().wait(for: [any], timeout: timeout) == .completed else {
             return nil
         }

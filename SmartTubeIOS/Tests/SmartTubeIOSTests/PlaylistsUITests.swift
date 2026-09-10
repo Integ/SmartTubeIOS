@@ -1,6 +1,7 @@
 import Foundation
 import OSLog
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - Playlist mock data
@@ -27,9 +28,12 @@ private nonisolated(unsafe) let mockLibraryResponse: [String: Any] = [
                                                                     "videoCountText": ["runs": [["text": "12 videos"]]],
                                                                     "thumbnail": [
                                                                         "thumbnails": [
-                                                                            ["url": "https://i.ytimg.com/vi/abc/hqdefault.jpg"]
+                                                                            [
+                                                                                "url":
+                                                                                    "https://i.ytimg.com/vi/abc/hqdefault.jpg"
+                                                                            ]
                                                                         ]
-                                                                    ]
+                                                                    ],
                                                                 ]
                                                             ],
                                                             [
@@ -39,9 +43,12 @@ private nonisolated(unsafe) let mockLibraryResponse: [String: Any] = [
                                                                     "videoCountText": ["runs": [["text": "5 videos"]]],
                                                                     "thumbnail": [
                                                                         "thumbnails": [
-                                                                            ["url": "https://i.ytimg.com/vi/xyz/hqdefault.jpg"]
+                                                                            [
+                                                                                "url":
+                                                                                    "https://i.ytimg.com/vi/xyz/hqdefault.jpg"
+                                                                            ]
                                                                         ]
-                                                                    ]
+                                                                    ],
                                                                 ]
                                                             ],
                                                             [
@@ -51,11 +58,14 @@ private nonisolated(unsafe) let mockLibraryResponse: [String: Any] = [
                                                                     "videoCount": "27",
                                                                     "thumbnail": [
                                                                         "thumbnails": [
-                                                                            ["url": "https://i.ytimg.com/vi/zzz/hqdefault.jpg"]
+                                                                            [
+                                                                                "url":
+                                                                                    "https://i.ytimg.com/vi/zzz/hqdefault.jpg"
+                                                                            ]
                                                                         ]
-                                                                    ]
+                                                                    ],
                                                                 ]
-                                                            ]
+                                                            ],
                                                         ]
                                                     ]
                                                 ]

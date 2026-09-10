@@ -26,7 +26,7 @@ final class TOSPlayerStateStoreTests: XCTestCase {
 
         store.play(video: video, api: api)
         store.stop()
-        store.stop() // must not crash when vm is already nil
+        store.stop()  // must not crash when vm is already nil
         XCTAssertNil(store.vm)
     }
 }

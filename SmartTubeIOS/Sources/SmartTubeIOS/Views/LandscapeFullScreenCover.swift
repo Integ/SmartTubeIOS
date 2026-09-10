@@ -42,7 +42,8 @@ final class LandscapeAwareHostingController: UIHostingController<AnyView> {
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         if isBeingDismissed {
-            landscapeLog.notice("[LandscapeAwareHostingController] viewDidDisappear isBeingDismissed=true — calling onDismiss")
+            landscapeLog.notice(
+                "[LandscapeAwareHostingController] viewDidDisappear isBeingDismissed=true — calling onDismiss")
             onDismiss?()
         }
     }
@@ -130,13 +131,18 @@ private struct LandscapePresenter<Item: Identifiable & Hashable>: UIViewControll
             // UIKit removes the presenting VC's view from the window during a .fullScreen
             // presentation, making vc.view.window nil while the player is on screen.
             if coordinator.latestItem == nil {
-                landscapeLog.notice("[LandscapePresenter] updateUIViewController — item nil, calling sync for dismiss (bypassing window guard)")
+                landscapeLog.notice(
+                    "[LandscapePresenter] updateUIViewController — item nil, calling sync for dismiss (bypassing window guard)"
+                )
                 coordinator.sync(root: UIViewController())
                 return
             }
             guard let window = vc.view.window,
-                  let root = window.rootViewController else {
-                landscapeLog.notice("[LandscapePresenter] updateUIViewController — item non-nil but vc.view.window is nil, skipping sync")
+                let root = window.rootViewController
+            else {
+                landscapeLog.notice(
+                    "[LandscapePresenter] updateUIViewController — item non-nil but vc.view.window is nil, skipping sync"
+                )
                 return
             }
             coordinator.sync(root: root)
@@ -195,8 +201,9 @@ private struct LandscapePresenter<Item: Identifiable & Hashable>: UIViewControll
                     // and short-circuit; onDismiss will clear everything when the
                     // in-flight dismiss animation completes.
                     guard top.view.window != nil,
-                          !top.isBeingDismissed,
-                          top.presentedViewController == nil else {
+                        !top.isBeingDismissed,
+                        top.presentedViewController == nil
+                    else {
                         landscapeLog.notice("[LandscapePresenter] doPresent — top VC not available, aborting")
                         self.isTransitioning = false
                         return
@@ -229,14 +236,16 @@ private struct LandscapePresenter<Item: Identifiable & Hashable>: UIViewControll
                     // which stalls when the hosting VC's view is off-screen (.fullScreen style).
                     self.capturedDismissStore?.dismissPlayerAction = { [weak hc, weak self] in
                         guard let hc, !hc.isBeingDismissed,
-                              hc.presentingViewController != nil else { return }
+                            hc.presentingViewController != nil
+                        else { return }
                         landscapeLog.notice("[LandscapePresenter] dismissPlayerAction fired — dismissing")
                         self?.isTransitioning = true
                         hc.dismiss(animated: false) { [weak self] in
                             self?.isTransitioning = false
                         }
                     }
-                    landscapeLog.notice("[LandscapePresenter] presenting LandscapeAwareHostingController from \(type(of: top))")
+                    landscapeLog.notice(
+                        "[LandscapePresenter] presenting LandscapeAwareHostingController from \(type(of: top))")
                     top.present(hc, animated: false) { [weak self] in
                         self?.isTransitioning = false
                     }

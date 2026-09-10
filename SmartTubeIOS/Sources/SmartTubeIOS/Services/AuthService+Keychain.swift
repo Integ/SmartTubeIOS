@@ -23,12 +23,12 @@ extension AuthService {
 
     func loadFromKeychain() {
         let snap = tokenManager.initialSnapshot
-        accessToken      = snap.accessToken
-        refreshToken     = snap.refreshToken
-        tokenExpiry      = snap.tokenExpiry
-        accountName      = snap.accountName
+        accessToken = snap.accessToken
+        refreshToken = snap.refreshToken
+        tokenExpiry = snap.tokenExpiry
+        accountName = snap.accountName
         accountAvatarURL = snap.accountAvatarURL
-        sapisid          = snap.sapisid
+        sapisid = snap.sapisid
         // If the stored access token has already expired, clear it so that
         // view observers (e.g. HomeView.task(id: auth.accessToken)) don't fire
         // API requests with a stale token. scheduleProactiveRefresh() will
@@ -51,4 +51,3 @@ extension AuthService {
         Task { await tokenManager.clearToken() }
     }
 }
-

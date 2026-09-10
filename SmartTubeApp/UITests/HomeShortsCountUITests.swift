@@ -23,7 +23,7 @@ final class HomeShortsCountUITests: XCTestCase {
         app = XCUIApplication()
         app.launchArguments += [
             "--uitesting",
-            "--uitesting-signed-in"
+            "--uitesting-signed-in",
         ]
         app.launch()
         UITestHelpers.tapTab(named: "Home", in: app)
@@ -52,8 +52,9 @@ final class HomeShortsCountUITests: XCTestCase {
     @discardableResult
     private func waitForShorts(minCount: Int, timeout: TimeInterval = 15) -> Int {
         let row = app.scrollViews["home.shortsRow"]
-        XCTAssertTrue(row.waitForExistence(timeout: timeout),
-                      "home.shortsRow not found within \(timeout)s")
+        XCTAssertTrue(
+            row.waitForExistence(timeout: timeout),
+            "home.shortsRow not found within \(timeout)s")
 
         let deadline = Date(timeIntervalSinceNow: timeout)
         while Date() < deadline {
@@ -121,9 +122,9 @@ final class HomeShortsCountUITests: XCTestCase {
         let hasOffscreenCard = cards.contains { $0.frame.minX >= rowMaxX }
         XCTAssertTrue(
             hasOffscreenCard,
-            "At least one Shorts card should start beyond the row's right edge (\(rowMaxX)pt), " +
-            "proving the row is scrollable. " +
-            "Card minX values: \(cards.map { "\($0.identifier)=\($0.frame.minX)" })"
+            "At least one Shorts card should start beyond the row's right edge (\(rowMaxX)pt), "
+                + "proving the row is scrollable. "
+                + "Card minX values: \(cards.map { "\($0.identifier)=\($0.frame.minX)" })"
         )
 
         // Swipe left to scroll the row; verify the card count is preserved.
@@ -188,15 +189,17 @@ final class HomeShortsCountUITests: XCTestCase {
         XCTAssertTrue(row.waitForExistence(timeout: 15), "home.shortsRow not found")
 
         let initialCount = waitForShorts(minCount: 4, timeout: 25)
-        XCTAssertGreaterThanOrEqual(initialCount, 4,
+        XCTAssertGreaterThanOrEqual(
+            initialCount, 4,
             "Need ≥4 Shorts to verify 6 swipes reveal new cards; got \(initialCount)")
 
         // Detect which cards are currently in the row's visible viewport by frame position.
         func visibleIDs() -> Set<String> {
             let rowMin = row.frame.minX
             let rowMax = row.frame.maxX
-            return Set(shortsCards().filter { $0.frame.maxX > rowMin && $0.frame.minX < rowMax }
-                                    .map { $0.identifier })
+            return Set(
+                shortsCards().filter { $0.frame.maxX > rowMin && $0.frame.minX < rowMax }
+                    .map { $0.identifier })
         }
 
         var seen = visibleIDs()
@@ -220,8 +223,8 @@ final class HomeShortsCountUITests: XCTestCase {
 
         XCTAssertGreaterThan(
             swipesWithNewCards, 0,
-            "At least one left-swipe must bring a new Short into view; " +
-            "0/6 swipes showed new cards — Shorts row has insufficient content."
+            "At least one left-swipe must bring a new Short into view; "
+                + "0/6 swipes showed new cards — Shorts row has insufficient content."
         )
     }
 }
@@ -244,7 +247,7 @@ final class HomeShortsEndlessUITests: XCTestCase {
         // so the endless loadNextShortsPage cascade fires.
         app.launchArguments += [
             "--uitesting",
-            "--uitesting-signed-in"
+            "--uitesting-signed-in",
         ]
         app.launch()
         UITestHelpers.tapTab(named: "Home", in: app)
@@ -289,8 +292,8 @@ final class HomeShortsEndlessUITests: XCTestCase {
 
         XCTAssertGreaterThanOrEqual(
             count, target,
-            "Endless Shorts cascade must load ≥\(target) cards in \(Int(timeout))s; got \(count). " +
-            "Check loadNextShortsPage while loop and fetchShortsMore search continuation."
+            "Endless Shorts cascade must load ≥\(target) cards in \(Int(timeout))s; got \(count). "
+                + "Check loadNextShortsPage while loop and fetchShortsMore search continuation."
         )
     }
 
@@ -315,7 +318,8 @@ final class HomeShortsEndlessUITests: XCTestCase {
             Thread.sleep(forTimeInterval: 0.5)
         }
         let initialCount = rowCount()
-        XCTAssertGreaterThanOrEqual(initialCount, 4,
+        XCTAssertGreaterThanOrEqual(
+            initialCount, 4,
             "Need ≥4 Shorts before testing auto-load; got \(initialCount)")
 
         let beforeShot = XCTAttachment(screenshot: app.screenshot())
@@ -345,9 +349,9 @@ final class HomeShortsEndlessUITests: XCTestCase {
 
         XCTAssertGreaterThan(
             finalCount, initialCount,
-            "Scrolling to the last Short must auto-load more cards via loadNextShortsPage; " +
-            "count did not grow (initial: \(initialCount), after swipes: \(finalCount)). " +
-            "Phase 2 (subs) fired but the new Short may be a duplicate. Check subsShorts dedup."
+            "Scrolling to the last Short must auto-load more cards via loadNextShortsPage; "
+                + "count did not grow (initial: \(initialCount), after swipes: \(finalCount)). "
+                + "Phase 2 (subs) fired but the new Short may be a duplicate. Check subsShorts dedup."
         )
     }
 }

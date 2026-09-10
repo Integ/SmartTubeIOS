@@ -91,7 +91,7 @@ final class SIDPlaybackStallingUITests: XCTestCase {
         app.launchArguments = [
             "--uitesting",
             "--uitesting-disable-tos-player-on-ios",
-            "--uitesting-deeplink-video=\(Self.videoID)"
+            "--uitesting-deeplink-video=\(Self.videoID)",
         ]
         app.launch()
     }
@@ -112,8 +112,9 @@ final class SIDPlaybackStallingUITests: XCTestCase {
     func testNoStallingDuringFiveMinutePlayback() throws {
         // ── Step 1: Wait for the player title to confirm the deep-link opened. ──
         guard app.staticTexts["player.titleLabel"].firstMatch.waitForExistence(timeout: 20) else {
-            throw XCTSkip("Player title did not appear within 20 s — " +
-                          "network unavailable or deep-link broken for \(Self.videoID)")
+            throw XCTSkip(
+                "Player title did not appear within 20 s — "
+                    + "network unavailable or deep-link broken for \(Self.videoID)")
         }
 
         // ── Step 2: Poll until readyToPlay (WKWebView HLS extraction can take ~20 s). ──
@@ -134,8 +135,9 @@ final class SIDPlaybackStallingUITests: XCTestCase {
         }
 
         guard readyToPlay else {
-            throw XCTSkip("Player did not reach readyToPlay within 50 s — " +
-                          "network unavailable or WKWebView HLS extraction failed for \(Self.videoID)")
+            throw XCTSkip(
+                "Player did not reach readyToPlay within 50 s — "
+                    + "network unavailable or WKWebView HLS extraction failed for \(Self.videoID)")
         }
 
         // ── Step 3: Let auto-hide fire so controls disappear, simulating real usage. ──
@@ -166,9 +168,9 @@ final class SIDPlaybackStallingUITests: XCTestCase {
             let playPause = app.buttons["player.playPauseButton"].firstMatch
             XCTAssertTrue(
                 playPause.exists && playPause.isEnabled,
-                "play/pause button not enabled at \(elapsed)s checkpoint \(check)/\(numberOfChecks) — " +
-                "player may have stalled (bug #193). Check device log for " +
-                "'[rateObserver] player.rate→0' or HLS segment 403/404 near this timestamp."
+                "play/pause button not enabled at \(elapsed)s checkpoint \(check)/\(numberOfChecks) — "
+                    + "player may have stalled (bug #193). Check device log for "
+                    + "'[rateObserver] player.rate→0' or HLS segment 403/404 near this timestamp."
             )
 
             // Let controls auto-hide before the next check.

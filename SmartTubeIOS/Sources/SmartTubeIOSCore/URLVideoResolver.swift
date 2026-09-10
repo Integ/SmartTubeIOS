@@ -39,9 +39,9 @@ public actor URLVideoResolver {
     public init() {
         // Manual redirect handling so we can inspect each Location hop.
         let config = URLSessionConfiguration.ephemeral
-        config.httpShouldSetCookies       = false
-        config.httpCookieAcceptPolicy     = .never
-        config.timeoutIntervalForRequest  = URLVideoResolver.hopTimeout
+        config.httpShouldSetCookies = false
+        config.httpCookieAcceptPolicy = .never
+        config.timeoutIntervalForRequest = URLVideoResolver.hopTimeout
         config.timeoutIntervalForResource = URLVideoResolver.totalTimeout
         // No cookies, no credentials forwarded to arbitrary third-party hosts.
         session = URLSession(configuration: config, delegate: RedirectBlockingDelegate(), delegateQueue: nil)
@@ -85,7 +85,7 @@ public actor URLVideoResolver {
 
     private func followRedirects(from startURL: URL, onProgress: (@Sendable (String) -> Void)? = nil) async -> String? {
         var current = startURL
-        for hop in 1 ... URLVideoResolver.maxRedirects {
+        for hop in 1...URLVideoResolver.maxRedirects {
             guard isHTTP(current) else {
                 resolverLog.notice("hop\(hop, privacy: .public) non-http scheme — stopping")
                 return nil
@@ -108,9 +108,9 @@ public actor URLVideoResolver {
             if let id = YouTubeLinkHandler.videoID(from: landed) { return id }
 
             // Look for a Location header to manually follow
-            guard (300 ... 399).contains(http.statusCode),
-                  let location = http.value(forHTTPHeaderField: "Location"),
-                  let next = URL(string: location, relativeTo: current)?.absoluteURL
+            guard (300...399).contains(http.statusCode),
+                let location = http.value(forHTTPHeaderField: "Location"),
+                let next = URL(string: location, relativeTo: current)?.absoluteURL
             else {
                 // Not a redirect — we've reached the final URL; step 3 will scrape it.
                 resolverLog.notice("hop\(hop, privacy: .public) final URL: \(landed.absoluteString, privacy: .public)")
@@ -135,7 +135,7 @@ public actor URLVideoResolver {
         request.setValue("SmartTube/1.0", forHTTPHeaderField: "User-Agent")
 
         guard let (data, response) = try? await session.data(for: request),
-              let http = response as? HTTPURLResponse
+            let http = response as? HTTPURLResponse
         else { return nil }
 
         // Only parse text/html responses.
@@ -147,8 +147,9 @@ public actor URLVideoResolver {
 
         // Cap at maxBodyBytes to prevent memory blowout.
         let capped = data.prefix(URLVideoResolver.maxBodyBytes)
-        guard let html = String(data: capped, encoding: .utf8)
-                      ?? String(data: capped, encoding: .isoLatin1)
+        guard
+            let html = String(data: capped, encoding: .utf8)
+                ?? String(data: capped, encoding: .isoLatin1)
         else { return nil }
 
         guard let found = HTMLVideoLinkExtractor.extractURL(from: html) else { return nil }

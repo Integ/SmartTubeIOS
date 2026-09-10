@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - BotGuardClientTests
@@ -28,76 +29,76 @@ struct BotGuardClientTests {
     /// Minimal BotGuard interpreter that mimics the real VM API.
     /// getMinter is synchronous — returns a plain function, not a Promise.
     private static let fakeInterpreterJS = """
-    (function() {
-        globalThis.TestBotGuardVM = {
-            a: function(program, vmFnCallback, flag, undef, noop, initPair) {
-                vmFnCallback(
-                    /* asyncSnapshotFn */
-                    function(snapshotCallback, params) {
-                        var signalOutput = params[2];
-                        // Install getMinter at signalOutput[0]
-                        signalOutput[0] = function getMinter(integrityBytes) {
-                            return function mintCallback(contentBytes) {
-                                return new Uint8Array([1, 2, 3]);
+        (function() {
+            globalThis.TestBotGuardVM = {
+                a: function(program, vmFnCallback, flag, undef, noop, initPair) {
+                    vmFnCallback(
+                        /* asyncSnapshotFn */
+                        function(snapshotCallback, params) {
+                            var signalOutput = params[2];
+                            // Install getMinter at signalOutput[0]
+                            signalOutput[0] = function getMinter(integrityBytes) {
+                                return function mintCallback(contentBytes) {
+                                    return new Uint8Array([1, 2, 3]);
+                                };
                             };
-                        };
-                        snapshotCallback("test-bg-response");
-                    },
-                    function() {}, /* shutdownFn */
-                    function() {}, /* passFn */
-                    function() {}  /* checkCameraFn */
-                );
-                return [null]; /* initResult — not a Promise */
-            }
-        };
-    })();
-    """
+                            snapshotCallback("test-bg-response");
+                        },
+                        function() {}, /* shutdownFn */
+                        function() {}, /* passFn */
+                        function() {}  /* checkCameraFn */
+                    );
+                    return [null]; /* initResult — not a Promise */
+                }
+            };
+        })();
+        """
 
     /// Same as above, but getMinter returns Promise<mintCallback> instead of mintCallback directly.
     /// Exercises the microtask-pump path in resolvePromise().
     private static let fakeInterpreterJSPromiseMinter = """
-    (function() {
-        globalThis.TestBotGuardVM = {
-            a: function(program, vmFnCallback, flag, undef, noop, initPair) {
-                vmFnCallback(
-                    function(snapshotCallback, params) {
-                        var signalOutput = params[2];
-                        signalOutput[0] = function getMinter(integrityBytes) {
-                            return Promise.resolve(function mintCallback(contentBytes) {
-                                return new Uint8Array([7, 8, 9]);
-                            });
-                        };
-                        snapshotCallback("test-bg-response-promise");
-                    },
-                    function() {}, function() {}, function() {}
-                );
-                return [null];
-            }
-        };
-    })();
-    """
+        (function() {
+            globalThis.TestBotGuardVM = {
+                a: function(program, vmFnCallback, flag, undef, noop, initPair) {
+                    vmFnCallback(
+                        function(snapshotCallback, params) {
+                            var signalOutput = params[2];
+                            signalOutput[0] = function getMinter(integrityBytes) {
+                                return Promise.resolve(function mintCallback(contentBytes) {
+                                    return new Uint8Array([7, 8, 9]);
+                                });
+                            };
+                            snapshotCallback("test-bg-response-promise");
+                        },
+                        function() {}, function() {}, function() {}
+                    );
+                    return [null];
+                }
+            };
+        })();
+        """
 
     /// vm.a() returns [Promise, ...] instead of [null, ...] — exercises the await-on-initResult path.
     private static let fakeInterpreterJSPromiseInit = """
-    (function() {
-        globalThis.TestBotGuardVM = {
-            a: function(program, vmFnCallback, flag, undef, noop, initPair) {
-                vmFnCallback(
-                    function(snapshotCallback, params) {
-                        var signalOutput = params[2];
-                        signalOutput[0] = function(intBytes) {
-                            return function(cBytes) { return new Uint8Array([1, 2, 3]); };
-                        };
-                        snapshotCallback("test-bg-response-preinit");
-                    },
-                    function() {}, function() {}, function() {}
-                );
-                // Return a pre-resolved Promise as initResult[0]
-                return [Promise.resolve(undefined)];
-            }
-        };
-    })();
-    """
+        (function() {
+            globalThis.TestBotGuardVM = {
+                a: function(program, vmFnCallback, flag, undef, noop, initPair) {
+                    vmFnCallback(
+                        function(snapshotCallback, params) {
+                            var signalOutput = params[2];
+                            signalOutput[0] = function(intBytes) {
+                                return function(cBytes) { return new Uint8Array([1, 2, 3]); };
+                            };
+                            snapshotCallback("test-bg-response-preinit");
+                        },
+                        function() {}, function() {}, function() {}
+                    );
+                    // Return a pre-resolved Promise as initResult[0]
+                    return [Promise.resolve(undefined)];
+                }
+            };
+        })();
+        """
 
     // MARK: - Helpers
 
@@ -126,7 +127,7 @@ struct BotGuardClientTests {
         //   wrappedUrl:    array — first non-empty String is the URL to fetch interpreter JS from
         let isURL = interpreterValue.hasPrefix("http") || interpreterValue.hasPrefix("//")
         let wrappedScript: [Any] = isURL ? [] : [interpreterValue]
-        let wrappedUrl: [Any]    = isURL ? [interpreterValue] : []
+        let wrappedUrl: [Any] = isURL ? [interpreterValue] : []
         let inner: [Any] = ["msgId001", wrappedScript, wrappedUrl, "hash-abc", "program-bytes", "TestBotGuardVM"]
         let payload: [Any] = ["O43z0dpjhgX20SCx4KAo", try scramble(inner)]
         return try JSONSerialization.data(withJSONObject: payload)
@@ -134,7 +135,9 @@ struct BotGuardClientTests {
 
     private func waaCreatePayloadNested(interpreterValue: String) throws -> Data {
         // Tests wrappedScript with mixed elements (including NSNull) — verifies compactMap skips nulls.
-        let inner: [Any] = ["msgId001", [NSNull(), interpreterValue], [], "hash-abc", "program-bytes", "TestBotGuardVM"]
+        let inner: [Any] = [
+            "msgId001", [NSNull(), interpreterValue], [], "hash-abc", "program-bytes", "TestBotGuardVM",
+        ]
         let payload: [Any] = ["O43z0dpjhgX20SCx4KAo", try scramble(inner)]
         return try JSONSerialization.data(withJSONObject: payload)
     }
@@ -147,16 +150,18 @@ struct BotGuardClientTests {
     }
 
     // Derived from the same URL constants the client uses so the key always matches exactly.
-    private static let waaCreateURL   = URL(string: "https://jnn-pa.googleapis.com/$rpc/google.internal.waa.v1.Waa/Create")!.absoluteString
-    private static let waaGenerateURL = URL(string: "https://jnn-pa.googleapis.com/$rpc/google.internal.waa.v1.Waa/GenerateIT")!.absoluteString
+    private static let waaCreateURL = URL(
+        string: "https://jnn-pa.googleapis.com/$rpc/google.internal.waa.v1.Waa/Create")!.absoluteString
+    private static let waaGenerateURL = URL(
+        string: "https://jnn-pa.googleapis.com/$rpc/google.internal.waa.v1.Waa/GenerateIT")!.absoluteString
 
     // MARK: - Happy path
 
     @Test("token(for:) returns 'AQID' with synchronous getMinter and inline interpreter JS")
     func tokenWithInlineInterpreterSync() async throws {
         var routes: [String: Data] = [:]
-        routes[Self.waaCreateURL]    = try waaCreatePayload(interpreterValue: Self.fakeInterpreterJS)
-        routes[Self.waaGenerateURL]  = try waaGenerateITPayload()
+        routes[Self.waaCreateURL] = try waaCreatePayload(interpreterValue: Self.fakeInterpreterJS)
+        routes[Self.waaGenerateURL] = try waaGenerateITPayload()
 
         let client = BotGuardClient(session: makeSession(routes: routes))
         let token = try await client.token(for: "dQw4w9WgXcQ")
@@ -169,8 +174,8 @@ struct BotGuardClientTests {
     func tokenWithURLInterpreterJS() async throws {
         let interpreterURL = "https://www.gstatic.com/botguard/fake_bg.js"
         var routes: [String: Data] = [:]
-        routes[Self.waaCreateURL]   = try waaCreatePayload(interpreterValue: interpreterURL)
-        routes[interpreterURL]       = Self.fakeInterpreterJS.data(using: .utf8)!
+        routes[Self.waaCreateURL] = try waaCreatePayload(interpreterValue: interpreterURL)
+        routes[interpreterURL] = Self.fakeInterpreterJS.data(using: .utf8)!
         routes[Self.waaGenerateURL] = try waaGenerateITPayload()
 
         let client = BotGuardClient(session: makeSession(routes: routes))
@@ -183,7 +188,7 @@ struct BotGuardClientTests {
     @Test("token(for:) resolves Promise-returning getMinter via microtask pump → 'BwgJ'")
     func tokenWithPromiseMinter() async throws {
         var routes: [String: Data] = [:]
-        routes[Self.waaCreateURL]   = try waaCreatePayload(interpreterValue: Self.fakeInterpreterJSPromiseMinter)
+        routes[Self.waaCreateURL] = try waaCreatePayload(interpreterValue: Self.fakeInterpreterJSPromiseMinter)
         routes[Self.waaGenerateURL] = try waaGenerateITPayload()
 
         let client = BotGuardClient(session: makeSession(routes: routes))
@@ -196,7 +201,7 @@ struct BotGuardClientTests {
     @Test("token(for:) handles vm.a() returning pre-resolved Promise as initResult[0]")
     func tokenWithPromiseInitResult() async throws {
         var routes: [String: Data] = [:]
-        routes[Self.waaCreateURL]   = try waaCreatePayload(interpreterValue: Self.fakeInterpreterJSPromiseInit)
+        routes[Self.waaCreateURL] = try waaCreatePayload(interpreterValue: Self.fakeInterpreterJSPromiseInit)
         routes[Self.waaGenerateURL] = try waaGenerateITPayload()
 
         let client = BotGuardClient(session: makeSession(routes: routes))
@@ -210,7 +215,7 @@ struct BotGuardClientTests {
     @Test("nested challenge response outer[1] = [[...]] is parsed correctly")
     func parsesNestedChallengeResponse() async throws {
         var routes: [String: Data] = [:]
-        routes[Self.waaCreateURL]   = try waaCreatePayloadNested(interpreterValue: Self.fakeInterpreterJS)
+        routes[Self.waaCreateURL] = try waaCreatePayloadNested(interpreterValue: Self.fakeInterpreterJS)
         routes[Self.waaGenerateURL] = try waaGenerateITPayload()
 
         let client = BotGuardClient(session: makeSession(routes: routes))
@@ -221,11 +226,11 @@ struct BotGuardClientTests {
 
     @Test("// -prefixed interpreter URL is normalised to https://")
     func protocolRelativeInterpreterURL() async throws {
-        let bareURL    = "//www.gstatic.com/botguard/proto_relative.js"
-        let httpsURL   = "https://www.gstatic.com/botguard/proto_relative.js"
+        let bareURL = "//www.gstatic.com/botguard/proto_relative.js"
+        let httpsURL = "https://www.gstatic.com/botguard/proto_relative.js"
         var routes: [String: Data] = [:]
-        routes[Self.waaCreateURL]  = try waaCreatePayload(interpreterValue: bareURL)
-        routes[httpsURL]            = Self.fakeInterpreterJS.data(using: .utf8)!
+        routes[Self.waaCreateURL] = try waaCreatePayload(interpreterValue: bareURL)
+        routes[httpsURL] = Self.fakeInterpreterJS.data(using: .utf8)!
         routes[Self.waaGenerateURL] = try waaGenerateITPayload()
 
         let client = BotGuardClient(session: makeSession(routes: routes))
@@ -279,10 +284,11 @@ struct BotGuardClientTests {
     func throwsOnShortInnerArray() async throws {
         // Scrambled inner array with only 4 elements — parseInnerArray requires ≥6
         let shortInner: [Any] = ["msgId", [], [], "hash"]
-        let bad = try JSONSerialization.data(withJSONObject: [
-            "O43z0dpjhgX20SCx4KAo",
-            scramble(shortInner)
-        ] as [Any])
+        let bad = try JSONSerialization.data(
+            withJSONObject: [
+                "O43z0dpjhgX20SCx4KAo",
+                scramble(shortInner),
+            ] as [Any])
         var routes: [String: Data] = [:]
         routes[Self.waaCreateURL] = bad
 
@@ -298,7 +304,7 @@ struct BotGuardClientTests {
         // Interpreter JS defines the wrong name (not "TestBotGuardVM")
         let wrongNameJS = "(function() { globalThis.NotTheRightName = { a: function(){return[null];} }; })();"
         var routes: [String: Data] = [:]
-        routes[Self.waaCreateURL]  = try waaCreatePayload(interpreterValue: wrongNameJS)
+        routes[Self.waaCreateURL] = try waaCreatePayload(interpreterValue: wrongNameJS)
         routes[Self.waaGenerateURL] = try waaGenerateITPayload()
 
         let client = BotGuardClient(session: makeSession(routes: routes))
@@ -312,18 +318,18 @@ struct BotGuardClientTests {
     func throwsWhenSnapshotFnNeverCallsCallback() async throws {
         // asyncSnapshotFn does NOT call snapshotCallback → botguardResponse stays nil
         let noCallbackJS = """
-        (function() {
-            globalThis.TestBotGuardVM = {
-                a: function(p, cb) {
-                    cb(function(snCb, params) { /* intentionally never calls snCb */ },
-                       function(){}, function(){}, function(){});
-                    return [null];
-                }
-            };
-        })();
-        """
+            (function() {
+                globalThis.TestBotGuardVM = {
+                    a: function(p, cb) {
+                        cb(function(snCb, params) { /* intentionally never calls snCb */ },
+                           function(){}, function(){}, function(){});
+                        return [null];
+                    }
+                };
+            })();
+            """
         var routes: [String: Data] = [:]
-        routes[Self.waaCreateURL]   = try waaCreatePayload(interpreterValue: noCallbackJS)
+        routes[Self.waaCreateURL] = try waaCreatePayload(interpreterValue: noCallbackJS)
         routes[Self.waaGenerateURL] = try waaGenerateITPayload()
 
         let client = BotGuardClient(session: makeSession(routes: routes))
@@ -349,7 +355,7 @@ struct BotGuardClientTests {
     @Test("token(for:) throws when GenerateIT returns non-array JSON")
     func throwsOnGenerateITNonArrayJSON() async throws {
         var routes: [String: Data] = [:]
-        routes[Self.waaCreateURL]   = try waaCreatePayload(interpreterValue: Self.fakeInterpreterJS)
+        routes[Self.waaCreateURL] = try waaCreatePayload(interpreterValue: Self.fakeInterpreterJS)
         routes[Self.waaGenerateURL] = try JSONSerialization.data(withJSONObject: ["key": "val"])
 
         let client = BotGuardClient(session: makeSession(routes: routes))
@@ -362,7 +368,7 @@ struct BotGuardClientTests {
     @Test("token(for:) throws when integrityToken base64 is invalid")
     func throwsOnInvalidIntegrityTokenBase64() async throws {
         var routes: [String: Data] = [:]
-        routes[Self.waaCreateURL]   = try waaCreatePayload(interpreterValue: Self.fakeInterpreterJS)
+        routes[Self.waaCreateURL] = try waaCreatePayload(interpreterValue: Self.fakeInterpreterJS)
         // "!!!" is not valid base64
         routes[Self.waaGenerateURL] = try JSONSerialization.data(withJSONObject: ["!!!", 3600, 1] as [Any])
 
@@ -377,20 +383,20 @@ struct BotGuardClientTests {
     func throwsWhenGetMinterNotSet() async throws {
         // VM never sets signalOutput[0]
         let noMinterJS = """
-        (function() {
-            globalThis.TestBotGuardVM = {
-                a: function(p, cb) {
-                    cb(function(snCb, params) {
-                        // Signal output left empty
-                        snCb("bg-response");
-                    }, function(){}, function(){}, function(){});
-                    return [null];
-                }
-            };
-        })();
-        """
+            (function() {
+                globalThis.TestBotGuardVM = {
+                    a: function(p, cb) {
+                        cb(function(snCb, params) {
+                            // Signal output left empty
+                            snCb("bg-response");
+                        }, function(){}, function(){}, function(){});
+                        return [null];
+                    }
+                };
+            })();
+            """
         var routes: [String: Data] = [:]
-        routes[Self.waaCreateURL]   = try waaCreatePayload(interpreterValue: noMinterJS)
+        routes[Self.waaCreateURL] = try waaCreatePayload(interpreterValue: noMinterJS)
         routes[Self.waaGenerateURL] = try waaGenerateITPayload()
 
         let client = BotGuardClient(session: makeSession(routes: routes))
@@ -434,7 +440,9 @@ struct BotGuardClientLiveTests {
         // Websafe fallback path: getMinter is not set (VM clones args, Proxy never fires),
         // integrityToken is nil (WAA returns json[0]=null for JSC), websafe fallback is used.
         #expect(token.count > 0, "Token should be non-empty")
-        #expect(client.lastRunHasMinter == false, "Expected websafe fallback path — getMinter is not set in JSC environment")
+        #expect(
+            client.lastRunHasMinter == false, "Expected websafe fallback path — getMinter is not set in JSC environment"
+        )
         #expect(client.lastRunIntegrityTokenLen == 0, "Expected json[0]=null from WAA server (JSC environment)")
     }
 }
@@ -452,8 +460,9 @@ private final class WAARouterProtocol: URLProtocol, @unchecked Sendable {
     override func startLoading() {
         let key = request.url?.absoluteString ?? ""
         if let data = Self.routes[key] {
-            let resp = HTTPURLResponse(url: request.url!, statusCode: 200,
-                                       httpVersion: "HTTP/1.1", headerFields: nil)!
+            let resp = HTTPURLResponse(
+                url: request.url!, statusCode: 200,
+                httpVersion: "HTTP/1.1", headerFields: nil)!
             client?.urlProtocol(self, didReceive: resp, cacheStoragePolicy: .notAllowed)
             client?.urlProtocol(self, didLoad: data)
             client?.urlProtocolDidFinishLoading(self)

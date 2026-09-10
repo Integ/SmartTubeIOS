@@ -101,15 +101,17 @@ final class VideoPlaybackRegressionUITests: XCTestCase {
         // 5. Find the same video card in the Home feed and open it again.
         let sameCard = homeApp.descendants(matching: .any).matching(identifier: cardID).firstMatch
         guard sameCard.waitForExistence(timeout: 5) else {
-            try captureAndSkip("Video card '\(cardID)' not found after returning to Home — feed may have refreshed", in: app)
+            try captureAndSkip(
+                "Video card '\(cardID)' not found after returning to Home — feed may have refreshed", in: app)
         }
         sameCard.tap()
 
         // 6. Assert the player reopens.
         let titleLabel = homeApp.staticTexts["player.titleLabel"].firstMatch
         guard titleLabel.waitForExistence(timeout: 20) else {
-            XCTFail("player.titleLabel did not appear on second open from Home — " +
-                    "black screen / stop() regression (#51) may still be present")
+            XCTFail(
+                "player.titleLabel did not appear on second open from Home — "
+                    + "black screen / stop() regression (#51) may still be present")
             return
         }
 
@@ -120,8 +122,8 @@ final class VideoPlaybackRegressionUITests: XCTestCase {
         let errorBanner = homeApp.otherElements["player.errorBanner"].firstMatch
         XCTAssertFalse(
             errorBanner.exists,
-            "player.errorBanner appeared on second open from Home — " +
-            "itemObserverTask/endObserverTask cancellation in stop() may be broken (#51)."
+            "player.errorBanner appeared on second open from Home — "
+                + "itemObserverTask/endObserverTask cancellation in stop() may be broken (#51)."
         )
         XCTAssertFalse(
             homeApp.alerts["Error"].exists,
@@ -146,7 +148,8 @@ final class VideoPlaybackRegressionUITests: XCTestCase {
         // 1. Wait for the deeplink player to open.
         let titleLabel = app.staticTexts["player.titleLabel"].firstMatch
         guard titleLabel.waitForExistence(timeout: 20) else {
-            try captureAndSkip("player.titleLabel did not appear within 20 s — network unavailable or deeplink did not fire", in: app)
+            try captureAndSkip(
+                "player.titleLabel did not appear within 20 s — network unavailable or deeplink did not fire", in: app)
         }
 
         // 2. Let the video start buffering.
@@ -175,12 +178,15 @@ final class VideoPlaybackRegressionUITests: XCTestCase {
         // 6. Re-open the same video in-session via the uitesting overlay button.
         //    This is the exact code path that was broken: same video ID, item=nil after stop().
         let reopenButton = app.buttons["uitesting.reopenDeeplinkVideoButton"].firstMatch
-        XCTAssertTrue(reopenButton.waitForExistence(timeout: 3), "uitesting.reopenDeeplinkVideoButton not found — overlay missing")
+        XCTAssertTrue(
+            reopenButton.waitForExistence(timeout: 3), "uitesting.reopenDeeplinkVideoButton not found — overlay missing"
+        )
         reopenButton.tap()
 
         // 7. Wait for the player to re-open.
         guard titleLabel.waitForExistence(timeout: 20) else {
-            XCTFail("player.titleLabel did not reappear within 20 s on second open — black screen bug may still be present")
+            XCTFail(
+                "player.titleLabel did not reappear within 20 s on second open — black screen bug may still be present")
             return
         }
 
@@ -191,8 +197,8 @@ final class VideoPlaybackRegressionUITests: XCTestCase {
         let errorBanner = app.otherElements["player.errorBanner"].firstMatch
         XCTAssertFalse(
             errorBanner.exists,
-            "player.errorBanner appeared on second open of \(Self.targetVideoID) after stop() — " +
-            "PlayerStateStore.play() may not be calling vm.load() when player.currentItem is nil."
+            "player.errorBanner appeared on second open of \(Self.targetVideoID) after stop() — "
+                + "PlayerStateStore.play() may not be calling vm.load() when player.currentItem is nil."
         )
         XCTAssertFalse(
             app.alerts["Error"].exists,

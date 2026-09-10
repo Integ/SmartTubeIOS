@@ -1,5 +1,5 @@
-import SwiftUI
 import SmartTubeIOSCore
+import SwiftUI
 
 // MARK: - ShortsCardView
 //
@@ -87,7 +87,9 @@ struct ShortsCardView: View {
                             try await api.addToWatchLater(videoId: video.id)
                             watchLaterAlert = DownloadAlertItem(
                                 title: String(localized: "Saved to Watch Later", bundle: .module),
-                                message: String(localized: "\"\(video.title)\" was added to your Watch Later playlist.", bundle: .module)
+                                message: String(
+                                    localized: "\"\(video.title)\" was added to your Watch Later playlist.",
+                                    bundle: .module)
                             )
                         } catch {
                             watchLaterAlert = DownloadAlertItem(
@@ -184,4 +186,3 @@ struct ShortsCardView: View {
         }
     }
 }
-

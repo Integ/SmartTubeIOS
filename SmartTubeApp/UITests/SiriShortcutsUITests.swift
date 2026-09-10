@@ -45,7 +45,9 @@ final class SiriShortcutsUITests: XCTestCase {
 
     /// Launches the app with the deep-link launch argument for `videoID`.
     private func launchWithDeepLink(videoID: String) {
-        app.launchArguments = ["--uitesting", "--uitesting-disable-tos-player-on-ios", "--uitesting-deeplink-video=\(videoID)"]
+        app.launchArguments = [
+            "--uitesting", "--uitesting-disable-tos-player-on-ios", "--uitesting-deeplink-video=\(videoID)",
+        ]
         app.launch()
     }
 
@@ -58,8 +60,8 @@ final class SiriShortcutsUITests: XCTestCase {
         launchWithDeepLink(videoID: Self.knownVideoID)
         XCTAssertTrue(
             playerTitleLabel.waitForExistence(timeout: 15),
-            "player.titleLabel should appear when the deep-link launch arg is set — " +
-            "PlayerView did not open, indicating the deepLinkedVideo path is broken"
+            "player.titleLabel should appear when the deep-link launch arg is set — "
+                + "PlayerView did not open, indicating the deepLinkedVideo path is broken"
         )
     }
 
@@ -71,8 +73,8 @@ final class SiriShortcutsUITests: XCTestCase {
         _ = app.tabBars.firstMatch.waitForExistence(timeout: 5)
         XCTAssertFalse(
             playerTitleLabel.exists,
-            "player.titleLabel should NOT appear for an empty video ID — " +
-            "the guard in consumeDeepLinkFromLaunchArgs should have returned early"
+            "player.titleLabel should NOT appear for an empty video ID — "
+                + "the guard in consumeDeepLinkFromLaunchArgs should have returned early"
         )
     }
 
@@ -111,8 +113,8 @@ final class SiriShortcutsUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 2)
         XCTAssertFalse(
             playerTitleLabel.exists,
-            "player.titleLabel reappeared after re-foregrounding — " +
-            "consumeDeepLinkFromLaunchArgs must not fire more than once per session"
+            "player.titleLabel reappeared after re-foregrounding — "
+                + "consumeDeepLinkFromLaunchArgs must not fire more than once per session"
         )
     }
 }

@@ -1,6 +1,6 @@
-import SwiftUI
 import AuthenticationServices
 import SmartTubeIOSCore
+import SwiftUI
 
 // MARK: - SettingsView
 //
@@ -232,10 +232,13 @@ public struct SettingsView: View {
                         Circle()
                             .fill(cat.color)
                             .frame(width: 10, height: 10)
-                        Picker(cat.displayName, selection: Binding(
-                            get: { store.settings.sponsorBlockActions[cat] ?? .nothing },
-                            set: { store.settings.sponsorBlockActions[cat] = $0 }
-                        )) {
+                        Picker(
+                            cat.displayName,
+                            selection: Binding(
+                                get: { store.settings.sponsorBlockActions[cat] ?? .nothing },
+                                set: { store.settings.sponsorBlockActions[cat] = $0 }
+                            )
+                        ) {
                             Text("Skip").tag(AppSettings.SponsorBlockAction.skip)
                             Text("Show Toast").tag(AppSettings.SponsorBlockAction.showToast)
                             Text("Nothing").tag(AppSettings.SponsorBlockAction.nothing)
@@ -290,7 +293,9 @@ public struct SettingsView: View {
         } header: {
             Text("Experimental")
         } footer: {
-            Text("Uses YouTube's official embedded player instead of the direct stream pipeline. Quality selection and downloads are unavailable. Ads will play. Useful for videos that refuse to play via the standard path.")
+            Text(
+                "Uses YouTube's official embedded player instead of the direct stream pipeline. Quality selection and downloads are unavailable. Ads will play. Useful for videos that refuse to play via the standard path."
+            )
         }
     }
     #endif
@@ -405,25 +410,30 @@ struct SectionsSettingsView: View {
         @Bindable var store = store
         List {
             ForEach(allSections) { section in
-                Toggle(section.title, isOn: Binding(
-                    get: { store.settings.enabledSections.contains(section.type) },
-                    set: { enabled in
-                        if enabled {
-                            if !store.settings.enabledSections.contains(section.type) {
-                                // Insert in canonical order
-                                let ordered = allSections
-                                    .filter { store.settings.enabledSections.contains($0.type) || $0.type == section.type }
-                                    .map { $0.type }
-                                store.settings.enabledSections = ordered
-                            }
-                        } else {
-                            // Don't allow disabling the last section
-                            if store.settings.enabledSections.count > 1 {
-                                store.settings.enabledSections.removeAll { $0 == section.type }
+                Toggle(
+                    section.title,
+                    isOn: Binding(
+                        get: { store.settings.enabledSections.contains(section.type) },
+                        set: { enabled in
+                            if enabled {
+                                if !store.settings.enabledSections.contains(section.type) {
+                                    // Insert in canonical order
+                                    let ordered =
+                                        allSections
+                                        .filter {
+                                            store.settings.enabledSections.contains($0.type) || $0.type == section.type
+                                        }
+                                        .map { $0.type }
+                                    store.settings.enabledSections = ordered
+                                }
+                            } else {
+                                // Don't allow disabling the last section
+                                if store.settings.enabledSections.count > 1 {
+                                    store.settings.enabledSections.removeAll { $0 == section.type }
+                                }
                             }
                         }
-                    }
-                ))
+                    ))
             }
         }
         .navigationTitle("Visible Sections")
@@ -452,7 +462,8 @@ struct SponsorBlockExcludedChannelsView: View {
                 ContentUnavailableView(
                     "No Excluded Channels",
                     systemImage: "person.crop.circle.badge.minus",
-                    description: Text("Open a channel and tap \u{201C}Exclude from SponsorBlock\u{201D} to add it here.")
+                    description: Text(
+                        "Open a channel and tap \u{201C}Exclude from SponsorBlock\u{201D} to add it here.")
                 )
             } else {
                 ForEach(sortedChannels, id: \.key) { channelId, title in

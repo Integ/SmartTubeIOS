@@ -1,9 +1,10 @@
 import AVFoundation
+import SmartTubeIOSCore
 import os
+
 #if canImport(UIKit)
 import MediaPlayer
 #endif
-import SmartTubeIOSCore
 
 private let playerLog = CrashlyticsLogger(category: "Player")
 
@@ -39,10 +40,14 @@ extension PlaybackViewModel {
         // fires right after commitScrub() triggers a binding re-evaluation.
         let sinceCommit = Date.now.timeIntervalSince(lastCommitScrubTime)
         guard sinceCommit > 0.5 else {
-            playerLog.debug("[scrub] beginScrubbing IGNORED (spurious, \(String(format: "%.3f", sinceCommit))s since commit — threshold=0.5s)")
+            playerLog.debug(
+                "[scrub] beginScrubbing IGNORED (spurious, \(String(format: "%.3f", sinceCommit))s since commit — threshold=0.5s)"
+            )
             return
         }
-        playerLog.debug("[scrub] beginScrubbing at \(String(format: "%.1f", self.currentTime))s — sinceCommit=\(String(format: "%.3f", sinceCommit))s isScrubbing=\(self.isScrubbing) controlsVisible=\(self.controlsVisible)")
+        playerLog.debug(
+            "[scrub] beginScrubbing at \(String(format: "%.1f", self.currentTime))s — sinceCommit=\(String(format: "%.3f", sinceCommit))s isScrubbing=\(self.isScrubbing) controlsVisible=\(self.controlsVisible)"
+        )
         seekDebounceTask?.cancel()
         isScrubbing = true
         scrubTime = currentTime
@@ -66,12 +71,15 @@ extension PlaybackViewModel {
         guard isScrubbing else { return }
         seekDebounceTask?.cancel()  // release-seek supersedes any pending debounce
         let target = scrubTime
-        playerLog.debug("[scrub] commitScrub to \(String(format: "%.1f", target))s — isScrubbing=\(self.isScrubbing) controlsVisible=\(self.controlsVisible)")
+        playerLog.debug(
+            "[scrub] commitScrub to \(String(format: "%.1f", target))s — isScrubbing=\(self.isScrubbing) controlsVisible=\(self.controlsVisible)"
+        )
         lastCommitScrubTime = .now
         isScrubbing = false
         seek(to: target)
         showControls()
-        playerLog.debug("[scrub] commitScrub done — isScrubbing=\(self.isScrubbing) controlsVisible=\(self.controlsVisible)")
+        playerLog.debug(
+            "[scrub] commitScrub done — isScrubbing=\(self.isScrubbing) controlsVisible=\(self.controlsVisible)")
     }
 
     /// Issues a seek to the given time. Does NOT show controls — callers that

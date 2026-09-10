@@ -38,8 +38,7 @@ final class ScrubberUITests: XCTestCase {
     private var app: XCUIApplication!
     private var skipThisTest = false
     private let skipReason =
-        "Player did not become ready within deadline — " +
-        "network unavailable or playback broken for this video"
+        "Player did not become ready within deadline — " + "network unavailable or playback broken for this video"
 
     // MARK: - Lifecycle
 
@@ -51,7 +50,7 @@ final class ScrubberUITests: XCTestCase {
         appUnderTest.launchArguments = [
             "--uitesting",
             "--uitesting-disable-tos-player-on-ios",
-            "--uitesting-deeplink-video=\(videoID)"
+            "--uitesting-deeplink-video=\(videoID)",
         ]
         appUnderTest.launch()
         app = appUnderTest
@@ -125,9 +124,9 @@ final class ScrubberUITests: XCTestCase {
         // hPad matches the constant used in iosProgressBar to exclude the end margins.
         let hPad: CGFloat = 20
         let trackW = frame.width - hPad * 2
-        let startX  = frame.minX + hPad + trackW * 0.10   // near-start anchor
-        let endX    = frame.minX + hPad + trackW * CGFloat(toFraction)
-        let midY    = frame.midY
+        let startX = frame.minX + hPad + trackW * 0.10  // near-start anchor
+        let endX = frame.minX + hPad + trackW * CGFloat(toFraction)
+        let midY = frame.midY
 
         let start = app.coordinate(withNormalizedOffset: .zero)
             .withOffset(CGVector(dx: startX, dy: midY))
@@ -137,9 +136,8 @@ final class ScrubberUITests: XCTestCase {
         start.press(forDuration: 0.1, thenDragTo: end)
 
         return String(
-            format: "bar=(x:%.0f y:%.0f w:%.0f h:%.0f) " +
-                    "hPad=%.0f trackW=%.0f " +
-                    "drag=(%.0f→%.0f)@y=%.0f target=%.0f%%",
+            format: "bar=(x:%.0f y:%.0f w:%.0f h:%.0f) " + "hPad=%.0f trackW=%.0f "
+                + "drag=(%.0f→%.0f)@y=%.0f target=%.0f%%",
             frame.minX, frame.minY, frame.width, frame.height,
             hPad, trackW,
             startX, endX, midY,
@@ -180,8 +178,8 @@ final class ScrubberUITests: XCTestCase {
                 att.lifetime = .keepAlways
                 add(att)
                 try captureAndSkip(
-                    "player.progressBar not hittable after 12 s of tapping — " +
-                    "controls overlay not visible for \(label) scrub test",
+                    "player.progressBar not hittable after 12 s of tapping — "
+                        + "controls overlay not visible for \(label) scrub test",
                     in: app
                 )
             }
@@ -206,12 +204,12 @@ final class ScrubberUITests: XCTestCase {
             let d = readDuration()
             let pbFrame = progressBar.frame
             let info = """
-            [BEFORE SCRUB TO \(label)]
-            currentTime   : \(t)
-            duration      : \(d)
-            progressBar   : x=\(pbFrame.minX) y=\(pbFrame.minY) w=\(pbFrame.width) h=\(pbFrame.height)
-            hittable      : \(progressBar.isHittable)
-            """
+                [BEFORE SCRUB TO \(label)]
+                currentTime   : \(t)
+                duration      : \(d)
+                progressBar   : x=\(pbFrame.minX) y=\(pbFrame.minY) w=\(pbFrame.width) h=\(pbFrame.height)
+                hittable      : \(progressBar.isHittable)
+                """
             let att = XCTAttachment(string: info)
             att.name = "state-before-\(label)"
             att.lifetime = .keepAlways
@@ -244,12 +242,12 @@ final class ScrubberUITests: XCTestCase {
             let t = readCurrentTime()
             let d = readDuration()
             let info = """
-            [AFTER SCRUB TO \(label)]
-            currentTime   : \(t)
-            duration      : \(d)
-            dragGeometry  : \(dragInfo)
-            timeBefore    : \(timeBefore)
-            """
+                [AFTER SCRUB TO \(label)]
+                currentTime   : \(t)
+                duration      : \(d)
+                dragGeometry  : \(dragInfo)
+                timeBefore    : \(timeBefore)
+                """
             let att = XCTAttachment(string: info)
             att.name = "state-after-\(label)"
             att.lifetime = .keepAlways
@@ -271,12 +269,11 @@ final class ScrubberUITests: XCTestCase {
         XCTContext.runActivity(named: "Step 8 – Assert scrub changed position") { _ in
             XCTAssertNotEqual(
                 timeBefore, timeAfter,
-                "player.currentTimeLabel did not change after dragging to \(label) " +
-                "(video was PAUSED — natural playback cannot explain this). " +
-                "The DragGesture was NOT recognised by the seek bar. " +
-                "Chapter-marker hit areas may still be intercepting touches (task #121). " +
-                "Before: '\(timeBefore)', After: '\(timeAfter)'. " +
-                "Drag geometry: \(dragInfo)"
+                "player.currentTimeLabel did not change after dragging to \(label) "
+                    + "(video was PAUSED — natural playback cannot explain this). "
+                    + "The DragGesture was NOT recognised by the seek bar. "
+                    + "Chapter-marker hit areas may still be intercepting touches (task #121). "
+                    + "Before: '\(timeBefore)', After: '\(timeAfter)'. " + "Drag geometry: \(dragInfo)"
             )
             XCTAssertFalse(
                 app.staticTexts["player.titleLabel"].firstMatch.label.isEmpty,
@@ -285,4 +282,4 @@ final class ScrubberUITests: XCTestCase {
         }
     }
 }
-#endif // !os(tvOS)
+#endif  // !os(tvOS)

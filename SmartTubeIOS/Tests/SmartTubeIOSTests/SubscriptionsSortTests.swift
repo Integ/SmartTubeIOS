@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - Helpers
@@ -20,12 +21,15 @@ struct SubscriptionsSortTests {
     /// Subscriptions videos must be sorted newest-first by publishedAt.
     /// Verifies the sort that fetchSubscriptions() applies after parseVideoGroup().
     @Test func subscriptionVideosSortedNewestFirst() {
-        let older = Video(id: "old", title: "Older", channelTitle: "Ch",
-                          publishedAt: Date(timeIntervalSinceReferenceDate: 1000))
-        let newer = Video(id: "new", title: "Newer", channelTitle: "Ch",
-                          publishedAt: Date(timeIntervalSinceReferenceDate: 2000))
-        let oldest = Video(id: "oldest", title: "Oldest", channelTitle: "Ch",
-                           publishedAt: Date(timeIntervalSinceReferenceDate: 500))
+        let older = Video(
+            id: "old", title: "Older", channelTitle: "Ch",
+            publishedAt: Date(timeIntervalSinceReferenceDate: 1000))
+        let newer = Video(
+            id: "new", title: "Newer", channelTitle: "Ch",
+            publishedAt: Date(timeIntervalSinceReferenceDate: 2000))
+        let oldest = Video(
+            id: "oldest", title: "Oldest", channelTitle: "Ch",
+            publishedAt: Date(timeIntervalSinceReferenceDate: 500))
 
         var group = VideoGroup(title: "Subscriptions", videos: [older, newer, oldest].shuffled())
         group.videos.sort { ($0.publishedAt ?? .distantPast) > ($1.publishedAt ?? .distantPast) }
@@ -37,10 +41,12 @@ struct SubscriptionsSortTests {
 
     /// Videos without a publishedAt date sort to the end (distantPast fallback).
     @Test func videosWithoutPublishedAtSortToEnd() {
-        let withDate = Video(id: "dated", title: "Dated", channelTitle: "Ch",
-                             publishedAt: Date(timeIntervalSinceReferenceDate: 1000))
-        let withoutDate = Video(id: "undated", title: "Undated", channelTitle: "Ch",
-                                publishedAt: nil)
+        let withDate = Video(
+            id: "dated", title: "Dated", channelTitle: "Ch",
+            publishedAt: Date(timeIntervalSinceReferenceDate: 1000))
+        let withoutDate = Video(
+            id: "undated", title: "Undated", channelTitle: "Ch",
+            publishedAt: nil)
 
         var videos = [withoutDate, withDate]
         videos.sort { ($0.publishedAt ?? .distantPast) > ($1.publishedAt ?? .distantPast) }
@@ -73,14 +79,18 @@ struct SubscriptionsSortTests {
     /// at the end of the list, not interleaved.
     @Test func paginatedSubscriptionsAppendNewVideosAtBottomWithoutResort() async {
         let now = Date()
-        let vidToday = Video(id: "today", title: "Today",   channelTitle: "Ch",
-                             publishedAt: now)
-        let vid4D    = Video(id: "4d",    title: "4 days",  channelTitle: "Ch",
-                             publishedAt: now.addingTimeInterval(-4 * 86_400))
-        let vid2D    = Video(id: "2d",    title: "2 days",  channelTitle: "Ch",
-                             publishedAt: now.addingTimeInterval(-2 * 86_400))
-        let vid1D    = Video(id: "1d",    title: "1 day",   channelTitle: "Ch",
-                             publishedAt: now.addingTimeInterval(-1 * 86_400))
+        let vidToday = Video(
+            id: "today", title: "Today", channelTitle: "Ch",
+            publishedAt: now)
+        let vid4D = Video(
+            id: "4d", title: "4 days", channelTitle: "Ch",
+            publishedAt: now.addingTimeInterval(-4 * 86_400))
+        let vid2D = Video(
+            id: "2d", title: "2 days", channelTitle: "Ch",
+            publishedAt: now.addingTimeInterval(-2 * 86_400))
+        let vid1D = Video(
+            id: "1d", title: "1 day", channelTitle: "Ch",
+            publishedAt: now.addingTimeInterval(-1 * 86_400))
 
         // Page 1: today and 4 days ago (sorted newest-first as API returns them)
         let mock = MockInnerTubeAPI()

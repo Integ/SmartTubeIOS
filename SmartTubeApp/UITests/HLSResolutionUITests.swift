@@ -53,7 +53,7 @@ final class HLSResolutionUITests: XCTestCase {
             "--uitesting-disable-tos-player-on-ios",
             "--uitesting-deeplink-video=\(Self.videoID)",
             "--uitesting-show-controls",
-            "--uitesting-disable-sponsorblock"
+            "--uitesting-disable-sponsorblock",
         ]
         app.launch()
     }
@@ -88,9 +88,9 @@ final class HLSResolutionUITests: XCTestCase {
         guard XCTWaiter().wait(for: [enabledExp], timeout: 90) == .completed else {
             captureState("video not ready after 90 s", in: app)
             XCTFail(
-                "Video did not become ready within 90 s. " +
-                "exhaustiveRetry must complete and deliver a playable stream. " +
-                "Check device log for client phase errors."
+                "Video did not become ready within 90 s. "
+                    + "exhaustiveRetry must complete and deliver a playable stream. "
+                    + "Check device log for client phase errors."
             )
             return
         }
@@ -107,10 +107,10 @@ final class HLSResolutionUITests: XCTestCase {
         let height = resolutionHeight(from: resLabel)
         XCTAssertGreaterThanOrEqual(
             height, Self.minimumHeight,
-            "Auto quality is \(height)p (label: '\(resLabel)') — expected ≥720p. " +
-            "WEB_CREATOR adaptive path failed. Check device log for: " +
-            "WebCreator signInRequired (auth not injected), rqh=1 false-positive on WEB_CREATOR streams, " +
-            "or exhaustiveRetry muxed fallback."
+            "Auto quality is \(height)p (label: '\(resLabel)') — expected ≥720p. "
+                + "WEB_CREATOR adaptive path failed. Check device log for: "
+                + "WebCreator signInRequired (auth not injected), rqh=1 false-positive on WEB_CREATOR streams, "
+                + "or exhaustiveRetry muxed fallback."
         )
     }
 
@@ -134,4 +134,4 @@ final class HLSResolutionUITests: XCTestCase {
     }
 }
 
-#endif // os(iOS)
+#endif  // os(iOS)

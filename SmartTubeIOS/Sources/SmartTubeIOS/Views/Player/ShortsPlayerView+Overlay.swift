@@ -1,5 +1,5 @@
-import SwiftUI
 import SmartTubeIOSCore
+import SwiftUI
 
 extension ShortsPlayerView {
 
@@ -56,7 +56,9 @@ extension ShortsPlayerView {
     private var overlayStack: some View {
         VStack(spacing: 0) {
             HStack {
-                Button { dismiss() } label: {
+                Button {
+                    dismiss()
+                } label: {
                     Image(systemName: AppSymbol.chevronLeft)
                         .font(.title2)
                         .foregroundStyle(.white)

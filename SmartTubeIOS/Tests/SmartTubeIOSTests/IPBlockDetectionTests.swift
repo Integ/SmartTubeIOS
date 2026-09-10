@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - IPBlockDetectionTests
@@ -108,10 +109,12 @@ struct IPBlockDetectionTests {
             }
             return true
         }
-        let cancelledError = NSError(domain: NSURLErrorDomain, code: -999,
-                                     userInfo: [NSLocalizedDescriptionKey: "cancelled"])
-        #expect(!shouldRecord(cancelledError),
-                "NSURLError -999 must be suppressed (NW-7-FIX)")
+        let cancelledError = NSError(
+            domain: NSURLErrorDomain, code: -999,
+            userInfo: [NSLocalizedDescriptionKey: "cancelled"])
+        #expect(
+            !shouldRecord(cancelledError),
+            "NSURLError -999 must be suppressed (NW-7-FIX)")
     }
 
     @Test("NW-7: non-transient NSURLError is still recorded")
@@ -125,10 +128,12 @@ struct IPBlockDetectionTests {
             return true
         }
         // -1200 = SSL handshake failed — a real error that should be recorded
-        let sslError = NSError(domain: NSURLErrorDomain, code: -1200,
-                               userInfo: [NSLocalizedDescriptionKey: "SSL handshake failed"])
-        #expect(shouldRecord(sslError),
-                "NSURLError -1200 is not transient and must still be recorded")
+        let sslError = NSError(
+            domain: NSURLErrorDomain, code: -1200,
+            userInfo: [NSLocalizedDescriptionKey: "SSL handshake failed"])
+        #expect(
+            shouldRecord(sslError),
+            "NSURLError -1200 is not transient and must still be recorded")
     }
 
     // MARK: - NW-6-FIX: Suppression and retry behaviour
@@ -157,10 +162,12 @@ struct IPBlockDetectionTests {
             if case APIError.ipBlocked = error { return false }
             return hasAuthToken
         }
-        #expect(!shouldRetryWithAuthenticatedClient(APIError.ipBlocked("IP blocked"), hasAuthToken: true),
-                "ipBlocked must NOT retry even when the user is authenticated")
-        #expect(!shouldRetryWithAuthenticatedClient(APIError.ipBlocked("IP blocked"), hasAuthToken: false),
-                "ipBlocked must NOT retry when unauthenticated")
+        #expect(
+            !shouldRetryWithAuthenticatedClient(APIError.ipBlocked("IP blocked"), hasAuthToken: true),
+            "ipBlocked must NOT retry even when the user is authenticated")
+        #expect(
+            !shouldRetryWithAuthenticatedClient(APIError.ipBlocked("IP blocked"), hasAuthToken: false),
+            "ipBlocked must NOT retry when unauthenticated")
     }
 
     @Test("NW-6: non-ipBlocked error still triggers TV-authenticated retry when authenticated")

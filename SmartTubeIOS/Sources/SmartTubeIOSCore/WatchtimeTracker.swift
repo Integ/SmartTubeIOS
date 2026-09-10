@@ -64,19 +64,21 @@ public final class WatchtimeTracker {
         flushDuration: TimeInterval
     ) -> @Sendable () async -> Void {
         // Capture old session synchronously.
-        let oldVideoId    = videoId
-        let oldCPN        = cpn
-        let oldURLs       = trackingURLs
-        let oldSegStart   = segmentStart
-        let api           = self.api
+        let oldVideoId = videoId
+        let oldCPN = cpn
+        let oldURLs = trackingURLs
+        let oldSegStart = segmentStart
+        let api = self.api
 
         // Reset to new session synchronously — no race with the returned closure.
-        videoId      = newVideoId
-        cpn          = newCPN
+        videoId = newVideoId
+        cpn = newCPN
         trackingURLs = nil
         segmentStart = nil
 
-        trackerLog.notice("transition: \(oldVideoId, privacy: .public) → \(newVideoId, privacy: .public) cpn=\(newCPN.prefix(8), privacy: .public)…")
+        trackerLog.notice(
+            "transition: \(oldVideoId, privacy: .public) → \(newVideoId, privacy: .public) cpn=\(newCPN.prefix(8), privacy: .public)…"
+        )
 
         return {
             guard !oldVideoId.isEmpty, flushDuration > 0 else { return }
@@ -89,10 +91,13 @@ public final class WatchtimeTracker {
             // YouTube ignores zero-length watchtime segments (st == et), which would
             // prevent cmt from being recorded and leave the watch-progress bar stale.
             let segStart = oldSegStart ?? 0
-            trackerLog.notice("transition flush: videoId=\(oldVideoId, privacy: .public) st=\(Int(segStart))s et=\(Int(flushPosition))s")
+            trackerLog.notice(
+                "transition flush: videoId=\(oldVideoId, privacy: .public) st=\(Int(segStart))s et=\(Int(flushPosition))s"
+            )
             await VideoStateStore.shared.save(videoId: oldVideoId, position: flushPosition, duration: flushDuration)
-            await api.reportWatchtime(videoId: oldVideoId, cpn: oldCPN, trackingURLs: oldURLs,
-                                      segmentStart: segStart, segmentEnd: flushPosition)
+            await api.reportWatchtime(
+                videoId: oldVideoId, cpn: oldCPN, trackingURLs: oldURLs,
+                segmentStart: segStart, segmentEnd: flushPosition)
         }
     }
 
@@ -115,8 +120,8 @@ public final class WatchtimeTracker {
     public func checkpoint(position: TimeInterval, duration: TimeInterval) async {
         guard !videoId.isEmpty, duration > 0 else { return }
 
-        let vid       = videoId
-        let localCPN  = cpn
+        let vid = videoId
+        let localCPN = cpn
         let localURLs = trackingURLs
 
         if segmentStart == nil {
@@ -125,15 +130,19 @@ public final class WatchtimeTracker {
             // segments (st == et), which would prevent cmt from being recorded and
             // leave the watch-progress bar stuck at a stale value.
             segmentStart = 0
-            trackerLog.notice("checkpoint (first): videoId=\(vid, privacy: .public) pos=\(Int(position))s — firing playbackStarted")
+            trackerLog.notice(
+                "checkpoint (first): videoId=\(vid, privacy: .public) pos=\(Int(position))s — firing playbackStarted")
             await api.reportPlaybackStarted(videoId: vid, cpn: localCPN, trackingURLs: localURLs)
         }
 
         let segStart = segmentStart ?? 0
-        trackerLog.notice("checkpoint: videoId=\(vid, privacy: .public) st=\(Int(segStart))s et=\(Int(position))s dur=\(Int(duration))s")
+        trackerLog.notice(
+            "checkpoint: videoId=\(vid, privacy: .public) st=\(Int(segStart))s et=\(Int(position))s dur=\(Int(duration))s"
+        )
         await VideoStateStore.shared.save(videoId: vid, position: position, duration: duration)
-        await api.reportWatchtime(videoId: vid, cpn: localCPN, trackingURLs: localURLs,
-                                   segmentStart: segStart, segmentEnd: position)
+        await api.reportWatchtime(
+            videoId: vid, cpn: localCPN, trackingURLs: localURLs,
+            segmentStart: segStart, segmentEnd: position)
         segmentStart = position
     }
 }

@@ -176,9 +176,9 @@ final class TVPlayerSettingsUITests: XCTestCase {
         let menuClosedAfterSelect = !moreMenuSpeedRow.exists
         XCTAssertTrue(
             speedPicker.waitForExistence(timeout: 5),
-            "player.speedPicker must appear after selecting the Playback Speed row. " +
-            "Menu closed after select=\(menuClosedAfterSelect). " +
-            "If false → no element had focus. If true → wrong button activated (Cancel?)."
+            "player.speedPicker must appear after selecting the Playback Speed row. "
+                + "Menu closed after select=\(menuClosedAfterSelect). "
+                + "If false → no element had focus. If true → wrong button activated (Cancel?)."
         )
         XCTAssertFalse(moreMenuSpeedRow.exists, "more menu must close when speed picker opens")
     }
@@ -189,7 +189,7 @@ final class TVPlayerSettingsUITests: XCTestCase {
         try openPlayer()
         try openMoreMenu()
 
-        remote.press(.select)   // activate speed row (focused by default)
+        remote.press(.select)  // activate speed row (focused by default)
         Thread.sleep(forTimeInterval: 0.5)
 
         guard speedPicker.waitForExistence(timeout: 5) else {
@@ -246,8 +246,10 @@ final class TVPlayerSettingsUITests: XCTestCase {
             XCTFail("No video cards loaded within 20 s — network unavailable")
             return
         }
-        remote.press(.down); Thread.sleep(forTimeInterval: 0.6)
-        remote.press(.down); Thread.sleep(forTimeInterval: 0.6)
+        remote.press(.down)
+        Thread.sleep(forTimeInterval: 0.6)
+        remote.press(.down)
+        Thread.sleep(forTimeInterval: 0.6)
         remote.press(.select)
         XCTAssertTrue(titleLabel.waitForExistence(timeout: 15), "player.titleLabel must appear")
 
@@ -256,7 +258,7 @@ final class TVPlayerSettingsUITests: XCTestCase {
             XCTFail("Sleep timer picker did not open — network or player issue")
             return
         }
-        Thread.sleep(forTimeInterval: 0.4) // let focus settle
+        Thread.sleep(forTimeInterval: 0.4)  // let focus settle
 
         XCTAssertTrue(
             sleepTimerPicker.exists,
@@ -292,8 +294,8 @@ final class TVPlayerSettingsUITests: XCTestCase {
 
         XCTAssertFalse(
             speedPicker.exists,
-            "player.speedPicker must NOT appear after ↓ + select — D-pad down was swallowed " +
-            "(ConditionalMoveCommand regression: onMoveCommand still intercepting overlay D-pad)"
+            "player.speedPicker must NOT appear after ↓ + select — D-pad down was swallowed "
+                + "(ConditionalMoveCommand regression: onMoveCommand still intercepting overlay D-pad)"
         )
     }
 
@@ -318,15 +320,16 @@ final class TVPlayerSettingsUITests: XCTestCase {
         }
 
         guard reachedSleepTimer else {
-            try captureAndSkip("Sleep Timer row did not receive focus after 5 D-pad presses — " +
-                          "row count may vary or network unavailable", in: app)
+            try captureAndSkip(
+                "Sleep Timer row did not receive focus after 5 D-pad presses — "
+                    + "row count may vary or network unavailable", in: app)
         }
 
         remote.press(.select)
         XCTAssertTrue(
             sleepTimerPicker.waitForExistence(timeout: 3),
-            "player.sleepTimerPicker must appear after navigating down to the Sleep Timer row — " +
-            "D-pad navigation inside the more menu is broken"
+            "player.sleepTimerPicker must appear after navigating down to the Sleep Timer row — "
+                + "D-pad navigation inside the more menu is broken"
         )
     }
 
@@ -350,10 +353,10 @@ final class TVPlayerSettingsUITests: XCTestCase {
 
         XCTAssertTrue(
             speedPicker.waitForExistence(timeout: 5),
-            "player.speedPicker must appear after controls auto-hide — " +
-            "focus was stolen from the more menu when vm.controlsVisible became false"
+            "player.speedPicker must appear after controls auto-hide — "
+                + "focus was stolen from the more menu when vm.controlsVisible became false"
         )
     }
 }
 
-#endif // os(tvOS)
+#endif  // os(tvOS)

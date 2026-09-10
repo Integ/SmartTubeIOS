@@ -1,6 +1,7 @@
-import SwiftUI
 import AVFoundation
 import AVKit
+import SwiftUI
+
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -160,17 +161,17 @@ struct HoldSpeedBadge: View {
 /// Named `PlayerSwipeGestureOverlay` to avoid a module-level clash with the
 /// identically-structured private copy in `ShortsPlayerView.swift`.
 struct PlayerSwipeGestureOverlay: UIViewRepresentable {
-    var onSwipeLeft:        () -> Void
-    var onSwipeRight:       () -> Void
-    var onTap:              () -> Void
-    var onDoubleTap:        (CGFloat) -> Void = { _ in }
-    var onTwoFingerTap:     () -> Void = {}
-    var onPanChanged:       ((CGFloat) -> Void)?
-    var onSwipeCancelled:   (() -> Void)?
-    var onLongPressStart:   (() -> Void)?
-    var onLongPressEnd:     (() -> Void)?
-    var onSwipeDown:        (() -> Void)? = nil
-    var isEnabled:          Bool = true
+    var onSwipeLeft: () -> Void
+    var onSwipeRight: () -> Void
+    var onTap: () -> Void
+    var onDoubleTap: (CGFloat) -> Void = { _ in }
+    var onTwoFingerTap: () -> Void = {}
+    var onPanChanged: ((CGFloat) -> Void)?
+    var onSwipeCancelled: (() -> Void)?
+    var onLongPressStart: (() -> Void)?
+    var onLongPressEnd: (() -> Void)?
+    var onSwipeDown: (() -> Void)? = nil
+    var isEnabled: Bool = true
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -178,36 +179,41 @@ struct PlayerSwipeGestureOverlay: UIViewRepresentable {
         let view = UIView()
         view.backgroundColor = .clear
 
-        let pan = UIPanGestureRecognizer(target: context.coordinator,
-                                         action: #selector(Coordinator.handlePan(_:)))
+        let pan = UIPanGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handlePan(_:)))
         pan.cancelsTouchesInView = true
         view.addGestureRecognizer(pan)
         context.coordinator.pan = pan
 
-        let doubleTap = UITapGestureRecognizer(target: context.coordinator,
-                                               action: #selector(Coordinator.handleDoubleTap(_:)))
+        let doubleTap = UITapGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handleDoubleTap(_:)))
         doubleTap.numberOfTapsRequired = 2
         doubleTap.cancelsTouchesInView = false
         doubleTap.require(toFail: pan)
         view.addGestureRecognizer(doubleTap)
         context.coordinator.doubleTap = doubleTap
 
-        let tap = UITapGestureRecognizer(target: context.coordinator,
-                                          action: #selector(Coordinator.handleTap))
+        let tap = UITapGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handleTap))
         tap.cancelsTouchesInView = false
         tap.require(toFail: pan)
         tap.require(toFail: doubleTap)
         view.addGestureRecognizer(tap)
         context.coordinator.tap = tap
 
-        let twoFingerTap = UITapGestureRecognizer(target: context.coordinator,
-                                                   action: #selector(Coordinator.handleTwoFingerTap))
+        let twoFingerTap = UITapGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handleTwoFingerTap))
         twoFingerTap.numberOfTouchesRequired = 2
         twoFingerTap.cancelsTouchesInView = false
         view.addGestureRecognizer(twoFingerTap)
 
-        let longPress = UILongPressGestureRecognizer(target: context.coordinator,
-                                                      action: #selector(Coordinator.handleLongPress(_:)))
+        let longPress = UILongPressGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handleLongPress(_:)))
         longPress.minimumPressDuration = 0.4
         longPress.cancelsTouchesInView = false
         view.addGestureRecognizer(longPress)
@@ -243,7 +249,7 @@ struct PlayerSwipeGestureOverlay: UIViewRepresentable {
             case .ended:
                 // Swipe-down: vertical-dominant, downward, meets threshold → minimize
                 if abs(t.y) > minDistance, t.y > 0, abs(t.y) > abs(t.x) {
-                    parent.onSwipeCancelled?() // reset any horizontal offset
+                    parent.onSwipeCancelled?()  // reset any horizontal offset
                     parent.onSwipeDown?()
                     return
                 }
@@ -279,8 +285,8 @@ struct PlayerSwipeGestureOverlay: UIViewRepresentable {
         }
     }
 }
-#endif // os(iOS)
-#endif // os(iOS) || os(tvOS)
+#endif  // os(iOS)
+#endif  // os(iOS) || os(tvOS)
 
 // MARK: - PlayerNSLayerView (macOS)
 

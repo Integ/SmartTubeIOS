@@ -84,7 +84,9 @@ extension TOSPlayerViewModel {
     }
 
     func updateNowPlayingInfo() {
-        tosNowPlayingLog.notice("[NowPlaying] updateNowPlayingInfo — title='\(videoTitle)' channel='\(channelTitle)' duration=\(String(format: "%.1f", duration))s")
+        tosNowPlayingLog.notice(
+            "[NowPlaying] updateNowPlayingInfo — title='\(videoTitle)' channel='\(channelTitle)' duration=\(String(format: "%.1f", duration))s"
+        )
         var info: [String: Any] = [
             MPMediaItemPropertyTitle: videoTitle,
             MPMediaItemPropertyArtist: channelTitle,
@@ -102,8 +104,9 @@ extension TOSPlayerViewModel {
         // comment / PlaybackViewModel+NowPlaying.swift's fix238 for why).
         if let thumbnailURL {
             let snapshot: UIImage = cachedArtwork ?? UIImage()
-            let artwork = MPMediaItemArtwork(boundsSize: CGSize(width: 600, height: 600),
-                                             requestHandler: makeNonisolatedArtworkProvider(image: snapshot))
+            let artwork = MPMediaItemArtwork(
+                boundsSize: CGSize(width: 600, height: 600),
+                requestHandler: makeNonisolatedArtworkProvider(image: snapshot))
             nowPlayingInfoCache[MPMediaItemPropertyArtwork] = artwork
 
             if cachedArtworkVideoID != videoId {
@@ -111,13 +114,15 @@ extension TOSPlayerViewModel {
                 cachedArtwork = nil
                 Task { [weak self, url = thumbnailURL, videoID = videoId] in
                     guard let (data, _) = try? await URLSession.shared.data(from: url),
-                          let image = UIImage(data: data) else { return }
+                        let image = UIImage(data: data)
+                    else { return }
                     await MainActor.run { [weak self] in
                         guard let self, self.cachedArtworkVideoID == videoID else { return }
                         self.cachedArtwork = image
                         self.nowPlayingInfoCache[MPMediaItemPropertyArtwork] =
-                            MPMediaItemArtwork(boundsSize: image.size,
-                                               requestHandler: makeNonisolatedArtworkProvider(image: image))
+                            MPMediaItemArtwork(
+                                boundsSize: image.size,
+                                requestHandler: makeNonisolatedArtworkProvider(image: image))
                         self.setNowPlayingInfo(self.nowPlayingInfoCache)
                     }
                 }

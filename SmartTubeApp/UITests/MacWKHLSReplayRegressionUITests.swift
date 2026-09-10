@@ -77,8 +77,8 @@ final class MacWKHLSReplayRegressionUITests: XCTestCase {
             )
         }
 
-        let cardID    = firstCard.identifier                              // "video.card.uN7uKLsGRWw"
-        let videoId   = String(cardID.dropFirst("video.card.".count))    // "uN7uKLsGRWw"
+        let cardID = firstCard.identifier  // "video.card.uN7uKLsGRWw"
+        let videoId = String(cardID.dropFirst("video.card.".count))  // "uN7uKLsGRWw"
         let expectedTitle = titleText(for: firstCard)
 
         // Wait for the pre-warm notification for this exact card's HLS URL.
@@ -121,7 +121,9 @@ final class MacWKHLSReplayRegressionUITests: XCTestCase {
             if readyResult == .completed {
                 print("[WKHLSReplay-mac] cycle \(cycle)  \(label)  \(String(format: "%.2f", elapsed))s")
             } else {
-                print("[WKHLSReplay-mac] cycle \(cycle)  \(label)  \(String(format: "%.2f", elapsed))s (readyToPlay not received within 30 s — video stalled)")
+                print(
+                    "[WKHLSReplay-mac] cycle \(cycle)  \(label)  \(String(format: "%.2f", elapsed))s (readyToPlay not received within 30 s — video stalled)"
+                )
             }
             replayTimings.append((cycle: cycle, elapsed: elapsed))
 
@@ -182,7 +184,8 @@ final class MacWKHLSReplayRegressionUITests: XCTestCase {
             print("[WKHLSReplay-mac] cycle \(cycle): stop complete — wkHLS cache evicted")
         }
 
-        let timingSummary = replayTimings
+        let timingSummary =
+            replayTimings
             .map { "c\($0.cycle)=\(String(format: "%.2f", $0.elapsed))s" }
             .joined(separator: " ")
         print("[WKHLSReplay-mac] results: \(timingSummary)")

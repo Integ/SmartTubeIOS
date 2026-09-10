@@ -1,5 +1,5 @@
-import SwiftUI
 import SmartTubeIOSCore
+import SwiftUI
 
 // MARK: - DownloadsView
 
@@ -120,7 +120,8 @@ private struct DownloadedVideoRow: View {
 
     private var fileSizeDescription: String {
         guard let attrs = try? FileManager.default.attributesOfItem(atPath: entry.fileURL.path),
-              let bytes = attrs[.size] as? Int64 else { return "" }
+            let bytes = attrs[.size] as? Int64
+        else { return "" }
         let gb = Double(bytes) / 1_000_000_000
         if gb >= 1 { return String(format: "%.1f GB", gb) }
         let mb = Double(bytes) / 1_000_000

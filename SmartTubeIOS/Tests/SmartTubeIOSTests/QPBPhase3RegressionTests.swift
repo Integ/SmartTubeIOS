@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - QPB Phase 3 Regression Tests
@@ -67,7 +68,9 @@ struct BUG001ExtractNumberKSuffixTests {
         let response = makeVideoRendererResponse([
             "videoId": "testid",
             "title": ["simpleText": "Test Title"],
-            "ownerText": ["runs": [["text": "Channel", "navigationEndpoint": ["browseEndpoint": ["browseId": "UCtest"]]]]],
+            "ownerText": [
+                "runs": [["text": "Channel", "navigationEndpoint": ["browseEndpoint": ["browseId": "UCtest"]]]]
+            ],
             "viewCountText": ["simpleText": "1.5K views"],
             "thumbnail": ["thumbnails": [["url": "https://i.ytimg.com/vi/testid/hqdefault.jpg"]]],
         ])
@@ -82,7 +85,9 @@ struct BUG001ExtractNumberKSuffixTests {
         let response = makeVideoRendererResponse([
             "videoId": "testid2",
             "title": ["simpleText": "Test Title"],
-            "ownerText": ["runs": [["text": "Channel", "navigationEndpoint": ["browseEndpoint": ["browseId": "UCtest2"]]]]],
+            "ownerText": [
+                "runs": [["text": "Channel", "navigationEndpoint": ["browseEndpoint": ["browseId": "UCtest2"]]]]
+            ],
             "viewCountText": ["simpleText": "2.3M views"],
             "thumbnail": ["thumbnails": [["url": "https://i.ytimg.com/vi/testid2/hqdefault.jpg"]]],
         ])
@@ -97,7 +102,9 @@ struct BUG001ExtractNumberKSuffixTests {
         let response = makeVideoRendererResponse([
             "videoId": "testid3",
             "title": ["simpleText": "Test Title"],
-            "ownerText": ["runs": [["text": "Channel", "navigationEndpoint": ["browseEndpoint": ["browseId": "UCtest3"]]]]],
+            "ownerText": [
+                "runs": [["text": "Channel", "navigationEndpoint": ["browseEndpoint": ["browseId": "UCtest3"]]]]
+            ],
             "viewCountText": ["simpleText": "1,234 views"],
             "thumbnail": ["thumbnails": [["url": "https://i.ytimg.com/vi/testid3/hqdefault.jpg"]]],
         ])
@@ -125,7 +132,7 @@ struct BUG011ViewCountParserTests {
                     "lines": [
                         ["lineRenderer": ["items": [["lineItemRenderer": ["text": ["simpleText": "Channel"]]]]]],
                         ["lineRenderer": ["items": [["lineItemRenderer": ["text": ["simpleText": "1.2K views"]]]]]],
-                    ]
+                    ],
                 ]
             ],
             "header": [
@@ -171,7 +178,9 @@ struct BUG014ShortViewCountTextTests {
         let response = makeVideoRendererResponse([
             "videoId": "vidshort",
             "title": ["simpleText": "Video Title"],
-            "ownerText": ["runs": [["text": "Channel", "navigationEndpoint": ["browseEndpoint": ["browseId": "UCshort"]]]]],
+            "ownerText": [
+                "runs": [["text": "Channel", "navigationEndpoint": ["browseEndpoint": ["browseId": "UCshort"]]]]
+            ],
             "shortViewCountText": ["simpleText": "1.2K"],
             // viewCountText intentionally absent
             "thumbnail": ["thumbnails": [["url": "https://i.ytimg.com/vi/vidshort/hqdefault.jpg"]]],
@@ -207,8 +216,8 @@ struct BUG013DiskCacheEvictionTests {
         diskCache.removeAll()
 
         let loadedBack = diskCache.load(NextInfo.self, videoId: "auth-test-vid", dataType: "nextInfo")
-        #expect(loadedBack == nil,
-                "After removeAll(), nextInfo should not be readable from disk")
+        #expect(
+            loadedBack == nil,
+            "After removeAll(), nextInfo should not be readable from disk")
     }
 }
-

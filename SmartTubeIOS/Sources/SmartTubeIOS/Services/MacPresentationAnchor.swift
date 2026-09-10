@@ -9,7 +9,8 @@ import AuthenticationServices
 // active macOS window.  Used by SignInView on macOS only.
 
 final class MacPresentationAnchor: NSObject, ASWebAuthenticationPresentationContextProviding,
-                                    @unchecked Sendable {
+    @unchecked Sendable
+{
 
     static let shared = MacPresentationAnchor()
     private override init() { super.init() }

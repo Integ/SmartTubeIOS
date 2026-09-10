@@ -86,7 +86,7 @@ final class ShortsEmbedPlayerUITests: XCTestCase {
     /// Swipes up in the Shorts player to advance to the next Short.
     private func swipePlayerUp() {
         let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
-        let end   = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
         start.press(forDuration: 0.05, thenDragTo: end)
         Thread.sleep(forTimeInterval: 1.2)
     }
@@ -94,7 +94,7 @@ final class ShortsEmbedPlayerUITests: XCTestCase {
     /// Swipes down in the Shorts player to go back to the previous Short.
     private func swipePlayerDown() {
         let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
-        let end   = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
         start.press(forDuration: 0.05, thenDragTo: end)
         Thread.sleep(forTimeInterval: 1.2)
     }
@@ -155,8 +155,8 @@ final class ShortsEmbedPlayerUITests: XCTestCase {
         // CRITICAL: "ready"/"tickstarted"/"playing" can fire during the cover-present
         // animation that precedes shorts.indexLabel appearing — create before tap,
         // same pattern as TOSPlayerIOSUITests.
-        let ready0   = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsplayer.ready")
-        let tick0    = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsplayer.tickstarted")
+        let ready0 = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsplayer.ready")
+        let tick0 = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsplayer.tickstarted")
         let playing0 = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsplayer.playing")
 
         let opening = try openFirstShort()
@@ -164,14 +164,19 @@ final class ShortsEmbedPlayerUITests: XCTestCase {
 
         let total = totalCount(from: opening)
         guard let total, total >= 3 else {
-            throw XCTSkip("only \(total.map(String.init) ?? "?") Shorts available — need at least 3 to test repeated iframe-src swaps")
+            throw XCTSkip(
+                "only \(total.map(String.init) ?? "?") Shorts available — need at least 3 to test repeated iframe-src swaps"
+            )
         }
 
         guard XCTWaiter().wait(for: [ready0], timeout: 30) == .completed else {
-            throw XCTSkip("ready notification never fired for short 0 — embed failed to load (network/YouTube availability)")
+            throw XCTSkip(
+                "ready notification never fired for short 0 — embed failed to load (network/YouTube availability)")
         }
-        XCTAssertEqual(XCTWaiter().wait(for: [tick0], timeout: 10), .completed, "tick notification never fired for short 0")
-        XCTAssertEqual(XCTWaiter().wait(for: [playing0], timeout: 10), .completed, "playing notification never fired for short 0")
+        XCTAssertEqual(
+            XCTWaiter().wait(for: [tick0], timeout: 10), .completed, "tick notification never fired for short 0")
+        XCTAssertEqual(
+            XCTWaiter().wait(for: [playing0], timeout: 10), .completed, "playing notification never fired for short 0")
         UITestHelpers.assertNoShortsErrorBanner(in: app)
         print("[shorts-embed] ✓ short 0 — ready/tick/playing all fired")
 
@@ -180,17 +185,24 @@ final class ShortsEmbedPlayerUITests: XCTestCase {
         for shortNum in 1...2 {
             let before = currentIndex(from: lastLabel) ?? 0
 
-            let ready   = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsplayer.ready")
-            let tick    = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsplayer.tickstarted")
+            let ready = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsplayer.ready")
+            let tick = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsplayer.tickstarted")
             let playing = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsplayer.playing")
 
             swipePlayerUp()
             let after = waitForIndexAdvance(past: before)
-            XCTAssertGreaterThan(after, before, "swipe \(shortNum) — index should advance from \(before) but stayed at \(after)")
+            XCTAssertGreaterThan(
+                after, before, "swipe \(shortNum) — index should advance from \(before) but stayed at \(after)")
 
-            XCTAssertEqual(XCTWaiter().wait(for: [ready], timeout: 15), .completed, "ready notification never fired for short \(shortNum) after iframe-src swap")
-            XCTAssertEqual(XCTWaiter().wait(for: [tick], timeout: 10), .completed, "tick notification never fired for short \(shortNum) after iframe-src swap")
-            XCTAssertEqual(XCTWaiter().wait(for: [playing], timeout: 10), .completed, "playing notification never fired for short \(shortNum) after iframe-src swap")
+            XCTAssertEqual(
+                XCTWaiter().wait(for: [ready], timeout: 15), .completed,
+                "ready notification never fired for short \(shortNum) after iframe-src swap")
+            XCTAssertEqual(
+                XCTWaiter().wait(for: [tick], timeout: 10), .completed,
+                "tick notification never fired for short \(shortNum) after iframe-src swap")
+            XCTAssertEqual(
+                XCTWaiter().wait(for: [playing], timeout: 10), .completed,
+                "playing notification never fired for short \(shortNum) after iframe-src swap")
             UITestHelpers.assertNoShortsErrorBanner(in: app)
             print("[shorts-embed] ✓ short \(shortNum) — ready/tick/playing all fired (index now \(after))")
 
@@ -231,7 +243,7 @@ final class ShortsEmbedPlayerUITests: XCTestCase {
     /// regression (which would fail on the retry too).
     func testSwipingBackwardAlsoRefiresJSBridge() throws {
         let ready0 = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsplayer.ready")
-        let tick0  = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsplayer.tickstarted")
+        let tick0 = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsplayer.tickstarted")
 
         let opening = try openFirstShort()
         print("[shorts-embed-back] opened player at '\(opening)'")
@@ -241,9 +253,11 @@ final class ShortsEmbedPlayerUITests: XCTestCase {
             throw XCTSkip("only \(total.map(String.init) ?? "?") Shorts available — need at least 3")
         }
         guard XCTWaiter().wait(for: [ready0], timeout: 30) == .completed else {
-            throw XCTSkip("ready notification never fired for short 0 — embed failed to load (network/YouTube availability)")
+            throw XCTSkip(
+                "ready notification never fired for short 0 — embed failed to load (network/YouTube availability)")
         }
-        XCTAssertEqual(XCTWaiter().wait(for: [tick0], timeout: 10), .completed, "tick notification never fired for short 0")
+        XCTAssertEqual(
+            XCTWaiter().wait(for: [tick0], timeout: 10), .completed, "tick notification never fired for short 0")
 
         // First forward swipe: always a cold reload (see doc comment above).
         var before = currentIndex(from: opening) ?? 0
@@ -272,8 +286,8 @@ final class ShortsEmbedPlayerUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 1.0)
 
         // Now swipe back — should re-fire ready/tick/playing for the cached previous Short.
-        let readyBack   = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsplayer.ready")
-        let tickBack    = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsplayer.tickstarted")
+        let readyBack = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsplayer.ready")
+        let tickBack = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsplayer.tickstarted")
         let playingBack = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsplayer.playing")
 
         swipePlayerDown()
@@ -284,9 +298,15 @@ final class ShortsEmbedPlayerUITests: XCTestCase {
         }
         XCTAssertLessThan(afterBack, after, "backward swipe should decrease the index")
 
-        XCTAssertEqual(XCTWaiter().wait(for: [readyBack], timeout: 15), .completed, "ready notification never fired after backward swipe")
-        XCTAssertEqual(XCTWaiter().wait(for: [tickBack], timeout: 10), .completed, "tick notification never fired after backward swipe")
-        XCTAssertEqual(XCTWaiter().wait(for: [playingBack], timeout: 10), .completed, "playing notification never fired after backward swipe")
+        XCTAssertEqual(
+            XCTWaiter().wait(for: [readyBack], timeout: 15), .completed,
+            "ready notification never fired after backward swipe")
+        XCTAssertEqual(
+            XCTWaiter().wait(for: [tickBack], timeout: 10), .completed,
+            "tick notification never fired after backward swipe")
+        XCTAssertEqual(
+            XCTWaiter().wait(for: [playingBack], timeout: 10), .completed,
+            "playing notification never fired after backward swipe")
         // No assertNoShortsErrorBanner here deliberately: ready/tick/playing firing
         // already confirms the backward swap itself worked. A later, unrelated
         // playback error on live YouTube content (same risk the other test in this
@@ -294,4 +314,4 @@ final class ShortsEmbedPlayerUITests: XCTestCase {
         print("[shorts-embed-back] ✓ backward swipe to index \(afterBack) — ready/tick/playing all fired")
     }
 }
-#endif // os(iOS)
+#endif  // os(iOS)

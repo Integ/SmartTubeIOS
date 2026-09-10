@@ -48,7 +48,7 @@ final class BotGuardLivePipelineUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = [
             "--uitesting",
-            "--uitesting-botguard-probe=\(Self.videoID)"
+            "--uitesting-botguard-probe=\(Self.videoID)",
         ]
         app.launch()
 
@@ -57,7 +57,8 @@ final class BotGuardLivePipelineUITests: XCTestCase {
         // Phase 3-4 ~3 s, Phase 5 < 1 s.
         Thread.sleep(forTimeInterval: 60)
 
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App crashed during BotGuard live pipeline probe")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App crashed during BotGuard live pipeline probe")
     }
 }

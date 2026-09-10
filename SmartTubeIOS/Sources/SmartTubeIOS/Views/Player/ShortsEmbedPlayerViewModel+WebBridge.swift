@@ -27,8 +27,8 @@ extension ShortsEmbedPlayerViewModel {
     ///   this is the missing link that fixes `play/seekTo/setPlaybackRate`.
     func handleScriptMessage(_ body: String, frameInfo: WKFrameInfo) {
         guard let data = body.data(using: .utf8),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let type = json["type"] as? String
+            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let type = json["type"] as? String
         else {
             shortsLog.debug("[\(self.logTag, privacy: .public)] [ytCallback] unparseable message: \(body)")
             return
@@ -36,7 +36,9 @@ extension ShortsEmbedPlayerViewModel {
 
         switch type {
         case "ping":
-            shortsLog.notice("[\(self.logTag, privacy: .public)] [ytCallback] JS<->Swift bridge ping received — videoId=\(self.videoId, privacy: .public)")
+            shortsLog.notice(
+                "[\(self.logTag, privacy: .public)] [ytCallback] JS<->Swift bridge ping received — videoId=\(self.videoId, privacy: .public)"
+            )
             CFNotificationCenterPostNotification(
                 CFNotificationCenterGetDarwinNotifyCenter(),
                 CFNotificationName("com.void.smarttube.shortsplayer.bridge" as CFString),
@@ -58,7 +60,9 @@ extension ShortsEmbedPlayerViewModel {
             // VM is actually waiting on.
             let frameVideoId = frameInfo.request.url.flatMap(ShortsEmbedURL.videoId(fromEmbedURL:))
             if let frameVideoId, frameVideoId != videoId {
-                shortsLog.notice("[\(self.logTag, privacy: .public)] [ytCallback] ready DISCARDED — stale load for videoId=\(frameVideoId, privacy: .public), current videoId=\(self.videoId, privacy: .public)")
+                shortsLog.notice(
+                    "[\(self.logTag, privacy: .public)] [ytCallback] ready DISCARDED — stale load for videoId=\(frameVideoId, privacy: .public), current videoId=\(self.videoId, privacy: .public)"
+                )
                 break
             }
 
@@ -73,12 +77,16 @@ extension ShortsEmbedPlayerViewModel {
             // (ShortsEmbedPlayerViewModel.swift) for the full root-cause story.
             if embedFrameInfo == nil {
                 embedFrameInfo = frameInfo
-                shortsLog.notice("[\(self.logTag, privacy: .public)] [frame] captured embed iframe frameInfo — isMainFrame=\(frameInfo.isMainFrame, privacy: .public) url=\(frameInfo.request.url?.absoluteString ?? "nil", privacy: .public)")
+                shortsLog.notice(
+                    "[\(self.logTag, privacy: .public)] [frame] captured embed iframe frameInfo — isMainFrame=\(frameInfo.isMainFrame, privacy: .public) url=\(frameInfo.request.url?.absoluteString ?? "nil", privacy: .public)"
+                )
 
             }
             isReady = true
             duration = (json["duration"] as? Double) ?? 0
-            shortsLog.notice("[\(self.logTag, privacy: .public)] [ytCallback] ready — videoId=\(self.videoId, privacy: .public) duration=\(self.duration, format: .fixed(precision: 1))s")
+            shortsLog.notice(
+                "[\(self.logTag, privacy: .public)] [ytCallback] ready — videoId=\(self.videoId, privacy: .public) duration=\(self.duration, format: .fixed(precision: 1))s"
+            )
             if isStandby {
                 // Pause immediately so the background WKWebView produces no audio.
                 // The embed URL loads with mute=1, but calling pause() here prevents
@@ -103,7 +111,9 @@ extension ShortsEmbedPlayerViewModel {
             // TOSPlayerViewModel+WebBridge.swift's "ready" case.
             if settings.playbackSpeed != 1.0 {
                 setPlaybackRate(settings.playbackSpeed)
-                shortsLog.notice("[\(self.logTag, privacy: .public)] [ytCallback] applied saved playback speed \(self.settings.playbackSpeed, format: .fixed(precision: 2))×")
+                shortsLog.notice(
+                    "[\(self.logTag, privacy: .public)] [ytCallback] applied saved playback speed \(self.settings.playbackSpeed, format: .fixed(precision: 2))×"
+                )
             }
 
         case "stateChange":
@@ -112,20 +122,26 @@ extension ShortsEmbedPlayerViewModel {
             // Standby VMs suppress notifications and controls manipulation — the
             // active VM's observers must not fire for background WKWebView events.
             if isStandby {
-                shortsLog.debug("[\(self.logTag, privacy: .public)] [ytCallback] stateChange (standby) → \(raw) videoId=\(self.videoId, privacy: .public)")
+                shortsLog.debug(
+                    "[\(self.logTag, privacy: .public)] [ytCallback] stateChange (standby) → \(raw) videoId=\(self.videoId, privacy: .public)"
+                )
                 break
             }
             if playerState == .paused {
                 showControls()
                 cancelControlsHide()
-                shortsLog.notice("[\(self.logTag, privacy: .public)] [ytCallback] stateChange → paused videoId=\(self.videoId, privacy: .public)")
+                shortsLog.notice(
+                    "[\(self.logTag, privacy: .public)] [ytCallback] stateChange → paused videoId=\(self.videoId, privacy: .public)"
+                )
                 CFNotificationCenterPostNotification(
                     CFNotificationCenterGetDarwinNotifyCenter(),
                     CFNotificationName("com.void.smarttube.shortsplayer.paused" as CFString),
                     nil, nil, true
                 )
             } else {
-                shortsLog.notice("[\(self.logTag, privacy: .public)] [ytCallback] stateChange → \(raw) videoId=\(self.videoId, privacy: .public)")
+                shortsLog.notice(
+                    "[\(self.logTag, privacy: .public)] [ytCallback] stateChange → \(raw) videoId=\(self.videoId, privacy: .public)"
+                )
             }
             if playerState == .playing {
                 CFNotificationCenterPostNotification(
@@ -149,7 +165,9 @@ extension ShortsEmbedPlayerViewModel {
             let src = (json["src"] as? String) ?? ""
             let ranges = (json["buffered"] as? [[Double]]) ?? []
             let rangesDesc = ranges.map { "\($0.first ?? 0)-\($0.last ?? 0)" }.joined(separator: ",")
-            shortsLog.notice("[\(self.logTag, privacy: .public)] [diag] videoId=\(self.videoId, privacy: .public) networkState=\(networkState, privacy: .public) readyState=\(readyState, privacy: .public) paused=\(paused, privacy: .public) muted=\(muted, privacy: .public) buffered=[\(rangesDesc, privacy: .public)] errorCode=\(errorCode, privacy: .public) errorMsg='\(errorMsg, privacy: .public)' src=\(src, privacy: .public)")
+            shortsLog.notice(
+                "[\(self.logTag, privacy: .public)] [diag] videoId=\(self.videoId, privacy: .public) networkState=\(networkState, privacy: .public) readyState=\(readyState, privacy: .public) paused=\(paused, privacy: .public) muted=\(muted, privacy: .public) buffered=[\(rangesDesc, privacy: .public)] errorCode=\(errorCode, privacy: .public) errorMsg='\(errorMsg, privacy: .public)' src=\(src, privacy: .public)"
+            )
 
         case "autoUnmuted":
             // One-shot trace from stateDetectionJS's pollVideo: confirms the
@@ -157,7 +175,9 @@ extension ShortsEmbedPlayerViewModel {
             // playback was observed.
             let unmutedAt = (json["t"] as? Double) ?? -1
             let stillMuted = (json["muted"] as? Bool) ?? true
-            shortsLog.notice("[\(self.logTag, privacy: .public)] [ytCallback] 🔊 auto-unmuted at t=\(unmutedAt, format: .fixed(precision: 2))s — video.muted now \(stillMuted, privacy: .public) videoId=\(self.videoId, privacy: .public)")
+            shortsLog.notice(
+                "[\(self.logTag, privacy: .public)] [ytCallback] 🔊 auto-unmuted at t=\(unmutedAt, format: .fixed(precision: 2))s — video.muted now \(stillMuted, privacy: .public) videoId=\(self.videoId, privacy: .public)"
+            )
 
         case "tick":
             let t = (json["t"] as? Double) ?? 0
@@ -169,7 +189,9 @@ extension ShortsEmbedPlayerViewModel {
             let newState = YTPlayerState(raw: s)
             if !hasReceivedFirstTick {
                 hasReceivedFirstTick = true
-                shortsLog.notice("[\(self.logTag, privacy: .public)] [ytCallback] first tick — state=\(s) t=\(t, format: .fixed(precision: 2))s videoId=\(self.videoId, privacy: .public)")
+                shortsLog.notice(
+                    "[\(self.logTag, privacy: .public)] [ytCallback] first tick — state=\(s) t=\(t, format: .fixed(precision: 2))s videoId=\(self.videoId, privacy: .public)"
+                )
                 CFNotificationCenterPostNotification(
                     CFNotificationCenterGetDarwinNotifyCenter(),
                     CFNotificationName("com.void.smarttube.shortsplayer.tickstarted" as CFString),
@@ -179,7 +201,9 @@ extension ShortsEmbedPlayerViewModel {
             let wasActivelyPlaying = playerState == .playing || playerState == .buffering
             let isNowActivelyPlaying = newState == .playing || newState == .buffering
             if isNowActivelyPlaying && !wasActivelyPlaying {
-                shortsLog.notice("[\(self.logTag, privacy: .public)] [ytCallback] tick detected active playback (state=\(s)) — firing playing notification videoId=\(self.videoId, privacy: .public)")
+                shortsLog.notice(
+                    "[\(self.logTag, privacy: .public)] [ytCallback] tick detected active playback (state=\(s)) — firing playing notification videoId=\(self.videoId, privacy: .public)"
+                )
                 CFNotificationCenterPostNotification(
                     CFNotificationCenterGetDarwinNotifyCenter(),
                     CFNotificationName("com.void.smarttube.shortsplayer.playing" as CFString),
@@ -187,7 +211,9 @@ extension ShortsEmbedPlayerViewModel {
                 )
             }
             if newState != playerState {
-                shortsLog.notice("[\(self.logTag, privacy: .public)] [ytCallback] tick state: \(self.playerState.rawValue) → \(s) at t=\(t, format: .fixed(precision: 1))s videoId=\(self.videoId, privacy: .public)")
+                shortsLog.notice(
+                    "[\(self.logTag, privacy: .public)] [ytCallback] tick state: \(self.playerState.rawValue) → \(s) at t=\(t, format: .fixed(precision: 1))s videoId=\(self.videoId, privacy: .public)"
+                )
                 CFNotificationCenterPostNotification(
                     CFNotificationCenterGetDarwinNotifyCenter(),
                     CFNotificationName("com.void.smarttube.shortsplayer.state.\(s)" as CFString),
@@ -206,14 +232,28 @@ extension ShortsEmbedPlayerViewModel {
             let errText = (json["text"] as? String) ?? ""
             let errName: String
             switch code {
-            case 2:        errName = "invalid-param";          playerError = .iframeError(code)
-            case 5:        errName = "html5-not-supported";    playerError = .iframeError(code)
-            case 100:      errName = "video-not-found";        playerError = .notFound
-            case 101, 150: errName = "embedding-disabled";     playerError = .embeddingDisabled
-            case 153:      errName = "player-config-error";    playerError = .iframeError(code)
-            default:       errName = "unknown(\(code))";       playerError = .iframeError(code)
+            case 2:
+                errName = "invalid-param"
+                playerError = .iframeError(code)
+            case 5:
+                errName = "html5-not-supported"
+                playerError = .iframeError(code)
+            case 100:
+                errName = "video-not-found"
+                playerError = .notFound
+            case 101, 150:
+                errName = "embedding-disabled"
+                playerError = .embeddingDisabled
+            case 153:
+                errName = "player-config-error"
+                playerError = .iframeError(code)
+            default:
+                errName = "unknown(\(code))"
+                playerError = .iframeError(code)
             }
-            shortsLog.notice("[\(self.logTag, privacy: .public)] [ytCallback] ❌ player error \(code) (\(errName)) text='\(errText)' isFatal=\(self.playerError?.isFatal ?? false) videoId=\(self.videoId, privacy: .public)")
+            shortsLog.notice(
+                "[\(self.logTag, privacy: .public)] [ytCallback] ❌ player error \(code) (\(errName)) text='\(errText)' isFatal=\(self.playerError?.isFatal ?? false) videoId=\(self.videoId, privacy: .public)"
+            )
             CFNotificationCenterPostNotification(
                 CFNotificationCenterGetDarwinNotifyCenter(),
                 CFNotificationName("com.void.smarttube.shortsplayer.error.\(code)" as CFString),
@@ -225,4 +265,4 @@ extension ShortsEmbedPlayerViewModel {
         }
     }
 }
-#endif // !os(tvOS)
+#endif  // !os(tvOS)

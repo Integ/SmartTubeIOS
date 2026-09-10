@@ -43,12 +43,14 @@ extension TOSPlayerViewModel {
                 guard count > 0 else { return }
                 let nextIdx = (idx + 1) % count
                 guard let next = await CurrentQueueStore.shared.videoAt(index: nextIdx) else { return }
-                tosLog.notice("[navigation] playNext (queue) — index=\(nextIdx)/\(count) id=\(next.id, privacy: .public)")
+                tosLog.notice(
+                    "[navigation] playNext (queue) — index=\(nextIdx)/\(count) id=\(next.id, privacy: .public)")
                 onPlayNext?(next)
             }
             return
         }
-        tosLog.notice("[navigation] playNext called — relatedVideos=\(self.relatedVideos.count) hasNext=\(self.hasNext)")
+        tosLog.notice(
+            "[navigation] playNext called — relatedVideos=\(self.relatedVideos.count) hasNext=\(self.hasNext)")
         guard let next = relatedVideos.first else { return }
         tosLog.notice("[navigation] playNext — \(next.id, privacy: .public)")
         onPlayNext?(next)
@@ -93,7 +95,8 @@ extension TOSPlayerViewModel {
                 guard count > 0 else { return }
                 let prevIdx = idx > 0 ? idx - 1 : count - 1
                 guard let prev = await CurrentQueueStore.shared.videoAt(index: prevIdx) else { return }
-                tosLog.notice("[navigation] playPrevious (queue) — index=\(prevIdx)/\(count) id=\(prev.id, privacy: .public)")
+                tosLog.notice(
+                    "[navigation] playPrevious (queue) — index=\(prevIdx)/\(count) id=\(prev.id, privacy: .public)")
                 onPlayNext?(prev)
             }
             return
@@ -114,7 +117,9 @@ extension TOSPlayerViewModel {
         if let cachedNextInfo = cached.nextInfo {
             let isStale = cached.staleFields.contains(.nextInfo)
             relatedVideos = filter(cachedNextInfo.relatedVideos, videoId: videoId)
-            tosLog.notice("[navigation] cache \(isStale ? "STALE" : "HIT") — \(self.relatedVideos.count) related video(s) for \(videoId)")
+            tosLog.notice(
+                "[navigation] cache \(isStale ? "STALE" : "HIT") — \(self.relatedVideos.count) related video(s) for \(videoId)"
+            )
             if relatedVideos.isEmpty { await searchFallback() }
             guard isStale else { return }
             Task(priority: .background) { [weak self] in
@@ -158,4 +163,4 @@ extension TOSPlayerViewModel {
         videos.filter { $0.id != videoId && !seenVideoIds.contains($0.id) }
     }
 }
-#endif // !os(tvOS)
+#endif  // !os(tvOS)

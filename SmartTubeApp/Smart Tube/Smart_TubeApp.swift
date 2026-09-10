@@ -1,7 +1,7 @@
-import SwiftUI
 import FirebaseCore
 import SmartTubeIOS
 import SmartTubeIOSCore
+import SwiftUI
 
 /// tvOS entry point for SmartTube.
 /// The device-code + QR sign-in flow is natively designed for Apple TV —
@@ -30,10 +30,10 @@ struct SmartTubeTVApp: App {
             return BotGuardClient()
         }()
         let api = InnerTubeAPI(authToken: nil, poTokenProvider: poTokenProvider)
-        _api                 = State(initialValue: api)
-        _authService         = State(initialValue: AuthService())
-        _browseViewModel     = State(initialValue: BrowseViewModel(api: api))
-        _settingsStore       = State(initialValue: settingsStore)
+        _api = State(initialValue: api)
+        _authService = State(initialValue: AuthService())
+        _browseViewModel = State(initialValue: BrowseViewModel(api: api))
+        _settingsStore = State(initialValue: settingsStore)
         _cardDownloadService = State(initialValue: VideoDownloadService(api: api))
     }
 

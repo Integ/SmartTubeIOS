@@ -16,4 +16,4 @@ extension TOSPlayerViewModel {
         comments.load(videoId: videoId)
     }
 }
-#endif // !os(tvOS)
+#endif  // !os(tvOS)

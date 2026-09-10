@@ -71,12 +71,13 @@ final class TOSPlayerSwipeNavigationUITests: XCTestCase {
 
     private func launchApp(extraArguments: [String] = []) {
         app = XCUIApplication()
-        app.launchArguments = [
-            "--uitesting",
-            "--uitesting-reset-settings",
-            "--uitesting-enable-tos-player-on-ios",
-            "--uitesting-disable-sponsorblock"
-        ] + extraArguments
+        app.launchArguments =
+            [
+                "--uitesting",
+                "--uitesting-reset-settings",
+                "--uitesting-enable-tos-player-on-ios",
+                "--uitesting-disable-sponsorblock",
+            ] + extraArguments
         app.launch()
     }
 
@@ -122,13 +123,13 @@ final class TOSPlayerSwipeNavigationUITests: XCTestCase {
 
     private func swipeLeft() {
         let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: 0.2))
-        let end   = app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.2))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.2))
         start.press(forDuration: 0.05, thenDragTo: end)
     }
 
     private func swipeRight() {
         let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.2))
-        let end   = app.coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: 0.2))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: 0.2))
         start.press(forDuration: 0.05, thenDragTo: end)
     }
 
@@ -155,7 +156,8 @@ final class TOSPlayerSwipeNavigationUITests: XCTestCase {
         }
 
         guard XCTWaiter().wait(for: [firstReady], timeout: 30) == .completed else {
-            throw XCTSkip("onPlayerReady never fired within 30 s — IFrame embed failed to load (network/YouTube availability)")
+            throw XCTSkip(
+                "onPlayerReady never fired within 30 s — IFrame embed failed to load (network/YouTube availability)")
         }
         print("[TOS-swipe] ✓ first video ready")
 
@@ -175,7 +177,9 @@ final class TOSPlayerSwipeNavigationUITests: XCTestCase {
 
         let secondReadyResult = XCTWaiter().wait(for: [secondReady], timeout: 20)
         guard secondReadyResult == .completed else {
-            throw XCTSkip("No second 'ready' notification after swipe left within 20 s — related videos likely did not populate in time (network-dependent)")
+            throw XCTSkip(
+                "No second 'ready' notification after swipe left within 20 s — related videos likely did not populate in time (network-dependent)"
+            )
         }
         print("[TOS-swipe] ✓ second video ready — swipe left advanced to next video")
 
@@ -218,7 +222,8 @@ final class TOSPlayerSwipeNavigationUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 1.0)
 
         XCTAssertTrue(app.windows.firstMatch.exists, "App should not crash after swipe right with no history")
-        XCTAssertTrue(stateLabel.exists, "tosPlayer.stateLabel should remain — swipe right with no history should be a no-op")
+        XCTAssertTrue(
+            stateLabel.exists, "tosPlayer.stateLabel should remain — swipe right with no history should be a no-op")
     }
 
     /// Swipe-left then swipe-right returns to the original video — exercises
@@ -238,7 +243,8 @@ final class TOSPlayerSwipeNavigationUITests: XCTestCase {
             throw XCTSkip("tosPlayer.stateLabel did not appear — TOS player was not opened")
         }
         guard XCTWaiter().wait(for: [firstReady], timeout: 30) == .completed else {
-            throw XCTSkip("onPlayerReady never fired within 30 s — IFrame embed failed to load (network/YouTube availability)")
+            throw XCTSkip(
+                "onPlayerReady never fired within 30 s — IFrame embed failed to load (network/YouTube availability)")
         }
 
         // Let fetchRelatedVideos() populate vm.relatedVideos.
@@ -247,7 +253,9 @@ final class TOSPlayerSwipeNavigationUITests: XCTestCase {
         let secondReady = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.ready")
         swipeLeft()
         guard XCTWaiter().wait(for: [secondReady], timeout: 20) == .completed else {
-            throw XCTSkip("No second 'ready' notification after swipe left within 20 s — related videos likely did not populate in time (network-dependent)")
+            throw XCTSkip(
+                "No second 'ready' notification after swipe left within 20 s — related videos likely did not populate in time (network-dependent)"
+            )
         }
         print("[TOS-swipe] ✓ swiped left to second video")
 
@@ -257,11 +265,13 @@ final class TOSPlayerSwipeNavigationUITests: XCTestCase {
         let thirdReady = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.ready")
         swipeRight()
         guard XCTWaiter().wait(for: [thirdReady], timeout: 20) == .completed else {
-            throw XCTSkip("No third 'ready' notification after swipe right within 20 s — history-based back-navigation is network/timing-dependent")
+            throw XCTSkip(
+                "No third 'ready' notification after swipe right within 20 s — history-based back-navigation is network/timing-dependent"
+            )
         }
         print("[TOS-swipe] ✓ swiped right back to original video")
 
         XCTAssertTrue(app.windows.firstMatch.exists, "App should still be running after swipe left then right")
     }
 }
-#endif // os(iOS)
+#endif  // os(iOS)

@@ -68,35 +68,35 @@ public actor TokenManager {
         continuation = cont
 
         let snap = Snapshot(
-            accessToken:     Self.kcGet(service: keychainService, key: "st_access_token"),
-            refreshToken:    Self.kcGet(service: keychainService, key: "st_refresh_token"),
+            accessToken: Self.kcGet(service: keychainService, key: "st_access_token"),
+            refreshToken: Self.kcGet(service: keychainService, key: "st_refresh_token"),
             tokenExpiry: {
                 guard let s = Self.kcGet(service: keychainService, key: "st_token_expiry")
                 else { return nil }
                 return ISO8601DateFormatter().date(from: s)
             }(),
-            accountName:     Self.kcGet(service: keychainService, key: "st_account_name"),
+            accountName: Self.kcGet(service: keychainService, key: "st_account_name"),
             accountAvatarURL: Self.kcGet(service: keychainService, key: "st_avatar_url")
-                                .flatMap(URL.init(string:)),
-            sapisid:         Self.kcGet(service: keychainService, key: "st_sapisid")
+                .flatMap(URL.init(string:)),
+            sapisid: Self.kcGet(service: keychainService, key: "st_sapisid")
         )
-        initialSnapshot  = snap
-        accessToken      = snap.accessToken
-        refreshToken     = snap.refreshToken
-        tokenExpiry      = snap.tokenExpiry
-        accountName      = snap.accountName
+        initialSnapshot = snap
+        accessToken = snap.accessToken
+        refreshToken = snap.refreshToken
+        tokenExpiry = snap.tokenExpiry
+        accountName = snap.accountName
         accountAvatarURL = snap.accountAvatarURL
-        sapisid          = snap.sapisid
+        sapisid = snap.sapisid
     }
 
     // MARK: - Reads
 
-    public func currentAccessToken() -> String?  { accessToken }
+    public func currentAccessToken() -> String? { accessToken }
     public func currentRefreshToken() -> String? { refreshToken }
-    public func currentTokenExpiry() -> Date?    { tokenExpiry }
-    public func currentAccountName() -> String?  { accountName }
-    public func currentAvatarURL() -> URL?       { accountAvatarURL }
-    public func isSignedIn() -> Bool             { accessToken != nil }
+    public func currentTokenExpiry() -> Date? { tokenExpiry }
+    public func currentAccountName() -> String? { accountName }
+    public func currentAvatarURL() -> URL? { accountAvatarURL }
+    public func isSignedIn() -> Bool { accessToken != nil }
 
     // MARK: - Mutations
 
@@ -107,10 +107,10 @@ public actor TokenManager {
         accountName: String?,
         avatarURL: URL?
     ) {
-        self.accessToken      = access
-        self.refreshToken     = refresh
-        self.tokenExpiry      = expiry
-        self.accountName      = accountName
+        self.accessToken = access
+        self.refreshToken = refresh
+        self.tokenExpiry = expiry
+        self.accountName = accountName
         self.accountAvatarURL = avatarURL
         persistToKeychain()
         continuation?.yield(.refreshed(token: access, expiresAt: expiry))
@@ -124,12 +124,12 @@ public actor TokenManager {
     }
 
     public func clearToken() {
-        accessToken      = nil
-        refreshToken     = nil
-        tokenExpiry      = nil
-        accountName      = nil
+        accessToken = nil
+        refreshToken = nil
+        tokenExpiry = nil
+        accountName = nil
         accountAvatarURL = nil
-        sapisid          = nil
+        sapisid = nil
         deleteFromKeychain()
         continuation?.yield(.signedOut)
     }
@@ -138,16 +138,18 @@ public actor TokenManager {
 
     private func persistToKeychain() {
         let fmt = ISO8601DateFormatter()
-        Self.kcSet(service: service, key: "st_access_token",  value: accessToken)
+        Self.kcSet(service: service, key: "st_access_token", value: accessToken)
         Self.kcSet(service: service, key: "st_refresh_token", value: refreshToken)
-        Self.kcSet(service: service, key: "st_token_expiry",  value: tokenExpiry.map { fmt.string(from: $0) })
-        Self.kcSet(service: service, key: "st_account_name",  value: accountName)
-        Self.kcSet(service: service, key: "st_avatar_url",    value: accountAvatarURL?.absoluteString)
+        Self.kcSet(service: service, key: "st_token_expiry", value: tokenExpiry.map { fmt.string(from: $0) })
+        Self.kcSet(service: service, key: "st_account_name", value: accountName)
+        Self.kcSet(service: service, key: "st_avatar_url", value: accountAvatarURL?.absoluteString)
     }
 
     private func deleteFromKeychain() {
-        for key in ["st_access_token", "st_refresh_token", "st_token_expiry",
-                    "st_account_name", "st_avatar_url", "st_sapisid"] {
+        for key in [
+            "st_access_token", "st_refresh_token", "st_token_expiry",
+            "st_account_name", "st_avatar_url", "st_sapisid",
+        ] {
             Self.kcDelete(service: service, key: key)
         }
     }
@@ -157,32 +159,32 @@ public actor TokenManager {
 
     private static func kcGet(service: String, key: String) -> String? {
         let query: [CFString: Any] = [
-            kSecClass:       kSecClassGenericPassword,
+            kSecClass: kSecClassGenericPassword,
             kSecAttrService: service,
             kSecAttrAccount: key,
-            kSecReturnData:  true,
-            kSecMatchLimit:  kSecMatchLimitOne,
+            kSecReturnData: true,
+            kSecMatchLimit: kSecMatchLimitOne,
         ]
         var result: AnyObject?
         guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
-              let data = result as? Data
+            let data = result as? Data
         else { return nil }
         return String(data: data, encoding: .utf8)
     }
 
     private static func kcSet(service: String, key: String, value: String?) {
         let deleteQuery: [CFString: Any] = [
-            kSecClass:       kSecClassGenericPassword,
+            kSecClass: kSecClassGenericPassword,
             kSecAttrService: service,
             kSecAttrAccount: key,
         ]
         SecItemDelete(deleteQuery as CFDictionary)
         guard let value, let data = value.data(using: .utf8) else { return }
         let addQuery: [CFString: Any] = [
-            kSecClass:          kSecClassGenericPassword,
-            kSecAttrService:    service,
-            kSecAttrAccount:    key,
-            kSecValueData:      data,
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrService: service,
+            kSecAttrAccount: key,
+            kSecValueData: data,
             kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlock,
         ]
         SecItemAdd(addQuery as CFDictionary, nil)
@@ -190,7 +192,7 @@ public actor TokenManager {
 
     private static func kcDelete(service: String, key: String) {
         let query: [CFString: Any] = [
-            kSecClass:       kSecClassGenericPassword,
+            kSecClass: kSecClassGenericPassword,
             kSecAttrService: service,
             kSecAttrAccount: key,
         ]

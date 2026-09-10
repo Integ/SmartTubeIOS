@@ -1,6 +1,6 @@
 import Foundation
-import Observation
 import OSLog
+import Observation
 import SmartTubeIOSCore
 
 private let settingsLog = Logger(subsystem: appSubsystem, category: "Settings")
@@ -17,7 +17,9 @@ public final class SettingsStore {
     public var settings: AppSettings {
         didSet {
             if self.settings.hideShorts != oldValue.hideShorts {
-                settingsLog.notice("hideShorts \(oldValue.hideShorts ? "ON" : "OFF", privacy: .public) → \(self.settings.hideShorts ? "ON" : "OFF", privacy: .public)")
+                settingsLog.notice(
+                    "hideShorts \(oldValue.hideShorts ? "ON" : "OFF", privacy: .public) → \(self.settings.hideShorts ? "ON" : "OFF", privacy: .public)"
+                )
             }
             self.save()
         }
@@ -36,7 +38,8 @@ public final class SettingsStore {
 
     public init() {
         if let data = UserDefaults.standard.data(forKey: Self.key),
-           let decoded = try? JSONDecoder().decode(AppSettings.self, from: data) {
+            let decoded = try? JSONDecoder().decode(AppSettings.self, from: data)
+        {
             self.settings = decoded
         } else {
             self.settings = AppSettings()

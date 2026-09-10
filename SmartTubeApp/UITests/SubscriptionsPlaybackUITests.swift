@@ -58,15 +58,18 @@ final class SubscriptionsPlaybackUITests: XCTestCase {
         // 3. Wait for the Subscriptions feed to populate (at least one video card).
         let predicate = NSPredicate(format: "identifier BEGINSWITH 'video.card.'")
         let cards = app.descendants(matching: .any).matching(predicate)
-        let feedLoaded = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count > 0"),
-                                                   object: cards)
+        let feedLoaded = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "count > 0"),
+            object: cards)
         guard XCTWaiter().wait(for: [feedLoaded], timeout: 20) == .completed else {
-            try captureAndSkip("Subscriptions feed did not load within 20 s — network unavailable or feed empty", in: app)
+            try captureAndSkip(
+                "Subscriptions feed did not load within 20 s — network unavailable or feed empty", in: app)
         }
 
         // Assert no alert appeared while loading the feed.
-        XCTAssertFalse(app.alerts["Error"].exists,
-                       "A feed 'Error' alert appeared while loading the Subscriptions section")
+        XCTAssertFalse(
+            app.alerts["Error"].exists,
+            "A feed 'Error' alert appeared while loading the Subscriptions section")
 
         // 4. Tap the first video card.
         let firstCard = cards.firstMatch
@@ -74,8 +77,9 @@ final class SubscriptionsPlaybackUITests: XCTestCase {
 
         // 5. Wait for PlayerView to open — the always-visible title label is the signal.
         let titleLabel = app.staticTexts["player.titleLabel"].firstMatch
-        XCTAssertTrue(titleLabel.waitForExistence(timeout: 15),
-                      "player.titleLabel must appear after tapping a video — PlayerView did not open")
+        XCTAssertTrue(
+            titleLabel.waitForExistence(timeout: 15),
+            "player.titleLabel must appear after tapping a video — PlayerView did not open")
 
         let videoTitle = titleLabel.label
 
@@ -86,17 +90,19 @@ final class SubscriptionsPlaybackUITests: XCTestCase {
         let errorBanner = app.otherElements["player.errorBanner"].firstMatch
         XCTAssertFalse(
             errorBanner.exists,
-            "player.errorBanner appeared during playback of '\(videoTitle)' — " +
-            "PlaybackViewModel.error was set (stream fetch or format error)"
+            "player.errorBanner appeared during playback of '\(videoTitle)' — "
+                + "PlaybackViewModel.error was set (stream fetch or format error)"
         )
 
         // 8. Assert no feed-level error alert appeared (belt-and-suspenders).
-        XCTAssertFalse(app.alerts["Error"].exists,
-                       "An 'Error' alert appeared during or after opening '\(videoTitle)'")
+        XCTAssertFalse(
+            app.alerts["Error"].exists,
+            "An 'Error' alert appeared during or after opening '\(videoTitle)'")
 
         // 9. Confirm the player is still open — title label still visible.
-        XCTAssertTrue(titleLabel.exists,
-                      "player.titleLabel disappeared — PlayerView may have been dismissed unexpectedly")
+        XCTAssertTrue(
+            titleLabel.exists,
+            "player.titleLabel disappeared — PlayerView may have been dismissed unexpectedly")
     }
 
     // MARK: - Helpers
@@ -111,8 +117,9 @@ final class SubscriptionsPlaybackUITests: XCTestCase {
         }
         // iPad iOS 18 sidebar: tab items render as buttons outside the tab bar.
         let sidebarButton = app.buttons[label].firstMatch
-        XCTAssertTrue(sidebarButton.waitForExistence(timeout: timeout),
-                      "'\(label)' navigation item not found in tab bar or sidebar")
+        XCTAssertTrue(
+            sidebarButton.waitForExistence(timeout: timeout),
+            "'\(label)' navigation item not found in tab bar or sidebar")
         sidebarButton.tap()
     }
 
@@ -122,7 +129,7 @@ final class SubscriptionsPlaybackUITests: XCTestCase {
     private func scrollChipIntoView(_ chip: XCUIElement, in chipBar: XCUIElement) {
         let screenWidth = app.windows.firstMatch.frame.width
         let near = chipBar.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5))
-        let far  = chipBar.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5))
+        let far = chipBar.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5))
 
         for _ in 0..<8 {
             let frame = chip.frame

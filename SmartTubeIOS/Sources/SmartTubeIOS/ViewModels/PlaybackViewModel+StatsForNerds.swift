@@ -1,6 +1,6 @@
 import AVFoundation
-import os
 import SmartTubeIOSCore
+import os
 
 private let playerLog = CrashlyticsLogger(category: "Player")
 
@@ -78,10 +78,12 @@ extension PlaybackViewModel {
         // critical events (load, quality switch, errors) out of the window.
         let prevSnap = statsSnapshot
         let codecChanged = codec != prevSnap.codec && prevSnap.codec != "—"
-        let resChanged   = res   != prevSnap.displayResolution && prevSnap.displayResolution != "—"
-        let isFirstSnap  = prevSnap.videoId != videoId
+        let resChanged = res != prevSnap.displayResolution && prevSnap.displayResolution != "—"
+        let isFirstSnap = prevSnap.videoId != videoId
         if isFirstSnap || codecChanged || resChanged {
-            playerLog.notice("[stats] snapshot — res=\(res) codec=\(codec) source=\(resSource)\(codecChanged ? " ⚠️codec-changed" : "")\(resChanged ? " ⚠️res-changed" : "")")
+            playerLog.notice(
+                "[stats] snapshot — res=\(res) codec=\(codec) source=\(resSource)\(codecChanged ? " ⚠️codec-changed" : "")\(resChanged ? " ⚠️res-changed" : "")"
+            )
         } else {
             playerLog.debug("[stats] snapshot — res=\(res) codec=\(codec) source=\(resSource)")
         }
@@ -117,19 +119,20 @@ extension PlaybackViewModel {
             if let valueRange = matched.range(of: #"(?<==)[^"]+"#, options: .regularExpression) {
                 let codecs = String(matched[valueRange])
                     .trimmingCharacters(in: CharacterSet(charactersIn: "\""))
-                let first = codecs.components(separatedBy: ",").first?
+                let first =
+                    codecs.components(separatedBy: ",").first?
                     .trimmingCharacters(in: .whitespaces) ?? codecs
                 return first.components(separatedBy: ".").first ?? first
             }
         }
-        if mimeType.contains("mp4")  { return "mp4" }
+        if mimeType.contains("mp4") { return "mp4" }
         if mimeType.contains("webm") { return "webm" }
         return mimeType.isEmpty ? "—" : mimeType
     }
 
     static func formatBitrate(_ bps: Int) -> String {
         if bps >= 1_000_000 { return String(format: "%.1f Mbps", Double(bps) / 1_000_000) }
-        if bps >= 1_000     { return String(format: "%.0f kbps", Double(bps) / 1_000) }
+        if bps >= 1_000 { return String(format: "%.0f kbps", Double(bps) / 1_000) }
         return "\(bps) bps"
     }
 }

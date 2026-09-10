@@ -15,9 +15,9 @@ final class VideoDiskCache: @unchecked Sendable {
 
     // MARK: - Configuration
 
-    static let maxBytes: Int = 20 * 1024 * 1024   // 20 MB; internal for tests
+    static let maxBytes: Int = 20 * 1024 * 1024  // 20 MB; internal for tests
     private let queue = DispatchQueue(label: "st.disk-cache", qos: .utility)
-    let cacheDir: URL   // internal for tests
+    let cacheDir: URL  // internal for tests
 
     // MARK: - In-memory byte estimate
     //
@@ -79,11 +79,15 @@ final class VideoDiskCache: @unchecked Sendable {
         var totalSize = files.compactMap {
             (try? $0.resourceValues(forKeys: [.fileSizeKey]))?.fileSize
         }.reduce(0, +)
-        estimatedBytes = totalSize   // correct the estimate with the real count
+        estimatedBytes = totalSize  // correct the estimate with the real count
         guard totalSize > Self.maxBytes else { return }
         let sorted = files.sorted {
-            let d1 = (try? $0.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? .distantPast
-            let d2 = (try? $1.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? .distantPast
+            let d1 =
+                (try? $0.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
+                ?? .distantPast
+            let d2 =
+                (try? $1.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
+                ?? .distantPast
             return d1 < d2  // oldest first
         }
         for file in sorted {
@@ -105,7 +109,9 @@ final class VideoDiskCache: @unchecked Sendable {
     func removeAll() {
         queue.sync {
             let fm = FileManager.default
-            guard let files = try? fm.contentsOfDirectory(at: self.cacheDir, includingPropertiesForKeys: nil) else { return }
+            guard let files = try? fm.contentsOfDirectory(at: self.cacheDir, includingPropertiesForKeys: nil) else {
+                return
+            }
             for file in files {
                 try? fm.removeItem(at: file)
             }
@@ -117,8 +123,9 @@ final class VideoDiskCache: @unchecked Sendable {
 
     func fileURL(videoId: String, dataType: String) -> URL {
         // Sanitise to prevent path traversal: replace '/' and '..' with '_'
-        let safeId = videoId
-            .replacingOccurrences(of: "/",  with: "_")
+        let safeId =
+            videoId
+            .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: "..", with: "_")
         return cacheDir.appendingPathComponent("\(safeId)-\(dataType).json")
     }

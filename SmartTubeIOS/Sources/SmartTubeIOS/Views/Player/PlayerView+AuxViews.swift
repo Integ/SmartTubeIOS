@@ -1,6 +1,6 @@
-import SwiftUI
 import AVFoundation
 import SmartTubeIOSCore
+import SwiftUI
 
 // MARK: - Self-contained auxiliary views used by PlayerView
 //
@@ -13,27 +13,30 @@ struct StatsForNerdsOverlay: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
-            row("Video ID",         snapshot.videoId)
-            row("Resolution",       snapshot.fps > 0
+            row("Video ID", snapshot.videoId)
+            row(
+                "Resolution",
+                snapshot.fps > 0
                     ? "\(snapshot.displayResolution) @ \(snapshot.fps) fps"
                     : snapshot.displayResolution)
             if !snapshot.pendingQualityLabel.isEmpty {
-                identifiedRow("Selected", snapshot.pendingQualityLabel,
-                              valueId: "stats.selectedQuality")
+                identifiedRow(
+                    "Selected", snapshot.pendingQualityLabel,
+                    valueId: "stats.selectedQuality")
             }
-            row("Codec",            snapshot.codec)
-            row("Nominal Bitrate",  snapshot.nominalBitrate)
+            row("Codec", snapshot.codec)
+            row("Nominal Bitrate", snapshot.nominalBitrate)
             row("Connection Speed", snapshot.observedBitrate)
-            row("Dropped Frames",   "\(snapshot.droppedFrames)")
-            row("Stalls",           "\(snapshot.stalls)")
+            row("Dropped Frames", "\(snapshot.droppedFrames)")
+            row("Stalls", "\(snapshot.stalls)")
             Divider().background(.white.opacity(0.2)).padding(.vertical, 2)
-            row("TTP (low-q)",      snapshot.timeToPlayMs > 0 ? "\(snapshot.timeToPlayMs) ms" : "—")
-            row("TTP (hi-q)",       snapshot.timeToHighQualityMs > 0 ? "\(snapshot.timeToHighQualityMs) ms" : "—")
-            row("Stream Type",      snapshot.streamType.isEmpty ? "—" : snapshot.streamType)
-            row("Cache",            snapshot.cacheStatus.isEmpty ? "—" : snapshot.cacheStatus)
-            smallRow("Stream URL",   snapshot.streamURL.isEmpty ? "—" : snapshot.streamURL)
+            row("TTP (low-q)", snapshot.timeToPlayMs > 0 ? "\(snapshot.timeToPlayMs) ms" : "—")
+            row("TTP (hi-q)", snapshot.timeToHighQualityMs > 0 ? "\(snapshot.timeToHighQualityMs) ms" : "—")
+            row("Stream Type", snapshot.streamType.isEmpty ? "—" : snapshot.streamType)
+            row("Cache", snapshot.cacheStatus.isEmpty ? "—" : snapshot.cacheStatus)
+            smallRow("Stream URL", snapshot.streamURL.isEmpty ? "—" : snapshot.streamURL)
             Divider().background(.white.opacity(0.2)).padding(.vertical, 2)
-            row("Report ID",        snapshot.reportID)
+            row("Report ID", snapshot.reportID)
             Text("Two-finger tap to dismiss  ·  Quote Report ID when sending diagnostics")
                 .foregroundStyle(.white.opacity(0.4))
                 .font(.system(.caption2, design: .monospaced))
@@ -179,10 +182,10 @@ struct EndCardOverlay: View {
         GeometryReader { proxy in
             ZStack(alignment: .topLeading) {
                 ForEach(visibleCards) { card in
-                    let cardWidth  = card.width / 100 * proxy.size.width
+                    let cardWidth = card.width / 100 * proxy.size.width
                     let cardHeight = cardWidth / max(card.aspectRatio, 0.1)
-                    let x          = card.left / 100 * proxy.size.width
-                    let y          = card.top  / 100 * proxy.size.height
+                    let x = card.left / 100 * proxy.size.width
+                    let y = card.top / 100 * proxy.size.height
                     EndCardButton(card: card, width: cardWidth, height: cardHeight, onSelect: onSelect)
                         .offset(x: x, y: y)
                         .transition(.opacity.combined(with: .scale(scale: 0.92)))
@@ -201,7 +204,9 @@ struct EndCardButton: View {
     let onSelect: (EndCard) -> Void
 
     var body: some View {
-        Button { onSelect(card) } label: {
+        Button {
+            onSelect(card)
+        } label: {
             ZStack(alignment: .bottom) {
                 AsyncImage(url: card.thumbnailURL) { phase in
                     switch phase {

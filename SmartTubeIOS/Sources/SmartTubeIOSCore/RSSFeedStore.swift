@@ -26,10 +26,12 @@ public actor RSSFeedStore {
     private init() {
         self.defaults = .standard
         if let data = UserDefaults.standard.data(forKey: Self.udKey),
-           let decoded = try? JSONDecoder().decode([String: RSSFeedInfo].self, from: data) {
-            feeds = Dictionary(uniqueKeysWithValues: decoded.compactMap { k, v in
-                UUID(uuidString: k).map { ($0, v) }
-            })
+            let decoded = try? JSONDecoder().decode([String: RSSFeedInfo].self, from: data)
+        {
+            feeds = Dictionary(
+                uniqueKeysWithValues: decoded.compactMap { k, v in
+                    UUID(uuidString: k).map { ($0, v) }
+                })
         }
     }
 
@@ -39,10 +41,12 @@ public actor RSSFeedStore {
         let ud = UserDefaults(suiteName: suiteName) ?? .standard
         self.defaults = ud
         if let data = ud.data(forKey: Self.udKey),
-           let decoded = try? JSONDecoder().decode([String: RSSFeedInfo].self, from: data) {
-            feeds = Dictionary(uniqueKeysWithValues: decoded.compactMap { k, v in
-                UUID(uuidString: k).map { ($0, v) }
-            })
+            let decoded = try? JSONDecoder().decode([String: RSSFeedInfo].self, from: data)
+        {
+            feeds = Dictionary(
+                uniqueKeysWithValues: decoded.compactMap { k, v in
+                    UUID(uuidString: k).map { ($0, v) }
+                })
         }
     }
 

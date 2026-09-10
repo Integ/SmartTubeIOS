@@ -69,7 +69,8 @@ final class TVHomeFeedUITests: XCTestCase {
             try captureAndSkip("home.chipBar not found — cannot wait for video cards", in: app)
         }
         guard waitForVideoCards(timeout: 20) else {
-            try captureAndSkip("No video.card.* elements appeared within 20 s — network unavailable or feed empty", in: app)
+            try captureAndSkip(
+                "No video.card.* elements appeared within 20 s — network unavailable or feed empty", in: app)
         }
         let predicate = NSPredicate(format: "identifier BEGINSWITH 'video.card.'")
         let cards = app.descendants(matching: .any).matching(predicate)

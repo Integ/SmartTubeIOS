@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - VideoPlaybackClientVersionTests
@@ -14,15 +15,17 @@ struct VideoPlaybackClientVersionTests {
         let ua = InnerTubeClients.iOS.userAgent
         let v = ProcessInfo.processInfo.operatingSystemVersion
         let expectedVersionFragment = "\(v.majorVersion)_\(v.minorVersion)"
-        #expect(ua.contains(expectedVersionFragment),
-                "User-Agent '\(ua)' should contain OS version '\(expectedVersionFragment)'")
+        #expect(
+            ua.contains(expectedVersionFragment),
+            "User-Agent '\(ua)' should contain OS version '\(expectedVersionFragment)'")
     }
 
     /// The hardcoded iOS 18.3.2 version string must no longer appear in the User-Agent.
     @Test func iosClientUserAgentDoesNotContainHardcoded18_3_2() {
         let ua = InnerTubeClients.iOS.userAgent
-        #expect(!ua.contains("18_3_2"),
-                "User-Agent must not contain hardcoded '18_3_2'; found: \(ua)")
+        #expect(
+            !ua.contains("18_3_2"),
+            "User-Agent must not contain hardcoded '18_3_2'; found: \(ua)")
     }
 
     /// The dynamic OS version string is correctly formatted (underscores, no spaces).
@@ -45,7 +48,8 @@ struct InnerTubeAPINetworkConfigTests {
         // Firebase issue 709b3e91: a 2m48s hang occurred because the OS default (60 s)
         // was too permissive for slow/throttled youtubei.googleapis.com requests.
         // This constant is used directly in URLSessionConfiguration.timeoutIntervalForRequest.
-        #expect(InnerTubeAPI.requestTimeoutInterval == 30,
-                "NW-4-FIX: timeout must be 30 s — do not lower without checking 709b3e91")
+        #expect(
+            InnerTubeAPI.requestTimeoutInterval == 30,
+            "NW-4-FIX: timeout must be 30 s — do not lower without checking 709b3e91")
     }
 }

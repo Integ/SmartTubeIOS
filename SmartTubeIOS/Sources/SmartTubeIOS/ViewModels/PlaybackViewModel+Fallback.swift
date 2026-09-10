@@ -1,12 +1,13 @@
 @preconcurrency import AVFoundation
+import SmartTubeIOSCore
 import os
+
 #if canImport(UIKit)
 import UIKit
 #endif
 #if canImport(WebKit)
 import WebKit
 #endif
-import SmartTubeIOSCore
 
 private typealias VideoFormat = SmartTubeIOSCore.VideoFormat
 
@@ -85,7 +86,9 @@ extension PlaybackViewModel {
     ///             Correct VR headers (nameID=28, Oculus UA on googleapis.com) are required.
     ///   Phase 4 — if all adaptive attempts fail, fall back to the Android muxed 360p stream.
     ///   The entire cycle repeats up to 3 times to survive transient network errors.
-    func exhaustiveRetry(video: Video, originalError: Error?, playerInfo: PlayerInfo? = nil, cached: CachedVideoData? = nil) async {
+    func exhaustiveRetry(
+        video: Video, originalError: Error?, playerInfo: PlayerInfo? = nil, cached: CachedVideoData? = nil
+    ) async {
         // Testing override: --uitesting-force-stream-method restricts the retry to a
         // single named client so UI tests can probe one path at a time.
         if let method = StreamMethodProbeSupport.forcedStreamMethod {
@@ -165,15 +168,19 @@ extension PlaybackViewModel {
                 probeValid = await isWKHLSURLValid(cachedHLSURL)
             }
             if probeValid {
-                if await tryWebViewHLS(cachedHLSURL, nSolver: nSolver, poToken: capturedPoToken, skipIfPfa1: true, for: video) {
+                if await tryWebViewHLS(
+                    cachedHLSURL, nSolver: nSolver, poToken: capturedPoToken, skipIfPfa1: true, for: video)
+                {
                     playerLog.notice("[wkHLS] cached URL played — exhaustiveRetry done")
                     if let playerInfo { launchPhase2(video: video, info: playerInfo, cached: cached) }
                     return
                 }
-                playerLog.notice("[wkHLS] cached URL failed (tryWebViewHLS) — invalidating and falling back to live WKWebView")
+                playerLog.notice(
+                    "[wkHLS] cached URL failed (tryWebViewHLS) — invalidating and falling back to live WKWebView")
                 await VideoPreloadCache.shared.invalidateWKHLSURL(for: video.id)
             } else {
-                playerLog.notice("[wkHLS] cached URL expired (probe 403/timeout) — invalidating and using live extraction")
+                playerLog.notice(
+                    "[wkHLS] cached URL expired (probe 403/timeout) — invalidating and using live extraction")
                 await VideoPreloadCache.shared.invalidateWKHLSURL(for: video.id)
             }
         }
@@ -243,7 +250,8 @@ extension PlaybackViewModel {
         if raceWon {
             switch raceWinningPath {
             case 1:
-                playerLog.notice("✅ [webView] Path B won — WKWebView HLS playing via wkHLSEarlyTask — exhaustiveRetry done")
+                playerLog.notice(
+                    "✅ [webView] Path B won — WKWebView HLS playing via wkHLSEarlyTask — exhaustiveRetry done")
                 // tryWebViewHLS does not call launchPhase2 internally — do it here so Phase 2
                 // metadata (nextVideo, endCards, sponsorSegments) is fetched and cached data is used.
                 if let playerInfo { launchPhase2(video: video, info: playerInfo, cached: cached) }
@@ -258,18 +266,21 @@ extension PlaybackViewModel {
                 // schedule a background HLS quality upgrade via TVEmbedded or MWEB while the
                 // video is already playing at the lower quality. Does not affect readyToPlay timing.
                 let vrMaxH = availableFormats.map(\.height).max() ?? 0
-                let preferredH = settings.preferredQuality == .auto
+                let preferredH =
+                    settings.preferredQuality == .auto
                     ? Self.displayMaxVideoHeight()
                     : (settings.preferredQuality.maxHeight ?? 1080)
                 if vrMaxH > 0 && vrMaxH < min(preferredH, 480) {
-                    playerLog.notice("[AndroidVR] maxH=\(vrMaxH) < preferred \(min(preferredH, 480))p — scheduling background HLS quality upgrade")
+                    playerLog.notice(
+                        "[AndroidVR] maxH=\(vrMaxH) < preferred \(min(preferredH, 480))p — scheduling background HLS quality upgrade"
+                    )
                     let upgradeVideo = video
                     Task { [weak self] in await self?.backgroundQualityUpgrade(video: upgradeVideo) }
                 }
             default:
                 playerLog.notice("[BotGuardWV] ✅ adaptive streaming via minted BotGuard token — exhaustiveRetry done")
-                // attemptComposition / attemptURL already called launchPhase2(webInfo). Same
-                // reasoning as Path C: don't override with stale playerInfo.
+            // attemptComposition / attemptURL already called launchPhase2(webInfo). Same
+            // reasoning as Path C: don't override with stale playerInfo.
             }
             return
         }
@@ -281,11 +292,14 @@ extension PlaybackViewModel {
         // fix235: guard cancellation before expensive serial extraction — the exhaustiveRetry
         // task may have been cancelled by a subsequent load() or stop() call.
         guard !Task.isCancelled else {
-            playerLog.notice("⚠️ [webView] race failed but task is cancelled — skipping serial extraction for \(video.id)")
+            playerLog.notice(
+                "⚠️ [webView] race failed but task is cancelled — skipping serial extraction for \(video.id)")
             return
         }
         if wkHLSPermissionDenied {
-            playerLog.notice("⚠️ [webView] race Path B hit CDN permission error — skipping serial extraction, going straight to client chain")
+            playerLog.notice(
+                "⚠️ [webView] race Path B hit CDN permission error — skipping serial extraction, going straight to client chain"
+            )
         } else {
             playerLog.notice("⚠️ [webView] race failed — attempting serial WKWebView extraction")
             isLoading = true
@@ -345,11 +359,17 @@ extension PlaybackViewModel {
             // Task group result carrier — @unchecked Sendable because PlayerInfo is accessed
             // only from @MainActor (the `for await` body runs on the calling actor).
             struct _FR: @unchecked Sendable {
-                let priority: Int; let label: String; let info: PlayerInfo; let skipMuxed: Bool
+                let priority: Int
+                let label: String
+                let info: PlayerInfo
+                let skipMuxed: Bool
             }
-            enum _FO: @unchecked Sendable { case result(_FR); case ipBlocked(Error) }
+            enum _FO: @unchecked Sendable {
+                case result(_FR)
+                case ipBlocked(Error)
+            }
 
-            var pendingNonHLS: [_FR] = []     // adaptive-only results, tried after all fetches
+            var pendingNonHLS: [_FR] = []  // adaptive-only results, tried after all fetches
             var androidInfoForMuxed: PlayerInfo? = nil
             var fetchIPBlockError: Error? = nil
             var parallelPlaySucceeded = false
@@ -359,7 +379,9 @@ extension PlaybackViewModel {
                 // 0 — TVAuth (authenticated TV client, HLS)
                 if capturedHasAuth {
                     fetchGroup.addTask {
-                        guard let info = try? await self.api.fetchPlayerInfoAuthenticated(videoId: video.id) else { return nil }
+                        guard let info = try? await self.api.fetchPlayerInfoAuthenticated(videoId: video.id) else {
+                            return nil
+                        }
                         return .result(_FR(priority: 0, label: "TVAuth[\(attempt)]", info: info, skipMuxed: true))
                     }
                 }
@@ -376,7 +398,9 @@ extension PlaybackViewModel {
                     if let et = earlyTask2, let info = await et.value {
                         return .result(_FR(priority: 2, label: "TVEmbedded[\(attempt)]", info: info, skipMuxed: true))
                     }
-                    guard let info = try? await self.api.fetchPlayerInfoTVEmbedded(videoId: video.id) else { return nil }
+                    guard let info = try? await self.api.fetchPlayerInfoTVEmbedded(videoId: video.id) else {
+                        return nil
+                    }
                     return .result(_FR(priority: 2, label: "TVEmbedded[\(attempt)]", info: info, skipMuxed: true))
                 }
 
@@ -438,8 +462,10 @@ extension PlaybackViewModel {
                         }
                         // HLS present → try immediately; first success wins and cancels rest
                         if r.info.hlsURL != nil {
-                            if await tryAllStreams(video: video, info: r.info,
-                                                  label: r.label, skipMuxed: r.skipMuxed) {
+                            if await tryAllStreams(
+                                video: video, info: r.info,
+                                label: r.label, skipMuxed: r.skipMuxed)
+                            {
                                 parallelPlaySucceeded = true
                                 fetchGroup.cancelAll()
                                 return
@@ -450,7 +476,7 @@ extension PlaybackViewModel {
                         }
                     }
                 }
-            } // end withTaskGroup
+            }  // end withTaskGroup
 
             if parallelPlaySucceeded { return }
 
@@ -470,16 +496,22 @@ extension PlaybackViewModel {
             // background — upgrading to higher quality while the video is already playing.
             pendingNonHLS.sort { $0.priority < $1.priority }
             let hasMuxedFallback = androidInfoForMuxed?.bestMuxedDownloadURL != nil
-            playerLog.notice("[parallel fetch] attempt \(attempt): \(pendingNonHLS.count) non-HLS candidate(s) — trying in priority order (hasMuxed=\(hasMuxedFallback))")
+            playerLog.notice(
+                "[parallel fetch] attempt \(attempt): \(pendingNonHLS.count) non-HLS candidate(s) — trying in priority order (hasMuxed=\(hasMuxedFallback))"
+            )
             for candidate in pendingNonHLS {
                 guard !Task.isCancelled else { return }
                 // Skip AndroidVR when muxed is available — see comment above.
                 if hasMuxedFallback && candidate.label.hasPrefix("AndroidVR[") {
-                    playerLog.notice("[parallel fetch] skipping \(candidate.label) (muxed available — background upgrade will retry)")
+                    playerLog.notice(
+                        "[parallel fetch] skipping \(candidate.label) (muxed available — background upgrade will retry)"
+                    )
                     continue
                 }
-                if await tryAllStreams(video: video, info: candidate.info,
-                                      label: candidate.label, skipMuxed: candidate.skipMuxed) {
+                if await tryAllStreams(
+                    video: video, info: candidate.info,
+                    label: candidate.label, skipMuxed: candidate.skipMuxed)
+                {
                     return
                 }
             }
@@ -494,8 +526,10 @@ extension PlaybackViewModel {
                 isLoading = true
                 retryStatusMessage = "Using fallback stream\u{2026}"
                 playerLog.notice("[Android[\(attempt)]] All adaptive failed — trying muxed fallback")
-                if await tryAllStreams(video: video, info: androidInfo,
-                                      label: "Android[\(attempt)]/muxed") {
+                if await tryAllStreams(
+                    video: video, info: androidInfo,
+                    label: "Android[\(attempt)]/muxed")
+                {
                     // Muxed playing — attempt quality upgrade in background while user watches.
                     let upgradeVideo = video
                     Task { [weak self] in await self?.backgroundQualityUpgrade(video: upgradeVideo) }
@@ -509,8 +543,10 @@ extension PlaybackViewModel {
                 do {
                     let webInfo = try await api.fetchPlayerInfo(videoId: video.id)
                     if webInfo.bestMuxedDownloadURL != nil {
-                        if await tryAllStreams(video: video, info: webInfo,
-                                              label: "Web[\(attempt)]/muxed") {
+                        if await tryAllStreams(
+                            video: video, info: webInfo,
+                            label: "Web[\(attempt)]/muxed")
+                        {
                             return
                         }
                     }
@@ -557,10 +593,12 @@ extension PlaybackViewModel {
         // Recovering SAPISID here lets postWebSafari use SAPISIDHASH auth → YouTube returns
         // rqh=0 adaptive URLs → CDN probe passes → Path A wins instead of waiting for Path B.
         if await !api.hasSAPISID,
-           let webSAPISID = HTTPCookieStorage.shared
-               .cookies(for: URL(string: "https://www.youtube.com")!)?.first(where: { $0.name == "SAPISID" })?.value {
+            let webSAPISID = HTTPCookieStorage.shared
+                .cookies(for: URL(string: "https://www.youtube.com")!)?.first(where: { $0.name == "SAPISID" })?.value
+        {
             await api.setSAPISID(webSAPISID)
-            playerLog.notice("[BotGuardWV] fix9: recovered SAPISID from WKWebView propagated cookies (len=\(webSAPISID.count))")
+            playerLog.notice(
+                "[BotGuardWV] fix9: recovered SAPISID from WKWebView propagated cookies (len=\(webSAPISID.count))")
         }
         let webVD = BotGuardWebViewRunner.shared.webVisitorData
         // fix8: use webVD as the mintToken identifier so the minted pot= token is bound
@@ -578,7 +616,9 @@ extension PlaybackViewModel {
         }
         await api.storeExternalPoToken(mintedToken, for: video.id)
         hasMintedPoToken = true
-        playerLog.notice("[BotGuardWV] ✅ minted token (len=\(mintedToken.count) webVD.len=\(webVD.count) apiVD.len=\(apiVD.count) match=\(apiVD == webVD)) — Path A racing WKWebView HLS")
+        playerLog.notice(
+            "[BotGuardWV] ✅ minted token (len=\(mintedToken.count) webVD.len=\(webVD.count) apiVD.len=\(apiVD.count) match=\(apiVD == webVD)) — Path A racing WKWebView HLS"
+        )
         guard !Task.isCancelled else { return false }
         do {
             let webInfo = try await api.fetchPlayerInfoWebWithPoToken(
@@ -595,13 +635,17 @@ extension PlaybackViewModel {
                 // the stream directly — skipping the probe removes one network round-trip
                 // (~0.5–1s) from Path A, helping it win the race against Path B.
                 if hasRqh {
-                    var req = URLRequest(url: probeURL, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData, timeoutInterval: 1)
+                    var req = URLRequest(
+                        url: probeURL, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData, timeoutInterval: 1)
                     req.httpMethod = "HEAD"
                     let hasPot = probeURL.absoluteString.contains("pot=")
                     if let (_, resp) = try? await URLSession.shared.data(for: req),
-                       let http = resp as? HTTPURLResponse {
+                        let http = resp as? HTTPURLResponse
+                    {
                         webProbeStatus = http.statusCode
-                        playerLog.notice("[BotGuardWV/WEB probe] CDN HEAD: HTTP \(http.statusCode) — pot=\(hasPot ? "YES" : "NO") rqh=1")
+                        playerLog.notice(
+                            "[BotGuardWV/WEB probe] CDN HEAD: HTTP \(http.statusCode) — pot=\(hasPot ? "YES" : "NO") rqh=1"
+                        )
                     }
                 } else {
                     playerLog.notice("[BotGuardWV/WEB probe] skipping CDN probe — no rqh=1, proceeding directly")
@@ -609,7 +653,8 @@ extension PlaybackViewModel {
             }
             guard !Task.isCancelled else { return false }
             if webProbeStatus != 403,
-               await tryAllStreams(video: video, info: webInfo, label: "BotGuardWV", skipMuxed: true) {
+                await tryAllStreams(video: video, info: webInfo, label: "BotGuardWV", skipMuxed: true)
+            {
                 playerLog.notice("[BotGuardWV] ✅ Path A won — WEB adaptive")
                 return true
             } else if webProbeStatus == 403 {
@@ -645,7 +690,8 @@ extension PlaybackViewModel {
                         playerLog.notice("[BotGuardWV] ✅ Path A won — proxy HLS")
                         return true
                     case .failed:
-                        playerLog.notice("[BotGuardWV] ⚠️ proxy HLS failed: \(proxyItem.error?.localizedDescription ?? "unknown")")
+                        playerLog.notice(
+                            "[BotGuardWV] ⚠️ proxy HLS failed: \(proxyItem.error?.localizedDescription ?? "unknown")")
                         break
                     default:
                         continue
@@ -681,7 +727,7 @@ extension PlaybackViewModel {
         playerLog.notice("[BotGuardWV] Path A exhausted — all BotGuardWV attempts failed")
         return false
     }
-    #endif // canImport(WebKit)
+    #endif  // canImport(WebKit)
 
     /// Path B of the exhaustiveRetry race: early WKWebView HLS path.
     /// Awaits the `wkHLSEarlyTask` started in `loadAsync` (already in-flight).
@@ -711,7 +757,7 @@ extension PlaybackViewModel {
         if won { playerLog.notice("✅ [webView] Path B won — WKWebView HLS") }
         return won
     }
-    #endif // canImport(WebKit)
+    #endif  // canImport(WebKit)
 
     /// Path C of the exhaustiveRetry race: Android VR (Oculus Quest) adaptive path.
     /// CDN-exempt from rqh=1 / pot= token requirements. Runs concurrently with Path A and B.
@@ -809,8 +855,10 @@ extension PlaybackViewModel {
             guard !Task.isCancelled, currentVideo?.id == video.id else { return }
             let vrPos = currentTime
             if vrPos > 0.5 { savedPositionToRestore = vrPos }
-            if await tryAllStreams(video: video, info: vrInfo,
-                                  label: "muxed→upgrade/AndroidVR", skipMuxed: true) {
+            if await tryAllStreams(
+                video: video, info: vrInfo,
+                label: "muxed→upgrade/AndroidVR", skipMuxed: true)
+            {
                 playerLog.notice("[upgrade] ✅ quality upgrade via AndroidVR adaptive complete")
                 return
             }
@@ -819,7 +867,9 @@ extension PlaybackViewModel {
             // which is correct — user can see quality options and tap to trigger a retry.
             // Restore isMuxedFallback so quality taps route to retryWith403Recovery.
             qualityManager.isMuxedFallback = true
-            playerLog.notice("[upgrade] AndroidVR adaptive failed — isMuxedFallback restored, \(availableFormats.count) formats visible in picker")
+            playerLog.notice(
+                "[upgrade] AndroidVR adaptive failed — isMuxedFallback restored, \(availableFormats.count) formats visible in picker"
+            )
         } catch {
             playerLog.notice("[upgrade] AndroidVR fetch failed: \(error)")
         }
@@ -848,18 +898,23 @@ extension PlaybackViewModel {
     /// Returns true if any stream starts playing successfully.
     /// - Parameter skipMuxed: When `true`, the muxed direct-MP4 fallback is skipped so that
     ///   the caller can try higher-priority clients before accepting the 360p muxed last-resort.
-    func tryAllStreams(video: Video, info: PlayerInfo, label: String,
-                        skipMuxed: Bool = false) async -> Bool {
+    func tryAllStreams(
+        video: Video, info: PlayerInfo, label: String,
+        skipMuxed: Bool = false
+    ) async -> Bool {
         let hasHLS = info.hlsURL != nil
         let hasDASH = info.dashURL != nil
         let hasAdaptiveVideo = qualityCapVideoURL(from: info.formats) != nil
         let hasAdaptiveAudio = info.bestAdaptiveAudioURL != nil
         let hasMuxed = info.bestMuxedDownloadURL != nil
         // Diagnostic: show first adaptive video URL prefix to detect SABR (c=TVHTML5) vs standard
-        let firstAdaptiveURL = info.formats.first(where: {
-            $0.mimeType.hasPrefix("video/mp4") && !$0.mimeType.contains(", ") && $0.url != nil
-        })?.url?.absoluteString.prefix(200) ?? "none"
-        playerLog.notice("[\(label)] streams: HLS=\(hasHLS) DASH=\(hasDASH) adaptiveVideo=\(hasAdaptiveVideo) adaptiveAudio=\(hasAdaptiveAudio) muxed=\(hasMuxed) skipMuxed=\(skipMuxed) firstAdaptiveURL=\(firstAdaptiveURL)")
+        let firstAdaptiveURL =
+            info.formats.first(where: {
+                $0.mimeType.hasPrefix("video/mp4") && !$0.mimeType.contains(", ") && $0.url != nil
+            })?.url?.absoluteString.prefix(200) ?? "none"
+        playerLog.notice(
+            "[\(label)] streams: HLS=\(hasHLS) DASH=\(hasDASH) adaptiveVideo=\(hasAdaptiveVideo) adaptiveAudio=\(hasAdaptiveAudio) muxed=\(hasMuxed) skipMuxed=\(skipMuxed) firstAdaptiveURL=\(firstAdaptiveURL)"
+        )
 
         // 1. HLS manifest — best quality, native AVPlayer ABR, alternate audio renditions
         if let hlsURL = info.hlsURL {
@@ -870,19 +925,22 @@ extension PlaybackViewModel {
 
         // 2. Adaptive composition — video-only + audio-only; avoids muxed CDN pot restrictions
         if let videoURL = qualityCapVideoURL(from: info.formats),
-           let audioURL = info.bestAdaptiveAudioURL {
+            let audioURL = info.bestAdaptiveAudioURL
+        {
             // Guard: if every adaptive video URL is SABR (c=TVHTML5), AVURLAsset.loadTracks
             // will stall for 60 s then return -11828 "Cannot Open". Skip composition entirely
             // and let exhaustiveRetry's WKWebView path handle the video instead.
             if info.containsSabrFormats {
-                playerLog.notice("[\(label)] All adaptive video URLs are SABR (c=TVHTML5) — skipping loadTracks stall, falling through")
-            // Guard: if every adaptive video URL has rqh=1, AVURLAsset.loadTracks stalls
-            // for ~8 s on the CDN's byte-range probe because rqh=1 requires CDN auth that
-            // URLSession cannot provide (same class of stall as SABR but shorter timeout).
-            // Skip composition and route to WKWebView HLS (spc=-authenticated).
-            // Exception: if a WKWebView-extracted pot= token is available (Option B), the
-            // adaptive URLs have already had &pot=<token> appended via applyingPoToken(),
-            // so CDN auth may succeed — attempt composition before falling through.
+                playerLog.notice(
+                    "[\(label)] All adaptive video URLs are SABR (c=TVHTML5) — skipping loadTracks stall, falling through"
+                )
+                // Guard: if every adaptive video URL has rqh=1, AVURLAsset.loadTracks stalls
+                // for ~8 s on the CDN's byte-range probe because rqh=1 requires CDN auth that
+                // URLSession cannot provide (same class of stall as SABR but shorter timeout).
+                // Skip composition and route to WKWebView HLS (spc=-authenticated).
+                // Exception: if a WKWebView-extracted pot= token is available (Option B), the
+                // adaptive URLs have already had &pot=<token> appended via applyingPoToken(),
+                // so CDN auth may succeed — attempt composition before falling through.
             } else if info.containsRqhAdaptiveFormats {
                 let hasPot = await api.hasPoToken(for: video.id)
                 // ANDROID_VR is exempt from CDN rqh=1 enforcement (no GVS_PO_TOKEN_POLICY
@@ -907,17 +965,26 @@ extension PlaybackViewModel {
                         playerLog.notice("[\(label)] fix2: started TVEmbedded early pre-fetch alongside rqh=1 timeout")
                     }
                     #endif
-                    playerLog.notice("[\(label)] rqh=1 but \(hasPot ? "pot= token available" : "ANDROID_VR exempt") — attempting adaptive composition")
-                    if await attemptComposition(videoURL: videoURL, audioURL: audioURL,
-                                                for: video, info: info, label: label) { return true }
+                    playerLog.notice(
+                        "[\(label)] rqh=1 but \(hasPot ? "pot= token available" : "ANDROID_VR exempt") — attempting adaptive composition"
+                    )
+                    if await attemptComposition(
+                        videoURL: videoURL, audioURL: audioURL,
+                        for: video, info: info, label: label)
+                    {
+                        return true
+                    }
                     playerLog.notice("[\(label)] adaptive composition with pot= failed — falling through")
                 } else {
-                    playerLog.notice("[\(label)] All adaptive video URLs are rqh=1 — skipping 8 s loadTracks stall, falling through")
+                    playerLog.notice(
+                        "[\(label)] All adaptive video URLs are rqh=1 — skipping 8 s loadTracks stall, falling through")
                 }
             } else {
                 playerLog.notice("[\(label)] Trying adaptive composition")
-                if await attemptComposition(videoURL: videoURL, audioURL: audioURL,
-                                            for: video, info: info, label: label) {
+                if await attemptComposition(
+                    videoURL: videoURL, audioURL: audioURL,
+                    for: video, info: info, label: label)
+                {
                     return true
                 }
                 // A background prefetch may have stored an HLS URL in the cache while adaptive
@@ -926,8 +993,12 @@ extension PlaybackViewModel {
                 let freshCachedInfo = await VideoPreloadCache.shared.consume(videoId: video.id).playerInfo
                 if let freshHLSURL = freshCachedInfo?.hlsURL, freshHLSURL != info.hlsURL {
                     playerLog.notice("[\(label)] HLS URL appeared in cache after adaptive failed — trying HLS")
-                    if await attemptURL(freshHLSURL, for: video, info: freshCachedInfo!,
-                                        label: "\(label)/HLS-late") { return true }
+                    if await attemptURL(
+                        freshHLSURL, for: video, info: freshCachedInfo!,
+                        label: "\(label)/HLS-late")
+                    {
+                        return true
+                    }
                 }
                 playerLog.notice("[\(label)] Adaptive composition failed — trying muxed")
             }
@@ -941,12 +1012,16 @@ extension PlaybackViewModel {
                 playerLog.notice("[\(label)] Skipping SABR muxed URL (c=TVHTML5) — not a playable MP4")
             } else {
                 playerLog.notice("[\(label)] Trying muxed")
-                let muxedItag = muxedURL.absoluteString
+                let muxedItag =
+                    muxedURL.absoluteString
                     .components(separatedBy: "&")
                     .first(where: { $0.contains("itag=") })
                     .flatMap { $0.components(separatedBy: "=").last } ?? "?"
-                let muxedBitrate = info.formats.first(where: { $0.url == muxedURL })?.bitrate.map { "\($0/1000)kbps" } ?? "?"
-                playerLog.notice("[\(label)] muxed candidate: itag=\(muxedItag) bitrate=\(muxedBitrate) url=\(muxedURL.absoluteString.prefix(100))")
+                let muxedBitrate =
+                    info.formats.first(where: { $0.url == muxedURL })?.bitrate.map { "\($0/1000)kbps" } ?? "?"
+                playerLog.notice(
+                    "[\(label)] muxed candidate: itag=\(muxedItag) bitrate=\(muxedBitrate) url=\(muxedURL.absoluteString.prefix(100))"
+                )
                 if await attemptURL(muxedURL, for: video, info: info, label: "\(label)/muxed") { return true }
                 playerLog.notice("[\(label)] Muxed failed — no more alternatives for this client")
             }
@@ -973,10 +1048,14 @@ extension PlaybackViewModel {
         let maxCurrentHeight = availableFormats.map(\.height).max() ?? 0
         let maxNewHeight = newFormats.map(\.height).max() ?? 0
         let isMuxedFallback = label.contains("/muxed")
-        if isMuxedFallback || newFormats.count > availableFormats.count || maxNewHeight > maxCurrentHeight || availableFormats.isEmpty {
+        if isMuxedFallback || newFormats.count > availableFormats.count || maxNewHeight > maxCurrentHeight
+            || availableFormats.isEmpty
+        {
             availableFormats = newFormats
         }
-        playerLog.notice("[\(label)] availableFormats after dedup: input=\(info.formats.count) output=\(newFormats.count) kept=\(availableFormats.count) maxH=\(availableFormats.map(\.height).max() ?? 0)")
+        playerLog.notice(
+            "[\(label)] availableFormats after dedup: input=\(info.formats.count) output=\(newFormats.count) kept=\(availableFormats.count) maxH=\(availableFormats.map(\.height).max() ?? 0)"
+        )
         availableCaptions = info.captionTracks
         autoApplyCaptionPreference(tracks: info.captionTracks)
 
@@ -990,7 +1069,8 @@ extension PlaybackViewModel {
                     url: hlsURL, userAgent: hlsPolicy.userAgent
                 )
                 if fetched.isEmpty,
-                   let cached = PlaybackQualityManager.cachedHLSVariants(for: videoId) {
+                    let cached = PlaybackQualityManager.cachedHLSVariants(for: videoId)
+                {
                     allVariantURLs = cached
                 } else {
                     allVariantURLs = fetched
@@ -1008,10 +1088,12 @@ extension PlaybackViewModel {
                     PlaybackQualityManager.cacheHLSVariants(fetched, for: videoId)
                 }
             }
-            let variantURLs = hlsPolicy.maximumHeight.map { cap in
-                allVariantURLs.filter { $0.key <= cap }
-            } ?? allVariantURLs
-            playerLog.notice("[\(label)] HLS: hlsURL=yes variantCount=\(variantURLs.count) effectiveQuality=\(effectiveQuality)")
+            let variantURLs =
+                hlsPolicy.maximumHeight.map { cap in
+                    allVariantURLs.filter { $0.key <= cap }
+                } ?? allVariantURLs
+            playerLog.notice(
+                "[\(label)] HLS: hlsURL=yes variantCount=\(variantURLs.count) effectiveQuality=\(effectiveQuality)")
             if hlsPolicy.requiresH264 {
                 availableFormats = availableFormats.filter { format in
                     hlsPolicy.allowsFormat(height: format.height, mimeType: format.mimeType)
@@ -1029,13 +1111,15 @@ extension PlaybackViewModel {
                 // Per-video pick (when set) takes precedence over the persisted default —
                 // a mid-playback 403 recovery must not silently revert the user's choice.
                 let preferredMaxH = hlsPolicy.cappedHeight(requested: effectiveQuality.maxHeight)
-                let chosen = preferredMaxH
+                let chosen =
+                    preferredMaxH
                     .flatMap { h in variantURLs.filter { $0.key <= h }.max(by: { $0.key < $1.key }) }
                     ?? variantURLs.max(by: { $0.key < $1.key })
                 if let chosen {
                     if hlsPolicy.filtersMasterManifest {
                         effectiveURL = hlsURL
-                        playerLog.notice("[\(label)] HLS: using H.264-filtered master with \(chosen.key)p cap and audio renditions")
+                        playerLog.notice(
+                            "[\(label)] HLS: using H.264-filtered master with \(chosen.key)p cap and audio renditions")
                     } else {
                         effectiveURL = chosen.value
                         playerLog.notice("[\(label)] HLS: selected variant \(chosen.key)p")
@@ -1056,23 +1140,34 @@ extension PlaybackViewModel {
                         diagReq.setValue("https://www.youtube.com", forHTTPHeaderField: "Origin")
                         diagReq.setValue("https://www.youtube.com/", forHTTPHeaderField: "Referer")
                         diagReq.timeoutInterval = 8
-                        guard let (diagData, diagResp) = try? await URLSession(configuration: .ephemeral).data(for: diagReq),
-                              let http = diagResp as? HTTPURLResponse else {
-                            playerLog.notice("[\(capturedLabel)] D-14 HLS variant probe: fail/timeout (no-cookie/Safari UA)")
+                        guard
+                            let (diagData, diagResp) = try? await URLSession(configuration: .ephemeral).data(
+                                for: diagReq),
+                            let http = diagResp as? HTTPURLResponse
+                        else {
+                            playerLog.notice(
+                                "[\(capturedLabel)] D-14 HLS variant probe: fail/timeout (no-cookie/Safari UA)")
                             return
                         }
                         let playlistText = String(data: diagData, encoding: .utf8) ?? ""
                         // Find first absolute segment URL (https:// line not starting with #)
-                        let firstSegURL = playlistText.components(separatedBy: "\n")
+                        let firstSegURL =
+                            playlistText.components(separatedBy: "\n")
                             .first { $0.hasPrefix("https://") } ?? "(no absolute URL found)"
                         // rqh=1 appears as /rqh/1/ path-style in HLS URLs (not ?rqh=1 query-style)
-                        let hasRqh = firstSegURL.contains("/rqh/1") || firstSegURL.contains("rqh=1") || firstSegURL.contains("rqh%3D1")
-                        playerLog.notice("[\(capturedLabel)] D-14 HLS variant probe: HTTP \(http.statusCode) bytes=\(diagData.count) firstSeg_rqh=\(hasRqh) firstSeg=\(firstSegURL.prefix(600))")
+                        let hasRqh =
+                            firstSegURL.contains("/rqh/1") || firstSegURL.contains("rqh=1")
+                            || firstSegURL.contains("rqh%3D1")
+                        playerLog.notice(
+                            "[\(capturedLabel)] D-14 HLS variant probe: HTTP \(http.statusCode) bytes=\(diagData.count) firstSeg_rqh=\(hasRqh) firstSeg=\(firstSegURL.prefix(600))"
+                        )
                         // If no absolute URL, log the first non-comment line to see relative segment format
                         if !firstSegURL.hasPrefix("https://") {
-                            let firstNonComment = playlistText.components(separatedBy: "\n")
+                            let firstNonComment =
+                                playlistText.components(separatedBy: "\n")
                                 .first { !$0.hasPrefix("#") && !$0.isEmpty } ?? "(empty)"
-                            playerLog.notice("[\(capturedLabel)] D-14 first non-comment line: \(firstNonComment.prefix(200))")
+                            playerLog.notice(
+                                "[\(capturedLabel)] D-14 first non-comment line: \(firstNonComment.prefix(200))")
                         }
                         // Also test first segment URL (if absolute) to see if segments need auth
                         if firstSegURL.hasPrefix("https://"), let segURL = URL(string: firstSegURL) {
@@ -1087,8 +1182,11 @@ extension PlaybackViewModel {
                             // Range request — just the first byte to test access
                             segReq.setValue("bytes=0-0", forHTTPHeaderField: "Range")
                             if let (_, segResp) = try? await URLSession(configuration: .ephemeral).data(for: segReq),
-                               let segHttp = segResp as? HTTPURLResponse {
-                                playerLog.notice("[\(capturedLabel)] D-14 segment probe (Safari UA/no-cookie): HTTP \(segHttp.statusCode) rqh=\(hasRqh)")
+                                let segHttp = segResp as? HTTPURLResponse
+                            {
+                                playerLog.notice(
+                                    "[\(capturedLabel)] D-14 segment probe (Safari UA/no-cookie): HTTP \(segHttp.statusCode) rqh=\(hasRqh)"
+                                )
                             } else {
                                 playerLog.notice("[\(capturedLabel)] D-14 segment probe: fail/timeout")
                             }
@@ -1107,9 +1205,13 @@ extension PlaybackViewModel {
                                 segBearerReq.setValue("Bearer \(bearerToken)", forHTTPHeaderField: "Authorization")
                                 segBearerReq.setValue("bytes=0-0", forHTTPHeaderField: "Range")
                                 segBearerReq.timeoutInterval = 8
-                                if let (_, segResp2) = try? await URLSession(configuration: .ephemeral).data(for: segBearerReq),
-                                   let segHttp2 = segResp2 as? HTTPURLResponse {
-                                    playerLog.notice("[\(capturedLabel)] D-15 segment probe (Safari UA+Bearer): HTTP \(segHttp2.statusCode) rqh=\(hasRqh)")
+                                if let (_, segResp2) = try? await URLSession(configuration: .ephemeral).data(
+                                    for: segBearerReq),
+                                    let segHttp2 = segResp2 as? HTTPURLResponse
+                                {
+                                    playerLog.notice(
+                                        "[\(capturedLabel)] D-15 segment probe (Safari UA+Bearer): HTTP \(segHttp2.statusCode) rqh=\(hasRqh)"
+                                    )
                                 } else {
                                     playerLog.notice("[\(capturedLabel)] D-15 segment probe (Bearer): fail/timeout")
                                 }
@@ -1171,7 +1273,9 @@ extension PlaybackViewModel {
             if let maxH = hlsPolicy.cappedHeight(requested: effectiveQuality.maxHeight) {
                 item.preferredMaximumResolution = CGSize(width: CGFloat(maxH) * 4, height: CGFloat(maxH))
                 item.preferredPeakBitRate = peakBitRate(for: maxH)
-                playerLog.notice("[\(label)] HLS ABR hints: maxH=\(maxH)p peakBitRate=\(peakBitRate(for: maxH) / 1_000_000)Mbps (master URL preserved)")
+                playerLog.notice(
+                    "[\(label)] HLS ABR hints: maxH=\(maxH)p peakBitRate=\(peakBitRate(for: maxH) / 1_000_000)Mbps (master URL preserved)"
+                )
             } else {
                 // Auto: remove all constraints so AVPlayer picks the best available variant.
                 item.preferredMaximumResolution = .zero
@@ -1183,7 +1287,9 @@ extension PlaybackViewModel {
         // Covers adaptive/muxed paths: a stale exhaustiveRetry (cancelled by load() or stop())
         // must not swap the AVPlayerItem under a correctly-playing video.
         guard !Task.isCancelled, currentVideo?.id == video.id else {
-            playerLog.notice("⚠️ [\(label)] fix235: task cancelled or video changed (current=\(currentVideo?.id ?? "nil") expected=\(video.id)) — aborting replaceCurrentItem")
+            playerLog.notice(
+                "⚠️ [\(label)] fix235: task cancelled or video changed (current=\(currentVideo?.id ?? "nil") expected=\(video.id)) — aborting replaceCurrentItem"
+            )
             return false
         }
         player.replaceCurrentItem(with: item)
@@ -1198,7 +1304,9 @@ extension PlaybackViewModel {
                 if itemDur.isFinite && itemDur > 0 {
                     let prevDur = self.duration
                     self.duration = itemDur
-                    playerLog.notice("[duration] updated from AVPlayerItem: \(String(format: "%.1f", itemDur))s (was \(String(format: "%.1f", prevDur))s from metadata)")
+                    playerLog.notice(
+                        "[duration] updated from AVPlayerItem: \(String(format: "%.1f", itemDur))s (was \(String(format: "%.1f", prevDur))s from metadata)"
+                    )
                 } else if self.duration == 0 {
                     durationObserverTask?.cancel()
                     durationObserverTask = Task { [weak self, weak item] in
@@ -1207,7 +1315,9 @@ extension PlaybackViewModel {
                             guard !Task.isCancelled else { return }
                             let prev = self.duration
                             self.duration = seconds
-                            playerLog.notice("[duration] deferred KVO update: \(String(format: "%.1f", seconds))s (was \(String(format: "%.1f", prev))s)")
+                            playerLog.notice(
+                                "[duration] deferred KVO update: \(String(format: "%.1f", seconds))s (was \(String(format: "%.1f", prev))s)"
+                            )
                             break
                         }
                     }
@@ -1239,7 +1349,8 @@ extension PlaybackViewModel {
             case .failed:
                 let err = item.error.map { "\($0)" } ?? "nil"
                 let nsErr = item.error as? NSError
-                let failURL = nsErr?.userInfo[NSURLErrorFailingURLStringErrorKey] as? String
+                let failURL =
+                    nsErr?.userInfo[NSURLErrorFailingURLStringErrorKey] as? String
                     ?? nsErr?.userInfo["NSErrorFailingURLKey"] as? String
                 playerLog.error("❌ [\(label)] AVPlayerItem failed: \(err)")
                 if let failURL {
@@ -1261,14 +1372,17 @@ extension PlaybackViewModel {
         videoURL: URL, audioURL: URL,
         for video: Video, info: PlayerInfo, label: String
     ) async -> Bool {
-        let videoItag = URLComponents(url: videoURL, resolvingAgainstBaseURL: false)?
+        let videoItag =
+            URLComponents(url: videoURL, resolvingAgainstBaseURL: false)?
             .queryItems?.first(where: { $0.name == "itag" })?.value ?? "?"
-        let audioItag = URLComponents(url: audioURL, resolvingAgainstBaseURL: false)?
+        let audioItag =
+            URLComponents(url: audioURL, resolvingAgainstBaseURL: false)?
             .queryItems?.first(where: { $0.name == "itag" })?.value ?? "?"
         let videoRqh = videoURL.absoluteString.contains("rqh=1") || videoURL.absoluteString.contains("/rqh/1")
 
         // Use the client UA that matches the URL's signing client.
-        let clientParam = URLComponents(url: videoURL, resolvingAgainstBaseURL: false)?
+        let clientParam =
+            URLComponents(url: videoURL, resolvingAgainstBaseURL: false)?
             .queryItems?.first(where: { $0.name == "c" })?.value?.uppercased() ?? ""
 
         // Skip every rqh=1 stream by default — no client works without a pot= token.
@@ -1281,31 +1395,33 @@ extension PlaybackViewModel {
         // a CDN-accepted token, which requires a real browser JS context (WKWebView).
         // hasMintedPoToken is set in exhaustiveRetry when BotGuardWebViewRunner succeeds
         // with a full getMinter-minted token — those ARE accepted by the CDN.
-        let isTVAuthBearer    = label.contains("TVAuth") && hasAuthToken && currentAuthToken != nil
-        let isAndroidVR       = clientParam == "ANDROID_VR"
+        let isTVAuthBearer = label.contains("TVAuth") && hasAuthToken && currentAuthToken != nil
+        let isAndroidVR = clientParam == "ANDROID_VR"
         #if canImport(WebKit)
-        let isBotGuardMinted  = label == "BotGuardWV" && hasMintedPoToken
+        let isBotGuardMinted = label == "BotGuardWV" && hasMintedPoToken
         #else
-        let isBotGuardMinted  = false
+        let isBotGuardMinted = false
         #endif
         if videoRqh && !isTVAuthBearer && !isAndroidVR && !isBotGuardMinted {
             playerLog.notice("[\(label)/adaptive] skipping rqh=1 (client=\(clientParam)) — not exempt")
             return false
         }
         if videoRqh && isBotGuardMinted {
-            playerLog.notice("[\(label)/adaptive] attempting rqh=1 with WKWebView-minted BotGuard token (client=\(clientParam)) — CDN should accept")
+            playerLog.notice(
+                "[\(label)/adaptive] attempting rqh=1 with WKWebView-minted BotGuard token (client=\(clientParam)) — CDN should accept"
+            )
         } else if videoRqh {
             playerLog.notice("[\(label)/adaptive] attempting rqh=1 TVAuth with Bearer — CDN auth experiment")
         }
         let ua: String
         switch clientParam {
-        case "ANDROID_VR":   ua = InnerTubeClients.AndroidVR.userAgent
-        case "ANDROID":      ua = InnerTubeClients.Android.userAgent
-        case "VISIONOS":     ua = InnerTubeClients.VisionOS.userAgent
-        case "TVHTML5":      ua = InnerTubeClients.TV.userAgent
-        case "MWEB":         ua = InnerTubeClients.MWEB.userAgent
-        case "WEB_CREATOR":  ua = InnerTubeClients.Web.userAgent
-        default:             ua = InnerTubeClients.iOS.userAgent
+        case "ANDROID_VR": ua = InnerTubeClients.AndroidVR.userAgent
+        case "ANDROID": ua = InnerTubeClients.Android.userAgent
+        case "VISIONOS": ua = InnerTubeClients.VisionOS.userAgent
+        case "TVHTML5": ua = InnerTubeClients.TV.userAgent
+        case "MWEB": ua = InnerTubeClients.MWEB.userAgent
+        case "WEB_CREATOR": ua = InnerTubeClients.Web.userAgent
+        default: ua = InnerTubeClients.iOS.userAgent
         }
 
         playerLog.notice("[\(label)/adaptive] videoItag=\(videoItag) client=\(clientParam) audioItag=\(audioItag)")
@@ -1318,7 +1434,9 @@ extension PlaybackViewModel {
         if newFormats.count > availableFormats.count || maxNewHeight > maxCurrentHeight || availableFormats.isEmpty {
             availableFormats = newFormats
         }
-        playerLog.notice("[\(label)/adaptive] availableFormats after dedup: input=\(info.formats.count) output=\(newFormats.count) kept=\(availableFormats.count) maxH=\(availableFormats.map(\.height).max() ?? 0)")
+        playerLog.notice(
+            "[\(label)/adaptive] availableFormats after dedup: input=\(info.formats.count) output=\(newFormats.count) kept=\(availableFormats.count) maxH=\(availableFormats.map(\.height).max() ?? 0)"
+        )
         availableCaptions = info.captionTracks
         autoApplyCaptionPreference(tracks: info.captionTracks)
 
@@ -1339,7 +1457,8 @@ extension PlaybackViewModel {
             let ytCookies = HTTPCookieStorage.shared.cookies(for: URL(string: "https://www.youtube.com")!) ?? []
             if !ytCookies.isEmpty {
                 assetHeaders["Cookie"] = ytCookies.map { "\($0.name)=\($0.value)" }.joined(separator: "; ")
-                playerLog.notice("[\(label)/adaptive] injecting \(ytCookies.count) youtube.com cookies for BotGuard rqh=1 CDN auth")
+                playerLog.notice(
+                    "[\(label)/adaptive] injecting \(ytCookies.count) youtube.com cookies for BotGuard rqh=1 CDN auth")
             }
         }
 
@@ -1365,16 +1484,23 @@ extension PlaybackViewModel {
             probeReq.setValue("bytes=0-131071", forHTTPHeaderField: "Range")
             probeReq.timeoutInterval = 1.5
             if let (_, probeResp) = try? await URLSession(configuration: .ephemeral).data(for: probeReq),
-               let http = probeResp as? HTTPURLResponse {
+                let http = probeResp as? HTTPURLResponse
+            {
                 if http.statusCode == 403 || http.statusCode == 401 {
-                    playerLog.notice("❌ [\(label)/adaptive] rqh=1 probe: HTTP \(http.statusCode) — CDN enforcing rqh, skipping composition")
+                    playerLog.notice(
+                        "❌ [\(label)/adaptive] rqh=1 probe: HTTP \(http.statusCode) — CDN enforcing rqh, skipping composition"
+                    )
                     return false
                 }
-                playerLog.notice("[\(label)/adaptive] rqh=1 probe: HTTP \(http.statusCode) 128KB delivered — moov atom accessible, proceeding")
+                playerLog.notice(
+                    "[\(label)/adaptive] rqh=1 probe: HTTP \(http.statusCode) 128KB delivered — moov atom accessible, proceeding"
+                )
             } else {
                 // CDN stalled before delivering 128 KB. This predicts loadTracks failure
                 // (moov atom not accessible), so bail immediately rather than waiting 2s.
-                playerLog.notice("⚠️ [\(label)/adaptive] rqh=1 probe: timeout after 1.5s (128KB stall) — CDN enforcing SABR, skipping composition")
+                playerLog.notice(
+                    "⚠️ [\(label)/adaptive] rqh=1 probe: timeout after 1.5s (128KB stall) — CDN enforcing SABR, skipping composition"
+                )
                 return false
             }
         }
@@ -1432,7 +1558,8 @@ extension PlaybackViewModel {
                 #else
                 // fix30 (task #230): 1.5s for non-VR iOS first-video loads.
                 // fix_task240: 2s for AndroidVR (was 8s) — false-positive probe scenario.
-                let timeoutNs: UInt64 = isVRAttempt ? 2_000_000_000 : (needsQuickStartup ? 1_500_000_000 : 8_000_000_000)
+                let timeoutNs: UInt64 =
+                    isVRAttempt ? 2_000_000_000 : (needsQuickStartup ? 1_500_000_000 : 8_000_000_000)
                 #endif
                 Task.detached {
                     try? await Task.sleep(nanoseconds: timeoutNs)
@@ -1441,14 +1568,16 @@ extension PlaybackViewModel {
                 }
 
                 if let firstOrNil = await raceStream.first(where: { @Sendable _ in true }),
-                   let box = firstOrNil {
+                    let box = firstOrNil
+                {
                     vTracks = box.video
                     aTracks = box.audio
                 } else {
                     #if os(tvOS)
                     let timeoutSec = isVRAttempt ? 2 : 3
                     #else
-                    let timeoutSec = isVRAttempt ? 2 : (needsQuickStartup ? 1 : 8)  // VR=2s (fix_task240), non-VR quick=1.5s (fix30)
+                    // VR=2s (fix_task240), non-VR quick=1.5s (fix30)
+                    let timeoutSec = isVRAttempt ? 2 : (needsQuickStartup ? 1 : 8)
                     #endif
                     let reason = "timed out after \(timeoutSec)s or loadTracks failed"
                     playerLog.error("❌ [\(label)/adaptive] loadTracks \(reason) (rqh=\(videoRqh))")
@@ -1457,7 +1586,8 @@ extension PlaybackViewModel {
             }
 
             guard let sourceVideoTrack = vTracks.first,
-                  let sourceAudioTrack = aTracks.first else {
+                let sourceAudioTrack = aTracks.first
+            else {
                 playerLog.error("❌ [\(label)/adaptive] no tracks in remote assets (rqh=\(videoRqh))")
                 return false
             }
@@ -1466,10 +1596,14 @@ extension PlaybackViewModel {
             let timeRange = CMTimeRange(start: .zero, duration: videoDuration)
             let composition = AVMutableComposition()
 
-            guard let compVideo = composition.addMutableTrack(withMediaType: .video,
-                                                              preferredTrackID: kCMPersistentTrackID_Invalid),
-                  let compAudio = composition.addMutableTrack(withMediaType: .audio,
-                                                              preferredTrackID: kCMPersistentTrackID_Invalid) else {
+            guard
+                let compVideo = composition.addMutableTrack(
+                    withMediaType: .video,
+                    preferredTrackID: kCMPersistentTrackID_Invalid),
+                let compAudio = composition.addMutableTrack(
+                    withMediaType: .audio,
+                    preferredTrackID: kCMPersistentTrackID_Invalid)
+            else {
                 playerLog.error("❌ [\(label)/adaptive] could not add composition tracks")
                 return false
             }
@@ -1493,7 +1627,9 @@ extension PlaybackViewModel {
             }
             // fix235: Guard cancellation and video identity before touching the player.
             guard !Task.isCancelled, currentVideo?.id == video.id else {
-                playerLog.notice("⚠️ [\(label)/adaptive] fix235: task cancelled or video changed (current=\(currentVideo?.id ?? "nil") expected=\(video.id)) — aborting replaceCurrentItem")
+                playerLog.notice(
+                    "⚠️ [\(label)/adaptive] fix235: task cancelled or video changed (current=\(currentVideo?.id ?? "nil") expected=\(video.id)) — aborting replaceCurrentItem"
+                )
                 return false
             }
             player.replaceCurrentItem(with: compositeItem)
@@ -1502,13 +1638,16 @@ extension PlaybackViewModel {
             for await status in compositeItem.statusStream {
                 switch status {
                 case .readyToPlay:
-                    playerLog.notice("[benchmark] readyToPlay — \(label)/adaptive — videoId=\(video.id) title=\(video.title)")
+                    playerLog.notice(
+                        "[benchmark] readyToPlay — \(label)/adaptive — videoId=\(video.id) title=\(video.title)")
                     playerLog.notice("✅ [\(label)/adaptive] readyToPlay")
                     let compDur = compositeItem.duration.seconds
                     if compDur.isFinite && compDur > 0 {
                         let prevDur = self.duration
                         self.duration = compDur
-                        playerLog.notice("[duration] updated from composition AVPlayerItem: \(String(format: "%.1f", compDur))s (was \(String(format: "%.1f", prevDur))s from metadata)")
+                        playerLog.notice(
+                            "[duration] updated from composition AVPlayerItem: \(String(format: "%.1f", compDur))s (was \(String(format: "%.1f", prevDur))s from metadata)"
+                        )
                     } else if self.duration == 0 {
                         durationObserverTask?.cancel()
                         durationObserverTask = Task { [weak self, weak compositeItem] in
@@ -1517,7 +1656,9 @@ extension PlaybackViewModel {
                                 guard !Task.isCancelled else { return }
                                 let prev = self.duration
                                 self.duration = seconds
-                                playerLog.notice("[duration] deferred KVO update: \(String(format: "%.1f", seconds))s (was \(String(format: "%.1f", prev))s)")
+                                playerLog.notice(
+                                    "[duration] deferred KVO update: \(String(format: "%.1f", seconds))s (was \(String(format: "%.1f", prev))s)"
+                                )
                                 break
                             }
                         }
@@ -1544,8 +1685,11 @@ extension PlaybackViewModel {
                     return true
                 case .failed:
                     let nsErr = compositeItem.error as? NSError
-                    let httpStatus = (nsErr?.userInfo[NSUnderlyingErrorKey] as? NSError)?.code == -12660 ? 403 : (nsErr?.code ?? -1)
-                    playerLog.error("❌ [\(label)/adaptive] AVPlayerItem failed: domain=\(nsErr?.domain ?? "?") code=\(nsErr?.code ?? -1) httpStatus=\(httpStatus)")
+                    let httpStatus =
+                        (nsErr?.userInfo[NSUnderlyingErrorKey] as? NSError)?.code == -12660 ? 403 : (nsErr?.code ?? -1)
+                    playerLog.error(
+                        "❌ [\(label)/adaptive] AVPlayerItem failed: domain=\(nsErr?.domain ?? "?") code=\(nsErr?.code ?? -1) httpStatus=\(httpStatus)"
+                    )
                     return false
                 case .unknown:
                     continue
@@ -1557,7 +1701,9 @@ extension PlaybackViewModel {
         } catch {
             let nsErr = error as NSError
             let httpStatus = (nsErr.userInfo[NSUnderlyingErrorKey] as? NSError)?.code == -12660 ? 403 : nsErr.code
-            playerLog.error("❌ [\(label)/adaptive] setup failed: domain=\(nsErr.domain) code=\(nsErr.code) httpStatus=\(httpStatus)")
+            playerLog.error(
+                "❌ [\(label)/adaptive] setup failed: domain=\(nsErr.domain) code=\(nsErr.code) httpStatus=\(httpStatus)"
+            )
             return false
         }
     }
@@ -1569,11 +1715,13 @@ extension PlaybackViewModel {
             // already-consumed nextInfo/endCards/sponsorSegments instead of re-fetching.
             // Falls back to empty (full network fetch) when no cached data is passed
             // (e.g. from the 3-attempt retry loop which doesn't have the original cached struct).
-            let p2Cached = cached ?? CachedVideoData(
-                playerInfo: nil, trackingURLs: nil, nextInfo: nil,
-                endCards: nil, sponsorSegments: nil, deArrowBranding: nil,
-                staleFields: []
-            )
+            let p2Cached =
+                cached
+                ?? CachedVideoData(
+                    playerInfo: nil, trackingURLs: nil, nextInfo: nil,
+                    endCards: nil, sponsorSegments: nil, deArrowBranding: nil,
+                    staleFields: []
+                )
             await self?.loadAsyncPhase2(
                 video: video, cached: p2Cached, info: info,
                 cachedTrackingURLs: cached?.trackingURLs ?? nil, authTrackingTask: nil,
@@ -1626,7 +1774,9 @@ extension PlaybackViewModel {
             if hasRqhFreeFormat && (vrFormats.count > availableFormats.count || maxVRH > maxCurrentH) {
                 availableFormats = vrFormats
             }
-            playerLog.notice("⚡ [prefetch] playerInfo upgraded to AndroidVR (\(vrFormats.count) formats) — quality switches skip 403 recovery")
+            playerLog.notice(
+                "⚡ [prefetch] playerInfo upgraded to AndroidVR (\(vrFormats.count) formats) — quality switches skip 403 recovery"
+            )
             await prefetchPreferredQualityTracks(info: vrInfo)
         } catch {
             playerLog.notice("[prefetch] background AndroidVR fetch failed: \(error)")
@@ -1638,21 +1788,26 @@ extension PlaybackViewModel {
     /// is a cache hit rather than a CDN round-trip.
     private func prefetchPreferredQualityTracks(info: PlayerInfo) async {
         guard settings.preferredQuality != .auto,
-              let maxH = settings.preferredQuality.maxHeight else { return }
-        guard let videoURL = PlaybackQualityManager.selectBestVideoFormat(
-                  from: info.formats, preferredMaxHeight: maxH,
-                  preferH264: settings.preferH264
-              )?.url,
-              let audioURL = info.bestAdaptiveAudioURL else { return }
+            let maxH = settings.preferredQuality.maxHeight
+        else { return }
+        guard
+            let videoURL = PlaybackQualityManager.selectBestVideoFormat(
+                from: info.formats, preferredMaxHeight: maxH,
+                preferH264: settings.preferH264
+            )?.url,
+            let audioURL = info.bestAdaptiveAudioURL
+        else { return }
         if AVAssetTrackCache.shared.videoTracks(for: videoURL) != nil { return }
-        let itag = URLComponents(url: videoURL, resolvingAgainstBaseURL: false)?
+        let itag =
+            URLComponents(url: videoURL, resolvingAgainstBaseURL: false)?
             .queryItems?.first(where: { $0.name == "itag" })?.value ?? "?"
         let ua = InnerTubeClients.iOS.userAgent
         let videoAsset = AVURLAsset(url: videoURL, options: ["AVURLAssetHTTPHeaderFieldsKey": ["User-Agent": ua]])
         let audioAsset = AVURLAsset(url: audioURL, options: ["AVURLAssetHTTPHeaderFieldsKey": ["User-Agent": ua]])
         playerLog.notice("[prefetch] pre-warming tracks for preferredQuality=\(maxH)p (itag=\(itag))")
         struct PrefetchTrackBox: @unchecked Sendable {
-            let video: [AVAssetTrack]; let audio: [AVAssetTrack]
+            let video: [AVAssetTrack]
+            let audio: [AVAssetTrack]
         }
         let (stream, cont) = AsyncStream<PrefetchTrackBox?>.makeStream()
         Task.detached {
@@ -1671,9 +1826,11 @@ extension PlaybackViewModel {
             cont.finish()
         }
         if let result = await stream.first(where: { @Sendable _ in true }),
-           let box = result, !box.video.isEmpty, !box.audio.isEmpty {
-            AVAssetTrackCache.shared.store(videoTracks: box.video, audioTracks: box.audio,
-                                            videoURL: videoURL, audioURL: audioURL)
+            let box = result, !box.video.isEmpty, !box.audio.isEmpty
+        {
+            AVAssetTrackCache.shared.store(
+                videoTracks: box.video, audioTracks: box.audio,
+                videoURL: videoURL, audioURL: audioURL)
             playerLog.notice("⚡ [prefetch] tracks cached for preferredQuality=\(maxH)p (itag=\(itag))")
         } else {
             playerLog.notice("[prefetch] track prefetch timed out/failed for preferredQuality=\(maxH)p")
@@ -1685,7 +1842,7 @@ extension PlaybackViewModel {
     /// quality, the tracks are already cached and the switch completes in < 100ms (Fix 2A).
     func prefetchAllQualityTracks() async {
         guard let info = playerInfo else { return }
-        guard info.hlsURL == nil else { return } // HLS doesn't need DASH track prefetch
+        guard info.hlsURL == nil else { return }  // HLS doesn't need DASH track prefetch
         guard let audioURL = info.bestAdaptiveAudioURL else { return }
         guard !PlaybackQualityManager.urlHasRqhEnforcement(audioURL) else { return }
 
@@ -1707,13 +1864,15 @@ extension PlaybackViewModel {
             guard let videoURL = fmt.url else { continue }
             guard !PlaybackQualityManager.urlHasRqhEnforcement(videoURL) else { continue }
             guard AVAssetTrackCache.shared.videoTracks(for: videoURL) == nil else { continue }
-            let itag = URLComponents(url: videoURL, resolvingAgainstBaseURL: false)?
+            let itag =
+                URLComponents(url: videoURL, resolvingAgainstBaseURL: false)?
                 .queryItems?.first(where: { $0.name == "itag" })?.value ?? "?"
             let videoAsset = AVURLAsset(url: videoURL, options: ["AVURLAssetHTTPHeaderFieldsKey": ["User-Agent": ua]])
             playerLog.notice("[prefetch/picker] pre-warming \(fmt.height)p itag=\(itag)")
             if let vTracks = try? await videoAsset.loadTracks(withMediaType: .video), !vTracks.isEmpty {
-                AVAssetTrackCache.shared.store(videoTracks: vTracks, audioTracks: audioTracks,
-                                               videoURL: videoURL, audioURL: audioURL)
+                AVAssetTrackCache.shared.store(
+                    videoTracks: vTracks, audioTracks: audioTracks,
+                    videoURL: videoURL, audioURL: audioURL)
                 playerLog.notice("⚡ [prefetch/picker] cached \(fmt.height)p itag=\(itag)")
             }
         }
@@ -1723,9 +1882,11 @@ extension PlaybackViewModel {
     /// (where `hlsURL == nil`). Mirrors `attemptComposition` but does not reset `playerInfo`
     /// or `availableFormats` and does not call `launchPhase2` — this is a mid-playback swap.
     func rebuildCompositionForQuality(videoURL: URL, audioURL: URL, seekTo: TimeInterval) async {
-        let videoItag = URLComponents(url: videoURL, resolvingAgainstBaseURL: false)?
+        let videoItag =
+            URLComponents(url: videoURL, resolvingAgainstBaseURL: false)?
             .queryItems?.first(where: { $0.name == "itag" })?.value ?? "?"
-        let audioItag = URLComponents(url: audioURL, resolvingAgainstBaseURL: false)?
+        let audioItag =
+            URLComponents(url: audioURL, resolvingAgainstBaseURL: false)?
             .queryItems?.first(where: { $0.name == "itag" })?.value ?? "?"
         // Always use the iOS UA regardless of URL signing (c=ANDROID or c=IOS).
         // The initial attemptComposition path uses iOS UA for all URLs including
@@ -1752,50 +1913,54 @@ extension PlaybackViewModel {
                 aTracks = ca
                 playerLog.notice("⚡ [quality/DASH] loadTracks cache hit (itag=\(videoItag)) — skipping CDN round-trip")
             } else {
-            do {
-                struct TrackBox: @unchecked Sendable {
-                    let video: [AVAssetTrack]
-                    let audio: [AVAssetTrack]
-                }
-                let (raceStream, raceCont) = AsyncStream<TrackBox?>.makeStream()
-                Task.detached {
-                    let box: TrackBox? = try? await { () async throws -> TrackBox in
-                        async let v = videoAsset.loadTracks(withMediaType: .video)
-                        async let a = audioAsset.loadTracks(withMediaType: .audio)
-                        let (vv, aa) = try await (v, a)
-                        return TrackBox(video: vv, audio: aa)
-                    }()
-                    raceCont.yield(box)
-                    raceCont.finish()
-                }
-                Task.detached {
-                    try? await Task.sleep(for: .seconds(10))
-                    raceCont.yield(nil)
-                    raceCont.finish()
-                }
-                if let firstOrNil = await raceStream.first(where: { @Sendable _ in true }),
-                   let box = firstOrNil {
-                    vTracks = box.video
-                    aTracks = box.audio
-                    AVAssetTrackCache.shared.store(videoTracks: vTracks, audioTracks: aTracks,
-                                                    videoURL: videoURL, audioURL: audioURL)
-                } else {
-                    playerLog.error("❌ [quality/DASH] loadTracks timed out after 10s — triggering 403 recovery retry")
-                    selectedFormat = nil
-                    if statsForNerdsVisible { updateStatsSnapshot() }
-                    if let video = currentVideo {
-                        await VideoPreloadCache.shared.invalidatePlayerInfo(for: video.id)
-                        HLSManifestCache.shared.invalidate(for: video.id)
-                        await retryWith403Recovery(video: video, originalError: nil)
+                do {
+                    struct TrackBox: @unchecked Sendable {
+                        let video: [AVAssetTrack]
+                        let audio: [AVAssetTrack]
                     }
-                    return
+                    let (raceStream, raceCont) = AsyncStream<TrackBox?>.makeStream()
+                    Task.detached {
+                        let box: TrackBox? = try? await { () async throws -> TrackBox in
+                            async let v = videoAsset.loadTracks(withMediaType: .video)
+                            async let a = audioAsset.loadTracks(withMediaType: .audio)
+                            let (vv, aa) = try await (v, a)
+                            return TrackBox(video: vv, audio: aa)
+                        }()
+                        raceCont.yield(box)
+                        raceCont.finish()
+                    }
+                    Task.detached {
+                        try? await Task.sleep(for: .seconds(10))
+                        raceCont.yield(nil)
+                        raceCont.finish()
+                    }
+                    if let firstOrNil = await raceStream.first(where: { @Sendable _ in true }),
+                        let box = firstOrNil
+                    {
+                        vTracks = box.video
+                        aTracks = box.audio
+                        AVAssetTrackCache.shared.store(
+                            videoTracks: vTracks, audioTracks: aTracks,
+                            videoURL: videoURL, audioURL: audioURL)
+                    } else {
+                        playerLog.error(
+                            "❌ [quality/DASH] loadTracks timed out after 10s — triggering 403 recovery retry")
+                        selectedFormat = nil
+                        if statsForNerdsVisible { updateStatsSnapshot() }
+                        if let video = currentVideo {
+                            await VideoPreloadCache.shared.invalidatePlayerInfo(for: video.id)
+                            HLSManifestCache.shared.invalidate(for: video.id)
+                            await retryWith403Recovery(video: video, originalError: nil)
+                        }
+                        return
+                    }
                 }
-            }
-            } // end cache-miss else
+            }  // end cache-miss else
             // ─────────────────────────────────────────────────────────────────────────
 
             guard let sourceVideoTrack = vTracks.first,
-                  let sourceAudioTrack = aTracks.first else {
+                let sourceAudioTrack = aTracks.first
+            else {
                 playerLog.error("❌ [quality/DASH] no tracks in remote assets — triggering 403 recovery retry")
                 selectedFormat = nil
                 if statsForNerdsVisible { updateStatsSnapshot() }
@@ -1811,10 +1976,14 @@ extension PlaybackViewModel {
             let timeRange = CMTimeRange(start: .zero, duration: videoDuration)
             let composition = AVMutableComposition()
 
-            guard let compVideo = composition.addMutableTrack(withMediaType: .video,
-                                                              preferredTrackID: kCMPersistentTrackID_Invalid),
-                  let compAudio = composition.addMutableTrack(withMediaType: .audio,
-                                                              preferredTrackID: kCMPersistentTrackID_Invalid) else {
+            guard
+                let compVideo = composition.addMutableTrack(
+                    withMediaType: .video,
+                    preferredTrackID: kCMPersistentTrackID_Invalid),
+                let compAudio = composition.addMutableTrack(
+                    withMediaType: .audio,
+                    preferredTrackID: kCMPersistentTrackID_Invalid)
+            else {
                 playerLog.error("❌ [quality/DASH] could not add composition tracks")
                 selectedFormat = nil
                 if statsForNerdsVisible { updateStatsSnapshot() }
@@ -1840,12 +2009,15 @@ extension PlaybackViewModel {
                     let benchVid = self.currentVideo?.id ?? "nil"
                     let benchTitle = self.currentVideo?.title ?? "nil"
                     playerLog.notice("[benchmark] readyToPlay — quality/DASH — videoId=\(benchVid) title=\(benchTitle)")
-                    playerLog.notice("✅ [quality/DASH] readyToPlay — presentationSize=\(Int(size.width))x\(Int(size.height))")
+                    playerLog.notice(
+                        "✅ [quality/DASH] readyToPlay — presentationSize=\(Int(size.width))x\(Int(size.height))")
                     isQualityChangePending = false
                     // Use currentTime (preserved by time observer freeze) instead of seekTo
                     // to honour any user seek that occurred during the DASH rebuild transition.
                     let seekTarget = currentTime > 0 ? currentTime : seekTo
-                    playerLog.notice("[quality/DASH] readyToPlay — seekTarget=\(seekTarget)s (currentTime=\(currentTime)s savedSeekTo=\(seekTo)s)")
+                    playerLog.notice(
+                        "[quality/DASH] readyToPlay — seekTarget=\(seekTarget)s (currentTime=\(currentTime)s savedSeekTo=\(seekTo)s)"
+                    )
                     if seekTarget > 0 { seek(to: seekTarget) }
                     loadAudioTracks(from: compositeItem)
                     player.rate = Float(settings.playbackSpeed)
@@ -1889,7 +2061,8 @@ extension PlaybackViewModel {
     /// c=ANDROID URLs) was incorrect; the initial `attemptComposition` path proves iOS UA
     /// works for all URL signing variants.
     static func userAgent(for url: URL) -> String {
-        let client = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+        let client =
+            URLComponents(url: url, resolvingAgainstBaseURL: false)?
             .queryItems?.first(where: { $0.name == "c" })?.value ?? ""
         return client.hasPrefix("ANDROID") ? InnerTubeClients.Android.userAgent : InnerTubeClients.iOS.userAgent
     }
@@ -1952,7 +2125,8 @@ extension PlaybackViewModel {
         req.setValue(ua, forHTTPHeaderField: "User-Agent")
         req.timeoutInterval = 8
         guard let (data, _) = try? await URLSession.shared.data(for: req),
-              let text = String(data: data, encoding: .utf8) else {
+            let text = String(data: data, encoding: .utf8)
+        else {
             playerLog.notice("[\(label)] n-probe: playlist fetch failed — using original URL")
             return (variantURL, nil)
         }
@@ -1960,7 +2134,8 @@ extension PlaybackViewModel {
         // 2. Find the first absolute segment URL in the playlist.
         let lines = text.components(separatedBy: .newlines)
         guard let segStr = lines.first(where: { !$0.hasPrefix("#") && !$0.isEmpty && $0.hasPrefix("http") }),
-              let segURL = URL(string: segStr) else {
+            let segURL = URL(string: segStr)
+        else {
             playerLog.notice("[\(label)] n-probe: no segment URL found — using original URL")
             return (variantURL, nil)
         }
@@ -1971,7 +2146,8 @@ extension PlaybackViewModel {
         segReq.setValue(ua, forHTTPHeaderField: "User-Agent")
         segReq.timeoutInterval = 5
         if let (_, resp) = try? await URLSession.shared.data(for: segReq),
-           let http = resp as? HTTPURLResponse, http.statusCode == 200 {
+            let http = resp as? HTTPURLResponse, http.statusCode == 200
+        {
             playerLog.notice("[\(label)] n-probe: segment 200 — n is valid, no descrambling needed")
             return (variantURL, nil)
         }
@@ -1988,11 +2164,13 @@ extension PlaybackViewModel {
         let segPathParts = segURL.pathComponents
         let scrambledSegN: String?
         if let idx = segPathParts.firstIndex(of: "n"), idx + 1 < segPathParts.count,
-           !segPathParts[idx + 1].isEmpty {
+            !segPathParts[idx + 1].isEmpty
+        {
             scrambledSegN = segPathParts[idx + 1]
         } else if let nItem = URLComponents(url: segURL, resolvingAgainstBaseURL: false)?
-                      .queryItems?.first(where: { $0.name == "n" }),
-                  let val = nItem.value, !val.isEmpty {
+            .queryItems?.first(where: { $0.name == "n" }),
+            let val = nItem.value, !val.isEmpty
+        {
             scrambledSegN = val
         } else {
             scrambledSegN = nil
@@ -2017,7 +2195,8 @@ extension PlaybackViewModel {
         // Extract the descrambled n value from the synthetic result.
         let descParts = descrambledSynthetic.pathComponents
         guard let dIdx = descParts.firstIndex(of: "n"), dIdx + 1 < descParts.count,
-              !descParts[dIdx + 1].isEmpty else {
+            !descParts[dIdx + 1].isEmpty
+        else {
             return (variantURL, nil)
         }
         let descrambledN = descParts[dIdx + 1]
@@ -2034,18 +2213,23 @@ extension PlaybackViewModel {
         // 6b. Verify the rewrite: probe the first rewritten segment to confirm 200.
         //     If still 403, the descrambled n is wrong (solver/player.js mismatch).
         let rewrittenLines = rewritten.components(separatedBy: .newlines)
-        if let firstRewrittenSeg = rewrittenLines.first(where: { !$0.hasPrefix("#") && !$0.isEmpty && $0.hasPrefix("http") }),
-           let verifyURL = URL(string: firstRewrittenSeg) {
+        if let firstRewrittenSeg = rewrittenLines.first(where: {
+            !$0.hasPrefix("#") && !$0.isEmpty && $0.hasPrefix("http")
+        }),
+            let verifyURL = URL(string: firstRewrittenSeg)
+        {
             playerLog.notice("[\(label)] n-probe: verifying rewritten seg n=\(descrambledN)")
             var verifyReq = URLRequest(url: verifyURL)
             verifyReq.httpMethod = "HEAD"
             verifyReq.setValue(ua, forHTTPHeaderField: "User-Agent")
             verifyReq.timeoutInterval = 5
             if let (_, verifyResp) = try? await URLSession.shared.data(for: verifyReq),
-               let verifyHTTP = verifyResp as? HTTPURLResponse {
+                let verifyHTTP = verifyResp as? HTTPURLResponse
+            {
                 playerLog.notice("[\(label)] n-probe: post-rewrite verify → HTTP \(verifyHTTP.statusCode)")
                 if verifyHTTP.statusCode == 403 {
-                    playerLog.error("[\(label)] n-probe: VERIFY FAILED — descrambled n returns 403; reverting to original URL")
+                    playerLog.error(
+                        "[\(label)] n-probe: VERIFY FAILED — descrambled n returns 403; reverting to original URL")
                     return (variantURL, nil)
                 }
             } else {
@@ -2088,18 +2272,23 @@ extension PlaybackViewModel {
     ///   variant URL contains `pfa/1` and `poToken` is nil. The Phase -1a cached preWarm URL has
     ///   a STALE `xpc=` credential that CDN always rejects for pfa/1 videos. Racing paths and
     ///   serial-extraction paths pass `false` because those use a FRESH `xpc=` URL (earlyTask).
-    private func tryWebViewHLS(_ masterURL: URL, nSolver: (unsolved: String, solved: String)?, poToken: String? = nil, skipIfPfa1: Bool = false, for video: Video) async -> Bool {
+    private func tryWebViewHLS(
+        _ masterURL: URL, nSolver: (unsolved: String, solved: String)?, poToken: String? = nil,
+        skipIfPfa1: Bool = false, for video: Video
+    ) async -> Bool {
         playerLog.notice("[webView/HLS] fetching master manifest: \(masterURL.absoluteString.prefix(120))")
 
-        let ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15"
+        let ua =
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15"
 
         // 1. Download the master M3U8 via URLSession (spc= in URL = self-authenticating)
         var request = URLRequest(url: masterURL, timeoutInterval: 20)
         request.setValue(ua, forHTTPHeaderField: "User-Agent")
         guard let (data, response) = try? await URLSession.shared.data(for: request),
-              let http = response as? HTTPURLResponse,
-              http.statusCode == 200,
-              let manifestText = String(data: data, encoding: .utf8) else {
+            let http = response as? HTTPURLResponse,
+            http.statusCode == 200,
+            let manifestText = String(data: data, encoding: .utf8)
+        else {
             playerLog.error("❌ [webView/HLS] failed to fetch master manifest")
             return false
         }
@@ -2107,8 +2296,9 @@ extension PlaybackViewModel {
 
         // 2. Parse ALL variants for the quality picker and best ≥720p for initial playback.
         let allVariants = parseHLSAllVariants(from: manifestText, baseURL: masterURL)
-        let bestURL = parseHLSBestVariant(from: manifestText, baseURL: masterURL, minHeight: 720)
-                   ?? parseHLSBestVariant(from: manifestText, baseURL: masterURL, minHeight: 0)
+        let bestURL =
+            parseHLSBestVariant(from: manifestText, baseURL: masterURL, minHeight: 720)
+            ?? parseHLSBestVariant(from: manifestText, baseURL: masterURL, minHeight: 0)
         guard let bestURL else {
             playerLog.error("❌ [webView/HLS] no quality URL found in master manifest")
             return false
@@ -2130,8 +2320,10 @@ extension PlaybackViewModel {
         // The race path (racePathB) and serial extraction after race-failed pass
         // `skipIfPfa1: false` so fresh liveRace URLs are never prematurely rejected.
         if skipIfPfa1, poToken == nil,
-           (bestURL.absoluteString.contains("/pfa/1/") || bestURL.absoluteString.contains("pfa%2F1")) {
-            playerLog.notice("[webView/HLS] Phase -1a pfa/1 + pot=nil — stale xpc= cannot auth CDN segments; bailing early (fix28)")
+            (bestURL.absoluteString.contains("/pfa/1/") || bestURL.absoluteString.contains("pfa%2F1"))
+        {
+            playerLog.notice(
+                "[webView/HLS] Phase -1a pfa/1 + pot=nil — stale xpc= cannot auth CDN segments; bailing early (fix28)")
             return false
         }
 
@@ -2155,12 +2347,14 @@ extension PlaybackViewModel {
             hlsVariantURLs = allVariants
             wkHLSMasterURL = masterURL
             let syntheticFormats = allVariants.keys.sorted(by: >).map { h in
-                VideoFormat(label: "\(h)p", width: 0, height: h, fps: 30,
-                            mimeType: "video/mp4; codecs=\"avc1.640028\"",
-                            url: allVariants[h], bitrate: nil)
+                VideoFormat(
+                    label: "\(h)p", width: 0, height: h, fps: 30,
+                    mimeType: "video/mp4; codecs=\"avc1.640028\"",
+                    url: allVariants[h], bitrate: nil)
             }
             availableFormats = syntheticFormats
-            playerLog.notice("[webView/HLS] quality picker: \(syntheticFormats.map { $0.qualityLabel }.joined(separator: ", "))")
+            playerLog.notice(
+                "[webView/HLS] quality picker: \(syntheticFormats.map { $0.qualityLabel }.joined(separator: ", "))")
         }
 
         // 2b. Parse dubbed-audio language tracks from YT-EXT-AUDIO-CONTENT-ID attributes.
@@ -2168,7 +2362,9 @@ extension PlaybackViewModel {
         //     TYPE=AUDIO), so loadMediaSelectionGroup returns nil. We parse them directly here
         //     and populate AudioTrackManager so the language selector appears immediately.
         let hlsLanguageTracks = parseHLSAudioLanguages(from: manifestText)
-        playerLog.notice("[webView/HLS] YT-EXT-AUDIO-CONTENT-ID tracks: \(hlsLanguageTracks.count) — \(hlsLanguageTracks.map { $0.name }.joined(separator: ", "))")
+        playerLog.notice(
+            "[webView/HLS] YT-EXT-AUDIO-CONTENT-ID tracks: \(hlsLanguageTracks.count) — \(hlsLanguageTracks.map { $0.name }.joined(separator: ", "))"
+        )
         if !hlsLanguageTracks.isEmpty {
             audioManager.loadHLSVariantTracks(hlsLanguageTracks)
             // Wire language switching: when the user picks a track, reload the AVPlayerItem
@@ -2212,7 +2408,8 @@ extension PlaybackViewModel {
         // contentID=nil) correctly maps to nil → proxy keeps no-content-ID variants.
         let initialContentID: String?
         if let pref = settings.preferredAudioLanguage,
-           let preferred = hlsLanguageTracks.first(where: { $0.languageCode == pref }) {
+            let preferred = hlsLanguageTracks.first(where: { $0.languageCode == pref })
+        {
             initialContentID = preferred.contentID
         } else {
             initialContentID = nil
@@ -2225,10 +2422,13 @@ extension PlaybackViewModel {
         // Falls back to extractedPoToken in case the caller didn't supply one.
         let effectivePoToken = poToken ?? YouTubeWebViewHLSExtractor.shared.extractedPoToken
         let potDisplay = effectivePoToken.map { "\($0.count) chars" } ?? "nil"
-        playerLog.notice("[webView/HLS] ✅ proxying master URL (lang=\(langDisplay), pot=\(potDisplay), YT-EXT-AUDIO-CONTENT-ID filter active)")
-        let proxyLoader = YTHLSProxyLoader(ua: ua, nSolver: nSolver, webViewCookies: webViewCookies,
-                                           selectedLanguageContentID: initialContentID,
-                                           poToken: effectivePoToken)
+        playerLog.notice(
+            "[webView/HLS] ✅ proxying master URL (lang=\(langDisplay), pot=\(potDisplay), YT-EXT-AUDIO-CONTENT-ID filter active)"
+        )
+        let proxyLoader = YTHLSProxyLoader(
+            ua: ua, nSolver: nSolver, webViewCookies: webViewCookies,
+            selectedLanguageContentID: initialContentID,
+            poToken: effectivePoToken)
         let asset = AVURLAsset(url: proxyURL)
         // Keep proxy loader alive for the lifetime of this asset
         asset.resourceLoader.setDelegate(proxyLoader, queue: DispatchQueue.global(qos: .userInitiated))
@@ -2248,19 +2448,24 @@ extension PlaybackViewModel {
         if settings.preferredQuality != .auto, let cap = settings.preferredQuality.maxHeight {
             preferredHeight = cap
         } else if let best = allVariants.keys.filter({ $0 >= 720 }).max()
-                          ?? allVariants.keys.max() {
+            ?? allVariants.keys.max()
+        {
             preferredHeight = best
         } else {
             preferredHeight = 0
         }
         // Start at 360p (fast first-frame) regardless of preferred quality.
         item.preferredMaximumResolution = CGSize(width: 640, height: 360)
-        playerLog.notice("[webView/HLS] fast-start ABR: initial cap 360p → ramp to \(preferredHeight > 0 ? "\(preferredHeight)p" : "Auto") after readyToPlay")
+        playerLog.notice(
+            "[webView/HLS] fast-start ABR: initial cap 360p → ramp to \(preferredHeight > 0 ? "\(preferredHeight)p" : "Auto") after readyToPlay"
+        )
         // fix235: Final cancellation / video-identity check before touching the player.
         // A stale exhaustiveRetry task (cancelled by a subsequent load() or stop()) must not
         // call replaceCurrentItem — doing so would silently swap the visible video.
         guard !Task.isCancelled, currentVideo?.id == video.id else {
-            playerLog.notice("⚠️ [webView/HLS] fix235: task cancelled or video changed (current=\(currentVideo?.id ?? "nil") expected=\(video.id)) — aborting replaceCurrentItem")
+            playerLog.notice(
+                "⚠️ [webView/HLS] fix235: task cancelled or video changed (current=\(currentVideo?.id ?? "nil") expected=\(video.id)) — aborting replaceCurrentItem"
+            )
             return false
         }
         lastAttemptedStreamURL = masterURL
@@ -2277,7 +2482,9 @@ extension PlaybackViewModel {
                 if itemDur.isFinite && itemDur > 0 {
                     let prevDur = self.duration
                     self.duration = itemDur
-                    playerLog.notice("[duration] updated from webView/HLS AVPlayerItem: \(String(format: "%.1f", itemDur))s (was \(String(format: "%.1f", prevDur))s)")
+                    playerLog.notice(
+                        "[duration] updated from webView/HLS AVPlayerItem: \(String(format: "%.1f", itemDur))s (was \(String(format: "%.1f", prevDur))s)"
+                    )
                 } else if self.duration == 0 {
                     durationObserverTask?.cancel()
                     durationObserverTask = Task { [weak self, weak item] in
@@ -2286,7 +2493,9 @@ extension PlaybackViewModel {
                             guard !Task.isCancelled else { return }
                             let prev = self.duration
                             self.duration = seconds
-                            playerLog.notice("[duration] deferred KVO update (webView/HLS): \(String(format: "%.1f", seconds))s (was \(String(format: "%.1f", prev))s)")
+                            playerLog.notice(
+                                "[duration] deferred KVO update (webView/HLS): \(String(format: "%.1f", seconds))s (was \(String(format: "%.1f", prev))s)"
+                            )
                             break
                         }
                     }
@@ -2360,17 +2569,20 @@ extension PlaybackViewModel {
         playerLog.notice("[wkHLS/lang] switching to contentID=\(idDisplay)")
 
         // Update hlsVariantURLs so quality switching preserves the selected language.
-        let langVariants = parseHLSVariantURLsForLanguage(contentID, from: manifestText,
-                                                          baseURL: masterURL)
+        let langVariants = parseHLSVariantURLsForLanguage(
+            contentID, from: manifestText,
+            baseURL: masterURL)
         if !langVariants.isEmpty {
             hlsVariantURLs = langVariants
             let variantSummary = langVariants.keys.sorted(by: >).map { "\($0)p" }.joined(separator: ", ")
             playerLog.notice("[wkHLS/lang] updated hlsVariantURLs: \(variantSummary)")
         }
 
-        let ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15"
-        let proxyLoader = YTHLSProxyLoader(ua: ua, nSolver: nSolver, webViewCookies: webViewCookies,
-                                           selectedLanguageContentID: contentID)
+        let ua =
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15"
+        let proxyLoader = YTHLSProxyLoader(
+            ua: ua, nSolver: nSolver, webViewCookies: webViewCookies,
+            selectedLanguageContentID: contentID)
         guard let proxyURL = masterURL.proxyURL else {
             playerLog.error("❌ [wkHLS/lang] failed to build proxy URL")
             return
@@ -2429,7 +2641,8 @@ extension PlaybackViewModel {
     /// to detect expiry before constructing an AVPlayerItem.
     /// Returns `true` if the URL is still accessible (2xx/3xx); `false` on 4xx or timeout.
     private func isWKHLSURLValid(_ url: URL) async -> Bool {
-        let ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15"
+        let ua =
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15"
         var request = URLRequest(url: url)
         request.httpMethod = "HEAD"
         request.setValue(ua, forHTTPHeaderField: "User-Agent")
@@ -2437,7 +2650,8 @@ extension PlaybackViewModel {
         request.setValue("https://www.youtube.com/", forHTTPHeaderField: "Referer")
         request.timeoutInterval = 8
         if let (_, response) = try? await URLSession(configuration: .ephemeral).data(for: request),
-           let http = response as? HTTPURLResponse {
+            let http = response as? HTTPURLResponse
+        {
             playerLog.notice("[wkHLS/probe] HEAD returned HTTP \(http.statusCode)")
             return http.statusCode < 400
         }
@@ -2524,7 +2738,7 @@ extension PlaybackViewModel {
         let ua = "com.google.ios.youtube/19.45.4 (iPhone16,2; U; CPU iOS 18_1_0 like Mac OS X)"
         let uaOpts: [String: Any] = ["AVURLAssetHTTPHeaderFieldsKey": ["User-Agent": ua]]
         let asset = AVURLAsset(url: url, options: uaOpts)
-        let item  = AVPlayerItem(asset: asset)
+        let item = AVPlayerItem(asset: asset)
         item.audioTimePitchAlgorithm = .spectral
         item.preferredForwardBufferDuration = 2.0
         Task { [weak item] in

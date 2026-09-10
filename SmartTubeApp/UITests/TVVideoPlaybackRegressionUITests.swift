@@ -49,8 +49,9 @@ final class TVVideoPlaybackRegressionUITests: XCTestCase {
     private func waitForVideoCards(timeout: TimeInterval = 20) -> Bool {
         let predicate = NSPredicate(format: "identifier BEGINSWITH 'video.card.'")
         let cards = app.descendants(matching: .any).matching(predicate)
-        let exp = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count > 0"),
-                                            object: cards)
+        let exp = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "count > 0"),
+            object: cards)
         return XCTWaiter().wait(for: [exp], timeout: timeout) == .completed
     }
 
@@ -71,8 +72,7 @@ final class TVVideoPlaybackRegressionUITests: XCTestCase {
         remote.press(.select)
         guard titleLabel.waitForExistence(timeout: timeout) else {
             try captureAndSkip(
-                "player.titleLabel did not appear within \(Int(timeout)) s — " +
-                "player failed to open from Home",
+                "player.titleLabel did not appear within \(Int(timeout)) s — " + "player failed to open from Home",
                 in: app
             )
         }
@@ -90,10 +90,12 @@ final class TVVideoPlaybackRegressionUITests: XCTestCase {
 
         Thread.sleep(forTimeInterval: 3.0)
 
-        XCTAssertFalse(errorBanner.exists,
-                       "player.errorBanner must not appear after opening player via deeplink")
-        XCTAssertFalse(ipBanner.exists,
-                       "player.ipBlockBanner must not appear — IP may be blocked in this environment")
+        XCTAssertFalse(
+            errorBanner.exists,
+            "player.errorBanner must not appear after opening player via deeplink")
+        XCTAssertFalse(
+            ipBanner.exists,
+            "player.ipBlockBanner must not appear — IP may be blocked in this environment")
     }
 
     /// Pressing Menu from the player must dismiss it and return to the Home screen.
@@ -105,8 +107,8 @@ final class TVVideoPlaybackRegressionUITests: XCTestCase {
 
         XCTAssertTrue(
             chipBar.waitForExistence(timeout: 8),
-            "home.chipBar must reappear after pressing Menu in the player — " +
-            "app may have crashed or become unresponsive"
+            "home.chipBar must reappear after pressing Menu in the player — "
+                + "app may have crashed or become unresponsive"
         )
     }
 
@@ -132,15 +134,15 @@ final class TVVideoPlaybackRegressionUITests: XCTestCase {
 
         guard titleLabel.waitForExistence(timeout: 15) else {
             try captureAndSkip(
-                "Second player did not open within 15 s — " +
-                "home feed may have been empty or navigation did not reach a video card",
+                "Second player did not open within 15 s — "
+                    + "home feed may have been empty or navigation did not reach a video card",
                 in: app
             )
         }
 
-        XCTAssertTrue(titleLabel.exists,
-                      "player.titleLabel must exist after opening second video — " +
-                      "player may be in a ghost/stuck state")
+        XCTAssertTrue(
+            titleLabel.exists,
+            "player.titleLabel must exist after opening second video — " + "player may be in a ghost/stuck state")
     }
 
     /// After 8 seconds of playback, no activity indicator (loading spinner) must
@@ -152,9 +154,10 @@ final class TVVideoPlaybackRegressionUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 8.0)
 
         let spinners = app.activityIndicators
-        XCTAssertEqual(spinners.count, 0,
-                       "Expected 0 activity indicators 8 s after player opened, " +
-                       "found \(spinners.count) — loading spinner may be permanently stuck")
+        XCTAssertEqual(
+            spinners.count, 0,
+            "Expected 0 activity indicators 8 s after player opened, "
+                + "found \(spinners.count) — loading spinner may be permanently stuck")
     }
 
     /// The player must remain open and functional after the controls overlay
@@ -167,9 +170,9 @@ final class TVVideoPlaybackRegressionUITests: XCTestCase {
 
         XCTAssertTrue(
             titleLabel.exists,
-            "player.titleLabel must still exist after controls auto-hide — " +
-            "player may have been dismissed or crashed when controls faded out"
+            "player.titleLabel must still exist after controls auto-hide — "
+                + "player may have been dismissed or crashed when controls faded out"
         )
     }
 }
-#endif // os(tvOS)
+#endif  // os(tvOS)

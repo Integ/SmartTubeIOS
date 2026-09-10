@@ -1,5 +1,5 @@
-import SwiftUI
 import SmartTubeIOSCore
+import SwiftUI
 
 // MARK: - SearchView
 //
@@ -88,9 +88,12 @@ public struct SearchView: View {
                 .autocorrectionDisabled()
                 .accessibilityIdentifier("search.bar")
                 #if os(iOS)
-                .textInputAutocapitalization(.never)
+            .textInputAutocapitalization(.never)
                 #endif
-                .onSubmit { vm.search(); isSearchFocused = false }
+                .onSubmit {
+                    vm.search()
+                    isSearchFocused = false
+                }
             if !vm.query.isEmpty {
                 Button {
                     vm.query = ""
@@ -104,8 +107,11 @@ public struct SearchView: View {
             Button {
                 showFilterSheet = true
             } label: {
-                Image(systemName: vm.filter.isDefault ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
-                    .foregroundStyle(vm.filter.isDefault ? .secondary : Color.accentColor)
+                Image(
+                    systemName: vm.filter.isDefault
+                        ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill"
+                )
+                .foregroundStyle(vm.filter.isDefault ? .secondary : Color.accentColor)
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("search.filterButton")
@@ -125,22 +131,30 @@ public struct SearchView: View {
                 HStack(spacing: 8) {
                     if vm.filter.sortOrder != .relevance {
                         FilterChip(label: LocalizedStringKey(vm.filter.sortOrder.label)) {
-                            var f = vm.filter; f.sortOrder = .relevance; vm.applyFilter(f)
+                            var f = vm.filter
+                            f.sortOrder = .relevance
+                            vm.applyFilter(f)
                         }
                     }
                     if vm.filter.uploadDate != .anytime {
                         FilterChip(label: LocalizedStringKey(vm.filter.uploadDate.label)) {
-                            var f = vm.filter; f.uploadDate = .anytime; vm.applyFilter(f)
+                            var f = vm.filter
+                            f.uploadDate = .anytime
+                            vm.applyFilter(f)
                         }
                     }
                     if vm.filter.type != .any {
                         FilterChip(label: LocalizedStringKey(vm.filter.type.label)) {
-                            var f = vm.filter; f.type = .any; vm.applyFilter(f)
+                            var f = vm.filter
+                            f.type = .any
+                            vm.applyFilter(f)
                         }
                     }
                     if vm.filter.duration != .any {
                         FilterChip(label: LocalizedStringKey(vm.filter.duration.label)) {
-                            var f = vm.filter; f.duration = .any; vm.applyFilter(f)
+                            var f = vm.filter
+                            f.duration = .any
+                            vm.applyFilter(f)
                         }
                     }
                 }

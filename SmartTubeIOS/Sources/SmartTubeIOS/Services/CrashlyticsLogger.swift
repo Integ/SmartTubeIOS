@@ -1,7 +1,7 @@
-import Foundation
-import os
 import FirebaseCrashlytics
+import Foundation
 import SmartTubeIOSCore
+import os
 
 /// Logs to `os.Logger` and forwards `.notice` and `.error` entries to Firebase
 /// Crashlytics as breadcrumbs so they appear in crash reports.
@@ -89,7 +89,9 @@ struct CrashlyticsLogger: Sendable {
     static func sendDiagnosticReport() {
         let crashlytics = Crashlytics.crashlytics()
         crashlytics.setCustomValue(sessionReportID, forKey: "report_id")
-        crashlytics.log("[Diagnostic] User-requested diagnostic report — report_id=\(sessionReportID). Tip: two-finger tap the player to open the debug overlay and confirm this ID before sending.")
+        crashlytics.log(
+            "[Diagnostic] User-requested diagnostic report — report_id=\(sessionReportID). Tip: two-finger tap the player to open the debug overlay and confirm this ID before sending."
+        )
         let error = NSError(
             domain: "SmartTube.UserDiagnostic",
             code: 0,
@@ -110,19 +112,20 @@ struct CrashlyticsLogger: Sendable {
         errorDescription: String? = nil
     ) {
         let crashlytics = Crashlytics.crashlytics()
-        crashlytics.setCustomValue(videoId,    forKey: "slow_load_video_id")
-        crashlytics.setCustomValue(elapsedMs,  forKey: "slow_load_ttff_ms")
+        crashlytics.setCustomValue(videoId, forKey: "slow_load_video_id")
+        crashlytics.setCustomValue(elapsedMs, forKey: "slow_load_ttff_ms")
         crashlytics.setCustomValue(streamType, forKey: "slow_load_stream_type")
-        crashlytics.setCustomValue(hasError,   forKey: "slow_load_has_error")
+        crashlytics.setCustomValue(hasError, forKey: "slow_load_has_error")
         if let desc = errorDescription {
-            crashlytics.setCustomValue(desc,   forKey: "slow_load_error_desc")
+            crashlytics.setCustomValue(desc, forKey: "slow_load_error_desc")
         }
         crashlytics.log("[SlowLoad] videoId=\(videoId) ttff=\(elapsedMs)ms stream=\(streamType) hasError=\(hasError)")
-        crashlytics.record(error: NSError(
-            domain: "SmartTube.SlowLoad",
-            code: 4001,
-            userInfo: [NSLocalizedDescriptionKey: "Slow video load: \(elapsedMs)ms (\(streamType))"]
-        ))
+        crashlytics.record(
+            error: NSError(
+                domain: "SmartTube.SlowLoad",
+                code: 4001,
+                userInfo: [NSLocalizedDescriptionKey: "Slow video load: \(elapsedMs)ms (\(streamType))"]
+            ))
     }
 
     /// Automatically records a diagnostic report when playback fails and the error is
@@ -135,11 +138,12 @@ struct CrashlyticsLogger: Sendable {
         let crashlytics = Crashlytics.crashlytics()
         crashlytics.log("[AutoDiagnostic] Playback failure — see custom keys and session breadcrumbs.")
         crashlytics.setCustomValue("auto", forKey: "trigger")
-        crashlytics.record(error: NSError(
-            domain: "SmartTube.AutoDiagnostic",
-            code: 1,
-            userInfo: [NSLocalizedDescriptionKey: "Playback failure — see session breadcrumbs"]
-        ))
+        crashlytics.record(
+            error: NSError(
+                domain: "SmartTube.AutoDiagnostic",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Playback failure — see session breadcrumbs"]
+            ))
     }
 
     /// Records a non-fatal Crashlytics event when the video that reached readyToPlay
@@ -155,17 +159,21 @@ struct CrashlyticsLogger: Sendable {
         activeTitle: String
     ) {
         let crashlytics = Crashlytics.crashlytics()
-        crashlytics.setCustomValue(intendedId,    forKey: "wv_intended_id")
+        crashlytics.setCustomValue(intendedId, forKey: "wv_intended_id")
         crashlytics.setCustomValue(intendedTitle, forKey: "wv_intended_title")
-        crashlytics.setCustomValue(activeId,      forKey: "wv_active_id")
-        crashlytics.setCustomValue(activeTitle,   forKey: "wv_active_title")
-        let msg = "[WrongVideo] intended=\(intendedId) (\(intendedTitle.prefix(60))) active=\(activeId) (\(activeTitle.prefix(60)))"
+        crashlytics.setCustomValue(activeId, forKey: "wv_active_id")
+        crashlytics.setCustomValue(activeTitle, forKey: "wv_active_title")
+        let msg =
+            "[WrongVideo] intended=\(intendedId) (\(intendedTitle.prefix(60))) active=\(activeId) (\(activeTitle.prefix(60)))"
         crashlytics.log(msg)
         Logger(subsystem: appSubsystem, category: "WrongVideo").error("\(msg, privacy: .public)")
-        crashlytics.record(error: NSError(
-            domain: "SmartTube.WrongVideo",
-            code: 2,
-            userInfo: [NSLocalizedDescriptionKey: "Wrong video at readyToPlay: intended=\(intendedId) active=\(activeId)"]
-        ))
+        crashlytics.record(
+            error: NSError(
+                domain: "SmartTube.WrongVideo",
+                code: 2,
+                userInfo: [
+                    NSLocalizedDescriptionKey: "Wrong video at readyToPlay: intended=\(intendedId) active=\(activeId)"
+                ]
+            ))
     }
 }

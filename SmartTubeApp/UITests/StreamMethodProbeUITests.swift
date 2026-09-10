@@ -118,9 +118,9 @@ final class StreamMethodProbeUITests: XCTestCase {
 
         defer { app.terminate() }
 
-        let titleLabel   = app.staticTexts["player.titleLabel"].firstMatch
-        let errorBanner  = app.otherElements["player.errorBanner"].firstMatch
-        let playPause    = app.buttons["player.playPauseButton"].firstMatch
+        let titleLabel = app.staticTexts["player.titleLabel"].firstMatch
+        let errorBanner = app.otherElements["player.errorBanner"].firstMatch
+        let playPause = app.buttons["player.playPauseButton"].firstMatch
 
         // Wait for either the title label or the error banner to appear.
         let appeared = titleLabel.waitForExistence(timeout: Self.probeTimeout)
@@ -145,8 +145,9 @@ final class StreamMethodProbeUITests: XCTestCase {
 
         // Title appeared — wait for play button to become enabled (video is buffering/playing).
         let enabledPredicate = NSPredicate(format: "enabled == true")
-        let playReadyExpectation = XCTNSPredicateExpectation(predicate: enabledPredicate,
-                                                              object: playPause)
+        let playReadyExpectation = XCTNSPredicateExpectation(
+            predicate: enabledPredicate,
+            object: playPause)
         let playReady = XCTWaiter().wait(for: [playReadyExpectation], timeout: 30) == .completed
 
         if errorBanner.exists {
@@ -169,124 +170,124 @@ final class StreamMethodProbeUITests: XCTestCase {
 
     // MARK: - ios
 
-    func testProbe_ios__dQw4w9WgXcQ()  { probe("ios", "dQw4w9WgXcQ") }
-    func testProbe_ios__9bZkp7q19f0()  { probe("ios", "9bZkp7q19f0") }
-    func testProbe_ios__LSMQ3U1Thzw()  { probe("ios", "LSMQ3U1Thzw") }
-    func testProbe_ios__v2ZtAi2rDzA()  { probe("ios", "v2ZtAi2rDzA") }
-    func testProbe_ios__Wu8xNx4njoM()  { probe("ios", "Wu8xNx4njoM") }
-    func testProbe_ios__y9R5a76HPbU()  { probe("ios", "y9R5a76HPbU") }
-    func testProbe_ios__Dy9ki9Q5nXs()  { probe("ios", "Dy9ki9Q5nXs") }
-    func testProbe_ios__jNQXAC9IVRw()  { probe("ios", "jNQXAC9IVRw") }
+    func testProbe_ios__dQw4w9WgXcQ() { probe("ios", "dQw4w9WgXcQ") }
+    func testProbe_ios__9bZkp7q19f0() { probe("ios", "9bZkp7q19f0") }
+    func testProbe_ios__LSMQ3U1Thzw() { probe("ios", "LSMQ3U1Thzw") }
+    func testProbe_ios__v2ZtAi2rDzA() { probe("ios", "v2ZtAi2rDzA") }
+    func testProbe_ios__Wu8xNx4njoM() { probe("ios", "Wu8xNx4njoM") }
+    func testProbe_ios__y9R5a76HPbU() { probe("ios", "y9R5a76HPbU") }
+    func testProbe_ios__Dy9ki9Q5nXs() { probe("ios", "Dy9ki9Q5nXs") }
+    func testProbe_ios__jNQXAC9IVRw() { probe("ios", "jNQXAC9IVRw") }
 
     // MARK: - ios-auth
 
-    func testProbe_iosauth__dQw4w9WgXcQ()  { probe("ios-auth", "dQw4w9WgXcQ", requiresAuth: true) }
-    func testProbe_iosauth__9bZkp7q19f0()  { probe("ios-auth", "9bZkp7q19f0", requiresAuth: true) }
-    func testProbe_iosauth__LSMQ3U1Thzw()  { probe("ios-auth", "LSMQ3U1Thzw", requiresAuth: true) }
-    func testProbe_iosauth__v2ZtAi2rDzA()  { probe("ios-auth", "v2ZtAi2rDzA", requiresAuth: true) }
-    func testProbe_iosauth__Wu8xNx4njoM()  { probe("ios-auth", "Wu8xNx4njoM", requiresAuth: true) }
-    func testProbe_iosauth__y9R5a76HPbU()  { probe("ios-auth", "y9R5a76HPbU", requiresAuth: true) }
-    func testProbe_iosauth__Dy9ki9Q5nXs()  { probe("ios-auth", "Dy9ki9Q5nXs", requiresAuth: true) }
-    func testProbe_iosauth__jNQXAC9IVRw()  { probe("ios-auth", "jNQXAC9IVRw", requiresAuth: true) }
+    func testProbe_iosauth__dQw4w9WgXcQ() { probe("ios-auth", "dQw4w9WgXcQ", requiresAuth: true) }
+    func testProbe_iosauth__9bZkp7q19f0() { probe("ios-auth", "9bZkp7q19f0", requiresAuth: true) }
+    func testProbe_iosauth__LSMQ3U1Thzw() { probe("ios-auth", "LSMQ3U1Thzw", requiresAuth: true) }
+    func testProbe_iosauth__v2ZtAi2rDzA() { probe("ios-auth", "v2ZtAi2rDzA", requiresAuth: true) }
+    func testProbe_iosauth__Wu8xNx4njoM() { probe("ios-auth", "Wu8xNx4njoM", requiresAuth: true) }
+    func testProbe_iosauth__y9R5a76HPbU() { probe("ios-auth", "y9R5a76HPbU", requiresAuth: true) }
+    func testProbe_iosauth__Dy9ki9Q5nXs() { probe("ios-auth", "Dy9ki9Q5nXs", requiresAuth: true) }
+    func testProbe_iosauth__jNQXAC9IVRw() { probe("ios-auth", "jNQXAC9IVRw", requiresAuth: true) }
 
     // MARK: - tvembedded
 
-    func testProbe_tvembedded__dQw4w9WgXcQ()  { probe("tvembedded", "dQw4w9WgXcQ") }
-    func testProbe_tvembedded__9bZkp7q19f0()  { probe("tvembedded", "9bZkp7q19f0") }
-    func testProbe_tvembedded__LSMQ3U1Thzw()  { probe("tvembedded", "LSMQ3U1Thzw") }
-    func testProbe_tvembedded__v2ZtAi2rDzA()  { probe("tvembedded", "v2ZtAi2rDzA") }
-    func testProbe_tvembedded__Wu8xNx4njoM()  { probe("tvembedded", "Wu8xNx4njoM") }
-    func testProbe_tvembedded__y9R5a76HPbU()  { probe("tvembedded", "y9R5a76HPbU") }
-    func testProbe_tvembedded__Dy9ki9Q5nXs()  { probe("tvembedded", "Dy9ki9Q5nXs") }
-    func testProbe_tvembedded__jNQXAC9IVRw()  { probe("tvembedded", "jNQXAC9IVRw") }
+    func testProbe_tvembedded__dQw4w9WgXcQ() { probe("tvembedded", "dQw4w9WgXcQ") }
+    func testProbe_tvembedded__9bZkp7q19f0() { probe("tvembedded", "9bZkp7q19f0") }
+    func testProbe_tvembedded__LSMQ3U1Thzw() { probe("tvembedded", "LSMQ3U1Thzw") }
+    func testProbe_tvembedded__v2ZtAi2rDzA() { probe("tvembedded", "v2ZtAi2rDzA") }
+    func testProbe_tvembedded__Wu8xNx4njoM() { probe("tvembedded", "Wu8xNx4njoM") }
+    func testProbe_tvembedded__y9R5a76HPbU() { probe("tvembedded", "y9R5a76HPbU") }
+    func testProbe_tvembedded__Dy9ki9Q5nXs() { probe("tvembedded", "Dy9ki9Q5nXs") }
+    func testProbe_tvembedded__jNQXAC9IVRw() { probe("tvembedded", "jNQXAC9IVRw") }
 
     // MARK: - tvauth
 
-    func testProbe_tvauth__dQw4w9WgXcQ()  { probe("tvauth", "dQw4w9WgXcQ", requiresAuth: true) }
-    func testProbe_tvauth__9bZkp7q19f0()  { probe("tvauth", "9bZkp7q19f0", requiresAuth: true) }
-    func testProbe_tvauth__LSMQ3U1Thzw()  { probe("tvauth", "LSMQ3U1Thzw", requiresAuth: true) }
-    func testProbe_tvauth__v2ZtAi2rDzA()  { probe("tvauth", "v2ZtAi2rDzA", requiresAuth: true) }
-    func testProbe_tvauth__Wu8xNx4njoM()  { probe("tvauth", "Wu8xNx4njoM", requiresAuth: true) }
-    func testProbe_tvauth__y9R5a76HPbU()  { probe("tvauth", "y9R5a76HPbU", requiresAuth: true) }
-    func testProbe_tvauth__Dy9ki9Q5nXs()  { probe("tvauth", "Dy9ki9Q5nXs", requiresAuth: true) }
-    func testProbe_tvauth__jNQXAC9IVRw()  { probe("tvauth", "jNQXAC9IVRw", requiresAuth: true) }
+    func testProbe_tvauth__dQw4w9WgXcQ() { probe("tvauth", "dQw4w9WgXcQ", requiresAuth: true) }
+    func testProbe_tvauth__9bZkp7q19f0() { probe("tvauth", "9bZkp7q19f0", requiresAuth: true) }
+    func testProbe_tvauth__LSMQ3U1Thzw() { probe("tvauth", "LSMQ3U1Thzw", requiresAuth: true) }
+    func testProbe_tvauth__v2ZtAi2rDzA() { probe("tvauth", "v2ZtAi2rDzA", requiresAuth: true) }
+    func testProbe_tvauth__Wu8xNx4njoM() { probe("tvauth", "Wu8xNx4njoM", requiresAuth: true) }
+    func testProbe_tvauth__y9R5a76HPbU() { probe("tvauth", "y9R5a76HPbU", requiresAuth: true) }
+    func testProbe_tvauth__Dy9ki9Q5nXs() { probe("tvauth", "Dy9ki9Q5nXs", requiresAuth: true) }
+    func testProbe_tvauth__jNQXAC9IVRw() { probe("tvauth", "jNQXAC9IVRw", requiresAuth: true) }
 
     // MARK: - websafari
 
-    func testProbe_websafari__dQw4w9WgXcQ()  { probe("websafari", "dQw4w9WgXcQ") }
-    func testProbe_websafari__9bZkp7q19f0()  { probe("websafari", "9bZkp7q19f0") }
-    func testProbe_websafari__LSMQ3U1Thzw()  { probe("websafari", "LSMQ3U1Thzw") }
-    func testProbe_websafari__v2ZtAi2rDzA()  { probe("websafari", "v2ZtAi2rDzA") }
-    func testProbe_websafari__Wu8xNx4njoM()  { probe("websafari", "Wu8xNx4njoM") }
-    func testProbe_websafari__y9R5a76HPbU()  { probe("websafari", "y9R5a76HPbU") }
-    func testProbe_websafari__Dy9ki9Q5nXs()  { probe("websafari", "Dy9ki9Q5nXs") }
-    func testProbe_websafari__jNQXAC9IVRw()  { probe("websafari", "jNQXAC9IVRw") }
+    func testProbe_websafari__dQw4w9WgXcQ() { probe("websafari", "dQw4w9WgXcQ") }
+    func testProbe_websafari__9bZkp7q19f0() { probe("websafari", "9bZkp7q19f0") }
+    func testProbe_websafari__LSMQ3U1Thzw() { probe("websafari", "LSMQ3U1Thzw") }
+    func testProbe_websafari__v2ZtAi2rDzA() { probe("websafari", "v2ZtAi2rDzA") }
+    func testProbe_websafari__Wu8xNx4njoM() { probe("websafari", "Wu8xNx4njoM") }
+    func testProbe_websafari__y9R5a76HPbU() { probe("websafari", "y9R5a76HPbU") }
+    func testProbe_websafari__Dy9ki9Q5nXs() { probe("websafari", "Dy9ki9Q5nXs") }
+    func testProbe_websafari__jNQXAC9IVRw() { probe("websafari", "jNQXAC9IVRw") }
 
     // MARK: - mweb
 
-    func testProbe_mweb__dQw4w9WgXcQ()  { probe("mweb", "dQw4w9WgXcQ") }
-    func testProbe_mweb__9bZkp7q19f0()  { probe("mweb", "9bZkp7q19f0") }
-    func testProbe_mweb__LSMQ3U1Thzw()  { probe("mweb", "LSMQ3U1Thzw") }
-    func testProbe_mweb__v2ZtAi2rDzA()  { probe("mweb", "v2ZtAi2rDzA") }
-    func testProbe_mweb__Wu8xNx4njoM()  { probe("mweb", "Wu8xNx4njoM") }
-    func testProbe_mweb__y9R5a76HPbU()  { probe("mweb", "y9R5a76HPbU") }
-    func testProbe_mweb__Dy9ki9Q5nXs()  { probe("mweb", "Dy9ki9Q5nXs") }
-    func testProbe_mweb__jNQXAC9IVRw()  { probe("mweb", "jNQXAC9IVRw") }
+    func testProbe_mweb__dQw4w9WgXcQ() { probe("mweb", "dQw4w9WgXcQ") }
+    func testProbe_mweb__9bZkp7q19f0() { probe("mweb", "9bZkp7q19f0") }
+    func testProbe_mweb__LSMQ3U1Thzw() { probe("mweb", "LSMQ3U1Thzw") }
+    func testProbe_mweb__v2ZtAi2rDzA() { probe("mweb", "v2ZtAi2rDzA") }
+    func testProbe_mweb__Wu8xNx4njoM() { probe("mweb", "Wu8xNx4njoM") }
+    func testProbe_mweb__y9R5a76HPbU() { probe("mweb", "y9R5a76HPbU") }
+    func testProbe_mweb__Dy9ki9Q5nXs() { probe("mweb", "Dy9ki9Q5nXs") }
+    func testProbe_mweb__jNQXAC9IVRw() { probe("mweb", "jNQXAC9IVRw") }
 
     // MARK: - android
 
-    func testProbe_android__dQw4w9WgXcQ()  { probe("android", "dQw4w9WgXcQ") }
-    func testProbe_android__9bZkp7q19f0()  { probe("android", "9bZkp7q19f0") }
-    func testProbe_android__LSMQ3U1Thzw()  { probe("android", "LSMQ3U1Thzw") }
-    func testProbe_android__v2ZtAi2rDzA()  { probe("android", "v2ZtAi2rDzA") }
-    func testProbe_android__Wu8xNx4njoM()  { probe("android", "Wu8xNx4njoM") }
-    func testProbe_android__y9R5a76HPbU()  { probe("android", "y9R5a76HPbU") }
-    func testProbe_android__Dy9ki9Q5nXs()  { probe("android", "Dy9ki9Q5nXs") }
-    func testProbe_android__jNQXAC9IVRw()  { probe("android", "jNQXAC9IVRw") }
+    func testProbe_android__dQw4w9WgXcQ() { probe("android", "dQw4w9WgXcQ") }
+    func testProbe_android__9bZkp7q19f0() { probe("android", "9bZkp7q19f0") }
+    func testProbe_android__LSMQ3U1Thzw() { probe("android", "LSMQ3U1Thzw") }
+    func testProbe_android__v2ZtAi2rDzA() { probe("android", "v2ZtAi2rDzA") }
+    func testProbe_android__Wu8xNx4njoM() { probe("android", "Wu8xNx4njoM") }
+    func testProbe_android__y9R5a76HPbU() { probe("android", "y9R5a76HPbU") }
+    func testProbe_android__Dy9ki9Q5nXs() { probe("android", "Dy9ki9Q5nXs") }
+    func testProbe_android__jNQXAC9IVRw() { probe("android", "jNQXAC9IVRw") }
 
     // MARK: - android-vr
 
-    func testProbe_androidvr__dQw4w9WgXcQ()  { probe("android-vr", "dQw4w9WgXcQ") }
-    func testProbe_androidvr__9bZkp7q19f0()  { probe("android-vr", "9bZkp7q19f0") }
-    func testProbe_androidvr__LSMQ3U1Thzw()  { probe("android-vr", "LSMQ3U1Thzw") }
-    func testProbe_androidvr__v2ZtAi2rDzA()  { probe("android-vr", "v2ZtAi2rDzA") }
-    func testProbe_androidvr__Wu8xNx4njoM()  { probe("android-vr", "Wu8xNx4njoM") }
-    func testProbe_androidvr__y9R5a76HPbU()  { probe("android-vr", "y9R5a76HPbU") }
-    func testProbe_androidvr__Dy9ki9Q5nXs()  { probe("android-vr", "Dy9ki9Q5nXs") }
-    func testProbe_androidvr__jNQXAC9IVRw()  { probe("android-vr", "jNQXAC9IVRw") }
+    func testProbe_androidvr__dQw4w9WgXcQ() { probe("android-vr", "dQw4w9WgXcQ") }
+    func testProbe_androidvr__9bZkp7q19f0() { probe("android-vr", "9bZkp7q19f0") }
+    func testProbe_androidvr__LSMQ3U1Thzw() { probe("android-vr", "LSMQ3U1Thzw") }
+    func testProbe_androidvr__v2ZtAi2rDzA() { probe("android-vr", "v2ZtAi2rDzA") }
+    func testProbe_androidvr__Wu8xNx4njoM() { probe("android-vr", "Wu8xNx4njoM") }
+    func testProbe_androidvr__y9R5a76HPbU() { probe("android-vr", "y9R5a76HPbU") }
+    func testProbe_androidvr__Dy9ki9Q5nXs() { probe("android-vr", "Dy9ki9Q5nXs") }
+    func testProbe_androidvr__jNQXAC9IVRw() { probe("android-vr", "jNQXAC9IVRw") }
 
     // MARK: - web-creator
 
-    func testProbe_webcreator__dQw4w9WgXcQ()  { probe("web-creator", "dQw4w9WgXcQ", requiresAuth: true) }
-    func testProbe_webcreator__9bZkp7q19f0()  { probe("web-creator", "9bZkp7q19f0", requiresAuth: true) }
-    func testProbe_webcreator__LSMQ3U1Thzw()  { probe("web-creator", "LSMQ3U1Thzw", requiresAuth: true) }
-    func testProbe_webcreator__v2ZtAi2rDzA()  { probe("web-creator", "v2ZtAi2rDzA", requiresAuth: true) }
-    func testProbe_webcreator__Wu8xNx4njoM()  { probe("web-creator", "Wu8xNx4njoM", requiresAuth: true) }
-    func testProbe_webcreator__y9R5a76HPbU()  { probe("web-creator", "y9R5a76HPbU", requiresAuth: true) }
-    func testProbe_webcreator__Dy9ki9Q5nXs()  { probe("web-creator", "Dy9ki9Q5nXs", requiresAuth: true) }
-    func testProbe_webcreator__jNQXAC9IVRw()  { probe("web-creator", "jNQXAC9IVRw", requiresAuth: true) }
+    func testProbe_webcreator__dQw4w9WgXcQ() { probe("web-creator", "dQw4w9WgXcQ", requiresAuth: true) }
+    func testProbe_webcreator__9bZkp7q19f0() { probe("web-creator", "9bZkp7q19f0", requiresAuth: true) }
+    func testProbe_webcreator__LSMQ3U1Thzw() { probe("web-creator", "LSMQ3U1Thzw", requiresAuth: true) }
+    func testProbe_webcreator__v2ZtAi2rDzA() { probe("web-creator", "v2ZtAi2rDzA", requiresAuth: true) }
+    func testProbe_webcreator__Wu8xNx4njoM() { probe("web-creator", "Wu8xNx4njoM", requiresAuth: true) }
+    func testProbe_webcreator__y9R5a76HPbU() { probe("web-creator", "y9R5a76HPbU", requiresAuth: true) }
+    func testProbe_webcreator__Dy9ki9Q5nXs() { probe("web-creator", "Dy9ki9Q5nXs", requiresAuth: true) }
+    func testProbe_webcreator__jNQXAC9IVRw() { probe("web-creator", "jNQXAC9IVRw", requiresAuth: true) }
 
     // MARK: - web-auth
 
-    func testProbe_webauth__dQw4w9WgXcQ()  { probe("web-auth", "dQw4w9WgXcQ", requiresAuth: true) }
-    func testProbe_webauth__9bZkp7q19f0()  { probe("web-auth", "9bZkp7q19f0", requiresAuth: true) }
-    func testProbe_webauth__LSMQ3U1Thzw()  { probe("web-auth", "LSMQ3U1Thzw", requiresAuth: true) }
-    func testProbe_webauth__v2ZtAi2rDzA()  { probe("web-auth", "v2ZtAi2rDzA", requiresAuth: true) }
-    func testProbe_webauth__Wu8xNx4njoM()  { probe("web-auth", "Wu8xNx4njoM", requiresAuth: true) }
-    func testProbe_webauth__y9R5a76HPbU()  { probe("web-auth", "y9R5a76HPbU", requiresAuth: true) }
-    func testProbe_webauth__Dy9ki9Q5nXs()  { probe("web-auth", "Dy9ki9Q5nXs", requiresAuth: true) }
-    func testProbe_webauth__jNQXAC9IVRw()  { probe("web-auth", "jNQXAC9IVRw", requiresAuth: true) }
+    func testProbe_webauth__dQw4w9WgXcQ() { probe("web-auth", "dQw4w9WgXcQ", requiresAuth: true) }
+    func testProbe_webauth__9bZkp7q19f0() { probe("web-auth", "9bZkp7q19f0", requiresAuth: true) }
+    func testProbe_webauth__LSMQ3U1Thzw() { probe("web-auth", "LSMQ3U1Thzw", requiresAuth: true) }
+    func testProbe_webauth__v2ZtAi2rDzA() { probe("web-auth", "v2ZtAi2rDzA", requiresAuth: true) }
+    func testProbe_webauth__Wu8xNx4njoM() { probe("web-auth", "Wu8xNx4njoM", requiresAuth: true) }
+    func testProbe_webauth__y9R5a76HPbU() { probe("web-auth", "y9R5a76HPbU", requiresAuth: true) }
+    func testProbe_webauth__Dy9ki9Q5nXs() { probe("web-auth", "Dy9ki9Q5nXs", requiresAuth: true) }
+    func testProbe_webauth__jNQXAC9IVRw() { probe("web-auth", "jNQXAC9IVRw", requiresAuth: true) }
 
     // MARK: - wkwebview-hls
 
-    func testProbe_wkwebviewhls__dQw4w9WgXcQ()  { probe("wkwebview-hls", "dQw4w9WgXcQ") }
-    func testProbe_wkwebviewhls__9bZkp7q19f0()  { probe("wkwebview-hls", "9bZkp7q19f0") }
-    func testProbe_wkwebviewhls__LSMQ3U1Thzw()  { probe("wkwebview-hls", "LSMQ3U1Thzw") }
-    func testProbe_wkwebviewhls__v2ZtAi2rDzA()  { probe("wkwebview-hls", "v2ZtAi2rDzA") }
-    func testProbe_wkwebviewhls__Wu8xNx4njoM()  { probe("wkwebview-hls", "Wu8xNx4njoM") }
-    func testProbe_wkwebviewhls__y9R5a76HPbU()  { probe("wkwebview-hls", "y9R5a76HPbU") }
-    func testProbe_wkwebviewhls__Dy9ki9Q5nXs()  { probe("wkwebview-hls", "Dy9ki9Q5nXs") }
-    func testProbe_wkwebviewhls__jNQXAC9IVRw()  { probe("wkwebview-hls", "jNQXAC9IVRw") }
+    func testProbe_wkwebviewhls__dQw4w9WgXcQ() { probe("wkwebview-hls", "dQw4w9WgXcQ") }
+    func testProbe_wkwebviewhls__9bZkp7q19f0() { probe("wkwebview-hls", "9bZkp7q19f0") }
+    func testProbe_wkwebviewhls__LSMQ3U1Thzw() { probe("wkwebview-hls", "LSMQ3U1Thzw") }
+    func testProbe_wkwebviewhls__v2ZtAi2rDzA() { probe("wkwebview-hls", "v2ZtAi2rDzA") }
+    func testProbe_wkwebviewhls__Wu8xNx4njoM() { probe("wkwebview-hls", "Wu8xNx4njoM") }
+    func testProbe_wkwebviewhls__y9R5a76HPbU() { probe("wkwebview-hls", "y9R5a76HPbU") }
+    func testProbe_wkwebviewhls__Dy9ki9Q5nXs() { probe("wkwebview-hls", "Dy9ki9Q5nXs") }
+    func testProbe_wkwebviewhls__jNQXAC9IVRw() { probe("wkwebview-hls", "jNQXAC9IVRw") }
 }
 
 #endif

@@ -20,8 +20,9 @@ final class TOSPlayerViewModelCancelTests: XCTestCase {
         vm.cancel()
 
         try await Task.sleep(nanoseconds: 200_000_000)
-        XCTAssertTrue(vm.sponsorSegments.isEmpty,
-                      "sponsorSegments must not be mutated after cancel() — a013be1c regression")
+        XCTAssertTrue(
+            vm.sponsorSegments.isEmpty,
+            "sponsorSegments must not be mutated after cancel() — a013be1c regression")
     }
 
     func testCancelPreventsLateNavigationTaskMutation() async throws {
@@ -39,8 +40,9 @@ final class TOSPlayerViewModelCancelTests: XCTestCase {
         vm.cancel()
 
         try await Task.sleep(nanoseconds: 200_000_000)
-        XCTAssertTrue(vm.relatedVideos.isEmpty,
-                      "relatedVideos must not be mutated after cancel() — a013be1c regression")
+        XCTAssertTrue(
+            vm.relatedVideos.isEmpty,
+            "relatedVideos must not be mutated after cancel() — a013be1c regression")
     }
 
     func testCancelIsIdempotent() {

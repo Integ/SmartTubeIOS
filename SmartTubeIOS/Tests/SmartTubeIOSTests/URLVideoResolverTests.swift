@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - URLVideoResolverTests
@@ -80,50 +81,50 @@ struct URLVideoResolverScrapeIntegrationTests {
     @Test("og:url strategy end-to-end resolves video ID")
     func ogURLEndToEnd() {
         let html = """
-        <meta property="og:url" content="https://www.youtube.com/watch?v=\(videoID)">
-        """
+            <meta property="og:url" content="https://www.youtube.com/watch?v=\(videoID)">
+            """
         #expect(resolveFromHTML(html) == videoID)
     }
 
     @Test("canonical link strategy end-to-end resolves video ID")
     func canonicalEndToEnd() {
         let html = """
-        <link rel="canonical" href="https://youtu.be/\(videoID)">
-        """
+            <link rel="canonical" href="https://youtu.be/\(videoID)">
+            """
         #expect(resolveFromHTML(html) == videoID)
     }
 
     @Test("anchor href strategy end-to-end resolves video ID")
     func anchorEndToEnd() {
         let html = """
-        <a href="https://www.youtube.com/watch?v=\(videoID)">Watch</a>
-        """
+            <a href="https://www.youtube.com/watch?v=\(videoID)">Watch</a>
+            """
         #expect(resolveFromHTML(html) == videoID)
     }
 
     @Test("JSON-LD strategy end-to-end resolves video ID")
     func jsonLDEndToEnd() {
         let html = """
-        <script type="application/ld+json">
-        {"url":"https://www.youtube.com/watch?v=\(videoID)"}
-        </script>
-        """
+            <script type="application/ld+json">
+            {"url":"https://www.youtube.com/watch?v=\(videoID)"}
+            </script>
+            """
         #expect(resolveFromHTML(html) == videoID)
     }
 
     @Test("embed iframe strategy end-to-end resolves video ID")
     func iframeEndToEnd() {
         let html = """
-        <iframe src="https://www.youtube.com/embed/\(videoID)"></iframe>
-        """
+            <iframe src="https://www.youtube.com/embed/\(videoID)"></iframe>
+            """
         #expect(resolveFromHTML(html) == videoID)
     }
 
     @Test("HTML with non-YouTube URL returns nil")
     func nonYouTubeHTML() {
         let html = """
-        <meta property="og:url" content="https://vimeo.com/123456789">
-        """
+            <meta property="og:url" content="https://vimeo.com/123456789">
+            """
         #expect(resolveFromHTML(html) == nil)
     }
 
@@ -137,15 +138,15 @@ struct URLVideoResolverScrapeIntegrationTests {
     func realWorldYouTubeSnippet() {
         // Minimal excerpt similar to what YouTube's HTML looks like
         let html = """
-        <html>
-        <head>
-        <link rel="canonical" href="https://www.youtube.com/watch?v=\(videoID)">
-        <meta property="og:url" content="https://www.youtube.com/watch?v=\(videoID)">
-        <meta property="og:title" content="Rick Astley - Never Gonna Give You Up">
-        </head>
-        <body></body>
-        </html>
-        """
+            <html>
+            <head>
+            <link rel="canonical" href="https://www.youtube.com/watch?v=\(videoID)">
+            <meta property="og:url" content="https://www.youtube.com/watch?v=\(videoID)">
+            <meta property="og:title" content="Rick Astley - Never Gonna Give You Up">
+            </head>
+            <body></body>
+            </html>
+            """
         #expect(resolveFromHTML(html) == videoID)
     }
 }

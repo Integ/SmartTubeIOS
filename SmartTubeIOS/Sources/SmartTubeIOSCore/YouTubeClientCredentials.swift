@@ -1,5 +1,6 @@
 import Foundation
 import os
+
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
@@ -28,7 +29,7 @@ public actor YouTubeClientCredentialsFetcher {
     // Used when the JS scrape fails so the app still works without a network
     // round-trip on first launch.
     private static let fallback = YouTubeClientCredentials(
-        clientId:     "861556708454-d6dlm3lh05idd8npek18k6be8ba3oc68.apps.googleusercontent.com",
+        clientId: "861556708454-d6dlm3lh05idd8npek18k6be8ba3oc68.apps.googleusercontent.com",
         clientSecret: "SboVhoG9s0rNafixCSGGKXAT"
     )
 
@@ -87,14 +88,15 @@ public actor YouTubeClientCredentialsFetcher {
         // The src is a /m=base kabuki URL, NOT a /base.js file path.
         let pattern = #"id="base-js" src="([^"]+)""#
         guard let match = html.range(of: pattern, options: .regularExpression),
-              let srcRange = html[match].range(of: #"src="([^"]+)""#, options: .regularExpression)
+            let srcRange = html[match].range(of: #"src="([^"]+)""#, options: .regularExpression)
         else {
             credLog.error("❌ base-js src URL not found in HTML")
             return nil
         }
         // Extract just the URL value from src="..."
         let srcFragment = String(html[match][srcRange])
-        let urlValue = srcFragment
+        let urlValue =
+            srcFragment
             .replacingOccurrences(of: "src=\"", with: "")
             .replacingOccurrences(of: "\"", with: "")
         guard let baseURL = URL(string: "https://www.youtube.com" + urlValue) else {
@@ -109,7 +111,7 @@ public actor YouTubeClientCredentialsFetcher {
         // Mirrors Android ClientData.java regex patterns:
         //   clientId:"([-\w]+\.apps\.googleusercontent\.com)",\n?[$\w]+:"\w+"
         //   clientId:"[-\w]+\.apps\.googleusercontent\.com",\n?[$\w]+:"(\w+)"
-        let clientIdPattern  = #"clientId:"([-\w]+\.apps\.googleusercontent\.com)""#
+        let clientIdPattern = #"clientId:"([-\w]+\.apps\.googleusercontent\.com)""#
         let clientSecPattern = #"clientId:"[-\w]+\.apps\.googleusercontent\.com",\n?[$\w]+:"(\w+)""#
 
         guard let clientId = firstCapture(in: js, pattern: clientIdPattern) else {
@@ -132,8 +134,8 @@ public actor YouTubeClientCredentialsFetcher {
 
     private func fetchText(request: URLRequest) async -> String? {
         guard let (data, response) = try? await session.data(for: request),
-              let http = response as? HTTPURLResponse,
-              (200..<300).contains(http.statusCode)
+            let http = response as? HTTPURLResponse,
+            (200..<300).contains(http.statusCode)
         else {
             let url = request.url?.absoluteString ?? "?"
             credLog.error("❌ HTTP request failed: \(url, privacy: .public)")
@@ -144,9 +146,9 @@ public actor YouTubeClientCredentialsFetcher {
 
     private func firstCapture(in text: String, pattern: String) -> String? {
         guard let regex = try? NSRegularExpression(pattern: pattern),
-              let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
-              match.numberOfRanges > 1,
-              let range = Range(match.range(at: 1), in: text)
+            let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
+            match.numberOfRanges > 1,
+            let range = Range(match.range(at: 1), in: text)
         else { return nil }
         return String(text[range])
     }

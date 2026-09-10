@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - PreferH264ToggleTests
@@ -43,4 +44,3 @@ struct PreferH264ToggleTests {
         #expect(decoded.preferH264 == false)
     }
 }
-

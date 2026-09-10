@@ -120,7 +120,8 @@ public final class TOSPlayerStateStore {
                     tosStoreLog.notice("[snapshot] takesnapshot received — capturing to \(path, privacy: .public)")
                     vm.takeSnapshot(to: path)
                 } else {
-                    tosStoreLog.notice("[snapshot] takesnapshot received but no active vm — posting snapshot.taken anyway")
+                    tosStoreLog.notice(
+                        "[snapshot] takesnapshot received but no active vm — posting snapshot.taken anyway")
                     CFNotificationCenterPostNotification(
                         CFNotificationCenterGetDarwinNotifyCenter(),
                         CFNotificationName("com.void.smarttube.tosplayer.snapshot.taken" as CFString),
@@ -149,7 +150,8 @@ public final class TOSPlayerStateStore {
     /// Load `video` and present the TOS player full-screen.
     /// If the same video is already loaded and playing, just expands.
     public func play(video: Video, api: InnerTubeAPI) {
-        tosStoreLog.notice("[TOSPlayerStateStore] play — id=\(video.id) currentPresentation=\(String(describing: self.presentation))")
+        tosStoreLog.notice(
+            "[TOSPlayerStateStore] play — id=\(video.id) currentPresentation=\(String(describing: self.presentation))")
 
         if vm?.videoId == video.id, presentation == .miniPlayer {
             // Same video minimized — just re-expand.
@@ -176,7 +178,10 @@ public final class TOSPlayerStateStore {
         }
 
         seenVideoIds.insert(video.id)
-        let newVM = TOSPlayerViewModel(videoId: video.id, title: video.title, channelId: video.channelId, channelTitle: video.channelTitle, thumbnailURL: video.thumbnailURL, playlistId: video.playlistId, playlistIndex: video.playlistIndex, startTime: 0, api: api)
+        let newVM = TOSPlayerViewModel(
+            videoId: video.id, title: video.title, channelId: video.channelId, channelTitle: video.channelTitle,
+            thumbnailURL: video.thumbnailURL, playlistId: video.playlistId, playlistIndex: video.playlistIndex,
+            startTime: 0, api: api)
         newVM.seenVideoIds = seenVideoIds
         newVM.setNavigationContext(hasPrevious: !history.isEmpty)
         // Wire swipe-navigation callbacks here (not in TOSPlayerView.onAppear) so
@@ -215,13 +220,15 @@ public final class TOSPlayerStateStore {
     /// Collapse the full-screen player to the mini-player bar.
     /// The WKWebView keeps running — audio continues.
     public func minimize() {
-        tosStoreLog.notice("[TOSPlayerStateStore] minimize — currentPresentation=\(String(describing: self.presentation))")
+        tosStoreLog.notice(
+            "[TOSPlayerStateStore] minimize — currentPresentation=\(String(describing: self.presentation))")
         guard presentation == .fullScreen else { return }
         let wasActive = vm?.playerState == .playing || vm?.playerState == .buffering
         presentation = .miniPlayer
         let action = dismissPlayerAction
         dismissPlayerAction = nil
-        tosStoreLog.notice("[TOSPlayerStateStore] minimize — presentation set to .miniPlayer, dismissPlayerAction=\(action != nil)")
+        tosStoreLog.notice(
+            "[TOSPlayerStateStore] minimize — presentation set to .miniPlayer, dismissPlayerAction=\(action != nil)")
         action?()
 
         // Defense-in-depth: TOSMiniPlayerLayerView transplants the WKWebView into the
@@ -237,7 +244,9 @@ public final class TOSPlayerStateStore {
             guard let self, self.presentation == .miniPlayer, self.vm === resumeVM else { return }
             let state = resumeVM?.playerState
             if state != .playing, state != .buffering {
-                tosStoreLog.notice("[TOSPlayerStateStore] minimize — playback did not resume (state=\(String(describing: state))), calling vm.play()")
+                tosStoreLog.notice(
+                    "[TOSPlayerStateStore] minimize — playback did not resume (state=\(String(describing: state))), calling vm.play()"
+                )
                 resumeVM?.play()
             }
         }
@@ -245,7 +254,8 @@ public final class TOSPlayerStateStore {
 
     /// Expand the mini-player back to full-screen.
     public func expand() {
-        tosStoreLog.notice("[TOSPlayerStateStore] expand — currentPresentation=\(String(describing: self.presentation))")
+        tosStoreLog.notice(
+            "[TOSPlayerStateStore] expand — currentPresentation=\(String(describing: self.presentation))")
         guard presentation == .miniPlayer else { return }
         presentation = .fullScreen
         tosStoreLog.notice("[TOSPlayerStateStore] expand — presentation set to .fullScreen")
@@ -266,7 +276,9 @@ public final class TOSPlayerStateStore {
         setInactive()
         let action = dismissPlayerAction
         dismissPlayerAction = nil
-        tosStoreLog.notice("[TOSPlayerStateStore] stop — presentation set to .hidden, vm released, dismissPlayerAction=\(action != nil)")
+        tosStoreLog.notice(
+            "[TOSPlayerStateStore] stop — presentation set to .hidden, vm released, dismissPlayerAction=\(action != nil)"
+        )
         action?()
     }
 
@@ -288,4 +300,4 @@ public final class TOSPlayerStateStore {
 // this object, the observer pattern leaks / misbehaves.
 private final class SnapshotObserver: NSObject {}
 
-#endif // os(iOS)
+#endif  // os(iOS)

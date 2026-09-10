@@ -1,6 +1,6 @@
 import AVFoundation
-import os
 import SmartTubeIOSCore
+import os
 
 private let playerLog = CrashlyticsLogger(category: "Player")
 
@@ -44,7 +44,7 @@ extension PlaybackViewModel {
                     videoId: afterNext.id,
                     sponsorCategories: sponsorCats,
                     authToken: token,
-                    priority: .visible   // beats home-feed card prefetches so it finishes before the user taps twice
+                    priority: .visible  // beats home-feed card prefetches so it finishes before the user taps twice
                 )
             }
         }
@@ -56,7 +56,8 @@ extension PlaybackViewModel {
     /// active; otherwise falls back to the first related (suggestion) video.
     public func playNext() {
         if let idx = currentVideo?.playlistIndex,
-           currentVideo?.playlistId == CurrentQueueStore.playlistID {
+            currentVideo?.playlistId == CurrentQueueStore.playlistID
+        {
             Task {
                 if let next = await CurrentQueueStore.shared.videoAt(index: idx + 1) {
                     playerLog.notice("playNext (queue): index=\(idx + 1) id=\(next.id)")
@@ -118,7 +119,8 @@ extension PlaybackViewModel {
             return
         }
         if let idx = currentVideo?.playlistIndex,
-           currentVideo?.playlistId == CurrentQueueStore.playlistID {
+            currentVideo?.playlistId == CurrentQueueStore.playlistID
+        {
             Task {
                 if settings.queueShuffleEnabled {
                     let remaining = await CurrentQueueStore.shared.remainingVideos(after: idx)

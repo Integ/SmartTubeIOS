@@ -41,7 +41,9 @@ final class TVMoreMenuNavigationUITests: XCTestCase {
 
     private func snap(_ label: String) {
         let a = XCTAttachment(screenshot: app.screenshot())
-        a.name = label; a.lifetime = .keepAlways; add(a)
+        a.name = label
+        a.lifetime = .keepAlways
+        add(a)
     }
 
     private func waitForMoreMenu() throws {
@@ -88,8 +90,9 @@ final class TVMoreMenuNavigationUITests: XCTestCase {
         let initial = focusedIdentifier()
         snap("0-menu-opened")
         XCTContext.runActivity(named: "Initial focused: \(initial)") { _ in }
-        XCTAssertEqual(initial, "player.moreMenu.speedRow",
-                       "More menu should open with Speed row focused")
+        XCTAssertEqual(
+            initial, "player.moreMenu.speedRow",
+            "More menu should open with Speed row focused")
 
         // ── DOWN 1 ──
         remote.press(.down)
@@ -98,10 +101,12 @@ final class TVMoreMenuNavigationUITests: XCTestCase {
         snap("1-after-first-down")
         XCTContext.runActivity(named: "After DOWN 1 — focused: \(after1)") { _ in }
 
-        XCTAssertNotEqual(after1, initial,
-                          "DOWN 1 must leave Speed — focus did not move at all")
-        XCTAssertNotEqual(after1, "player.moreMenu.cancel",
-                          "DOWN 1 jumped all the way to Cancel — double-step bug")
+        XCTAssertNotEqual(
+            after1, initial,
+            "DOWN 1 must leave Speed — focus did not move at all")
+        XCTAssertNotEqual(
+            after1, "player.moreMenu.cancel",
+            "DOWN 1 jumped all the way to Cancel — double-step bug")
 
         // ── DOWN 2 ──
         remote.press(.down)
@@ -110,10 +115,12 @@ final class TVMoreMenuNavigationUITests: XCTestCase {
         snap("2-after-second-down")
         XCTContext.runActivity(named: "After DOWN 2 — focused: \(after2)") { _ in }
 
-        XCTAssertNotEqual(after2, after1,
-                          "DOWN 2 did not move — focus stuck on \(after1)")
-        XCTAssertNotEqual(after2, "player.moreMenu.cancel",
-                          "DOWN 2 jumped to Cancel after only 2 presses — double-step bug")
+        XCTAssertNotEqual(
+            after2, after1,
+            "DOWN 2 did not move — focus stuck on \(after1)")
+        XCTAssertNotEqual(
+            after2, "player.moreMenu.cancel",
+            "DOWN 2 jumped to Cancel after only 2 presses — double-step bug")
 
         // ── DOWN 3 ──
         remote.press(.down)
@@ -122,15 +129,19 @@ final class TVMoreMenuNavigationUITests: XCTestCase {
         snap("3-after-third-down")
         XCTContext.runActivity(named: "After DOWN 3 — focused: \(after3)") { _ in }
 
-        XCTAssertNotEqual(after3, after2,
-                          "DOWN 3 did not move — focus stuck on \(after2)")
-        XCTAssertNotEqual(after3, "player.moreMenu.cancel",
-                          "DOWN 3 jumped to Cancel after only 3 presses — double-step bug; " +
-                          "DOWN1=\(after1) DOWN2=\(after2) DOWN3=\(after3)")
+        XCTAssertNotEqual(
+            after3, after2,
+            "DOWN 3 did not move — focus stuck on \(after2)")
+        XCTAssertNotEqual(
+            after3, "player.moreMenu.cancel",
+            "DOWN 3 jumped to Cancel after only 3 presses — double-step bug; "
+                + "DOWN1=\(after1) DOWN2=\(after2) DOWN3=\(after3)")
 
         // ── Summary ──
-        XCTContext.runActivity(named:
-            "Navigation path: Speed → \(after1) → \(after2) → \(after3)") { _ in }
+        XCTContext.runActivity(
+            named:
+                "Navigation path: Speed → \(after1) → \(after2) → \(after3)"
+        ) { _ in }
     }
 
     /// The Quality row must be present in the more menu, directly reachable
@@ -139,19 +150,22 @@ final class TVMoreMenuNavigationUITests: XCTestCase {
         try waitForMoreMenu()
 
         let qualityRow = element("player.moreMenu.qualityRow")
-        XCTAssertTrue(qualityRow.waitForExistence(timeout: 5),
-                      "player.moreMenu.qualityRow must be in the more menu")
+        XCTAssertTrue(
+            qualityRow.waitForExistence(timeout: 5),
+            "player.moreMenu.qualityRow must be in the more menu")
 
         // Speed is focused initially; one DOWN lands on Quality (the next row).
         remote.press(.down)
         Thread.sleep(forTimeInterval: 0.6)
-        XCTAssertEqual(focusedIdentifier(), "player.moreMenu.qualityRow",
-                       "One DOWN from Speed must focus the Quality row")
+        XCTAssertEqual(
+            focusedIdentifier(), "player.moreMenu.qualityRow",
+            "One DOWN from Speed must focus the Quality row")
 
         remote.press(.select)
         let picker = element("player.qualityPicker")
-        XCTAssertTrue(picker.waitForExistence(timeout: 10),
-                      "Selecting the Quality row must open the quality picker")
+        XCTAssertTrue(
+            picker.waitForExistence(timeout: 10),
+            "Selecting the Quality row must open the quality picker")
     }
 }
 #endif

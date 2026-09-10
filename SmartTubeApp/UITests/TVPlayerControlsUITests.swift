@@ -67,11 +67,11 @@ final class TVPlayerControlsUITests: XCTestCase {
         guard XCTWaiter().wait(for: [cardExpectation], timeout: 20) == .completed else {
             try captureAndSkip("No video cards loaded — network unavailable", in: app)
         }
-        remote.press(.down)       // tab bar → chip bar
+        remote.press(.down)  // tab bar → chip bar
         Thread.sleep(forTimeInterval: 0.6)
-        remote.press(.down)       // chip bar → video list
+        remote.press(.down)  // chip bar → video list
         Thread.sleep(forTimeInterval: 0.6)
-        remote.press(.select)     // open first video
+        remote.press(.select)  // open first video
         guard titleLabel.waitForExistence(timeout: 15) else {
             try captureAndSkip("player.titleLabel not found — player failed to open", in: app)
         }
@@ -80,7 +80,8 @@ final class TVPlayerControlsUITests: XCTestCase {
     /// Waits for the more menu to open (triggered by --uitesting-open-more-menu launch arg).
     private func waitForMoreMenu() throws {
         guard moreMenuSpeedRow.waitForExistence(timeout: 12) else {
-            try captureAndSkip("More menu did not open automatically — check --uitesting-open-more-menu handling", in: app)
+            try captureAndSkip(
+                "More menu did not open automatically — check --uitesting-open-more-menu handling", in: app)
         }
         Thread.sleep(forTimeInterval: 0.4)
     }
@@ -121,8 +122,9 @@ final class TVPlayerControlsUITests: XCTestCase {
         let playPause = element(identifier: "player.playPauseButton")
         let seekForward = element(identifier: "player.seekForwardButton")
         guard seekBack.waitForExistence(timeout: 8),
-              playPause.waitForExistence(timeout: 8),
-              seekForward.waitForExistence(timeout: 8) else {
+            playPause.waitForExistence(timeout: 8),
+            seekForward.waitForExistence(timeout: 8)
+        else {
             try captureAndSkip("Center transport controls were not available", in: app)
         }
 
@@ -218,8 +220,9 @@ final class TVPlayerControlsUITests: XCTestCase {
         }
         remote.press(.menu)
         Thread.sleep(forTimeInterval: 1.0)
-        XCTAssertFalse(element(identifier: "player.qualityPicker").exists,
-                       "player.qualityPicker must be gone after pressing Menu")
+        XCTAssertFalse(
+            element(identifier: "player.qualityPicker").exists,
+            "player.qualityPicker must be gone after pressing Menu")
         XCTAssertTrue(titleLabel.exists, "player.titleLabel must still exist after dismissing quality picker")
     }
 
@@ -258,11 +261,15 @@ final class TVPlayerControlsUITests: XCTestCase {
             try captureAndSkip("player.moreMenu.cancel not found — cannot test dismissal", in: app)
         }
         // The cancel button is at the bottom. Navigate down several times to reach it.
-        for _ in 0..<6 { remote.press(.down); Thread.sleep(forTimeInterval: 0.3) }
+        for _ in 0..<6 {
+            remote.press(.down)
+            Thread.sleep(forTimeInterval: 0.3)
+        }
         remote.press(.select)
         Thread.sleep(forTimeInterval: 1.0)
-        XCTAssertFalse(element(identifier: "player.moreMenu.speedRow").exists,
-                       "More menu must be dismissed after selecting the cancel row")
+        XCTAssertFalse(
+            element(identifier: "player.moreMenu.speedRow").exists,
+            "More menu must be dismissed after selecting the cancel row")
         XCTAssertTrue(titleLabel.exists, "player.titleLabel must still exist after dismissing the more menu")
     }
 
@@ -279,7 +286,10 @@ final class TVPlayerControlsUITests: XCTestCase {
         for _ in 0..<8 {
             remote.press(.down)
             Thread.sleep(forTimeInterval: 0.35)
-            if descriptionRow.hasFocus { reached = true; break }
+            if descriptionRow.hasFocus {
+                reached = true
+                break
+            }
         }
         guard reached else {
             try captureAndSkip("#150 regression: description row did not receive focus", in: app)
@@ -288,7 +298,9 @@ final class TVPlayerControlsUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 1.0)
         // Description overlay must be visible.
         let xButton = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier BEGINSWITH 'player.descriptionOverlay' OR label == 'Description'"))
+            .matching(
+                NSPredicate(format: "identifier BEGINSWITH 'player.descriptionOverlay' OR label == 'Description'")
+            )
             .firstMatch
         guard xButton.waitForExistence(timeout: 6) else {
             try captureAndSkip("#150 regression: description panel did not open", in: app)
@@ -297,8 +309,9 @@ final class TVPlayerControlsUITests: XCTestCase {
         remote.press(.menu)
         Thread.sleep(forTimeInterval: 1.0)
         // Player title must still be present — app must not have exited.
-        XCTAssertTrue(titleLabel.waitForExistence(timeout: 5),
-                      "#150 regression: player.titleLabel must still exist after pressing Menu to close description panel")
+        XCTAssertTrue(
+            titleLabel.waitForExistence(timeout: 5),
+            "#150 regression: player.titleLabel must still exist after pressing Menu to close description panel")
     }
 }
 #endif

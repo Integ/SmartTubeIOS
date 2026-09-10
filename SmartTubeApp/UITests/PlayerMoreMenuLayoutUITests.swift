@@ -19,7 +19,7 @@ final class PlayerMenuAndPickerLayoutUITests: XCTestCase {
             "--uitesting",
             "--uitesting-disable-tos-player-on-ios",
             "--uitesting-deeplink-video=dQw4w9WgXcQ",
-            "--uitesting-open-more-menu"
+            "--uitesting-open-more-menu",
         ]
         #if os(iOS)
         XCUIDevice.shared.orientation = .portrait
@@ -139,51 +139,63 @@ final class PlayerMenuAndPickerLayoutUITests: XCTestCase {
         ensureMoreMenuVisible()
 
         let scrollView = app.scrollViews["player.moreMenu.scrollView"].firstMatch
-        XCTAssertTrue(scrollView.waitForExistence(timeout: 10),
-                      "More menu scroll view must be accessible in landscape")
+        XCTAssertTrue(
+            scrollView.waitForExistence(timeout: 10),
+            "More menu scroll view must be accessible in landscape")
 
         // In landscape compact height, Speed/Quality/Sleep rows are hidden.
         // Verify the rows that ARE present: downloadButton and cancel.
         let downloadButton = app.buttons["player.moreMenu.downloadButton"].firstMatch
-        XCTAssertTrue(downloadButton.waitForExistence(timeout: 5),
-                      "Download button should be accessible in landscape more menu")
-        XCTAssertTrue(downloadButton.isHittable,
-                      "Download button should be tappable in landscape")
+        XCTAssertTrue(
+            downloadButton.waitForExistence(timeout: 5),
+            "Download button should be accessible in landscape more menu")
+        XCTAssertTrue(
+            downloadButton.isHittable,
+            "Download button should be tappable in landscape")
 
         let cancelButton = app.buttons["player.moreMenu.cancel"].firstMatch
         let deadline = Date().addingTimeInterval(5)
         while Date() < deadline && !cancelButton.isHittable {
             scrollView.swipeUp()
         }
-        XCTAssertTrue(cancelButton.exists,
-                      "Cancel row should remain in the accessibility tree")
-        XCTAssertTrue(cancelButton.isHittable,
-                      "Cancel row should be reachable by scrolling in landscape")
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must remain running while interacting with the landscape more menu")
+        XCTAssertTrue(
+            cancelButton.exists,
+            "Cancel row should remain in the accessibility tree")
+        XCTAssertTrue(
+            cancelButton.isHittable,
+            "Cancel row should be reachable by scrolling in landscape")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must remain running while interacting with the landscape more menu")
     }
 
     func testMoreMenuWidthIsConstrainedInPortrait() throws {
         try XCTSkipIf(Self.skipAllTests, Self.skipReason)
 
         let scrollView = app.scrollViews["player.moreMenu.scrollView"].firstMatch
-        XCTAssertTrue(scrollView.waitForExistence(timeout: 10),
-                      "More menu scroll view must appear in portrait")
+        XCTAssertTrue(
+            scrollView.waitForExistence(timeout: 10),
+            "More menu scroll view must appear in portrait")
 
         let screenWidth = app.frame.size.width
         let menuWidth = scrollView.frame.size.width
-        XCTAssertLessThanOrEqual(menuWidth, screenWidth * 0.85,
-                                 "More menu width (\(menuWidth)pt) must be ≤ 85 % of screen width " +
-                                 "(\(screenWidth)pt) — task #44 constraint")
-        XCTAssertGreaterThan(menuWidth, screenWidth * 0.5,
-                             "More menu width (\(menuWidth)pt) must be reasonable (> 50 % of screen)")
+        XCTAssertLessThanOrEqual(
+            menuWidth, screenWidth * 0.85,
+            "More menu width (\(menuWidth)pt) must be ≤ 85 % of screen width "
+                + "(\(screenWidth)pt) — task #44 constraint")
+        XCTAssertGreaterThan(
+            menuWidth, screenWidth * 0.5,
+            "More menu width (\(menuWidth)pt) must be reasonable (> 50 % of screen)")
         // Confirm that a named row is hittable.
         // player.moreMenu.speedRow no longer appears in the more menu in the current app version;
         // player.moreMenu.downloadButton is the first row with a stable accessibility ID.
         let downloadButton = app.buttons["player.moreMenu.downloadButton"].firstMatch
-        let hittable = XCTNSPredicateExpectation(predicate: NSPredicate(format: "hittable == true"), object: downloadButton)
+        let hittable = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "hittable == true"), object: downloadButton)
         _ = XCTWaiter().wait(for: [hittable], timeout: 12)
-        XCTAssertTrue(downloadButton.isHittable, "Download button must be tappable in portrait — confirms menu items are accessible")
+        XCTAssertTrue(
+            downloadButton.isHittable,
+            "Download button must be tappable in portrait — confirms menu items are accessible")
     }
 
     /// Regression for #94: the portrait more menu must fit all items without
@@ -192,11 +204,13 @@ final class PlayerMenuAndPickerLayoutUITests: XCTestCase {
         try XCTSkipIf(Self.skipAllTests, Self.skipReason)
 
         let cancelButton = app.buttons["player.moreMenu.cancel"].firstMatch
-        XCTAssertTrue(cancelButton.waitForExistence(timeout: 10),
-                      "Cancel button must be accessible in the portrait more menu")
-        XCTAssertTrue(cancelButton.isHittable,
-                      "Cancel button must be hittable without scrolling in portrait — " +
-                      "menu should fit entirely within portrait height (moreMenuMaxHeight = 380 pt)")
+        XCTAssertTrue(
+            cancelButton.waitForExistence(timeout: 10),
+            "Cancel button must be accessible in the portrait more menu")
+        XCTAssertTrue(
+            cancelButton.isHittable,
+            "Cancel button must be hittable without scrolling in portrait — "
+                + "menu should fit entirely within portrait height (moreMenuMaxHeight = 380 pt)")
     }
 
 }

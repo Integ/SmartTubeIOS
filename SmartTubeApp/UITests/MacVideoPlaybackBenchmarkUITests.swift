@@ -117,7 +117,7 @@ final class MacVideoPlaybackBenchmarkUITests: XCTestCase {
         }
         let coldElapsed = Date().timeIntervalSince(coldStart)
         var timings: [(id: String, elapsed: Double, hot: Bool)] = [
-            (videoIDs[0], coldElapsed, false),
+            (videoIDs[0], coldElapsed, false)
         ]
         print("[benchmark-mac] \(videoIDs[0])  cold  \(String(format: "%.2f", coldElapsed))s")
 
@@ -202,7 +202,7 @@ final class MacVideoPlaybackBenchmarkUITests: XCTestCase {
         let separator = String(repeating: "-", count: 44)
         var lines = [separator, "videoID        type  elapsed", separator]
         for t in timings {
-            let idPad  = t.id.padding(toLength: 14, withPad: " ", startingAt: 0)
+            let idPad = t.id.padding(toLength: 14, withPad: " ", startingAt: 0)
             let typPad = (t.hot ? "hot" : "cold").padding(toLength: 4, withPad: " ", startingAt: 0)
             lines.append("\(idPad)  \(typPad)  \(String(format: "%.2f", t.elapsed))s")
         }
@@ -215,8 +215,9 @@ final class MacVideoPlaybackBenchmarkUITests: XCTestCase {
         attachment.lifetime = .keepAlways
         add(attachment)
 
-        XCTAssertEqual(timings.count, videoIDs.count,
-                       "Expected \(videoIDs.count) timing entries, got \(timings.count)")
+        XCTAssertEqual(
+            timings.count, videoIDs.count,
+            "Expected \(videoIDs.count) timing entries, got \(timings.count)")
     }
 
     // MARK: - Private helpers

@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - SearchFilterUITests
@@ -51,10 +52,10 @@ struct SearchFilterUITests {
     @Test("Resetting all fields hides the badge")
     func resetHidesBadge() {
         var filter = SearchFilter()
-        filter.sortOrder  = .uploadDate
+        filter.sortOrder = .uploadDate
         filter.uploadDate = .today
-        filter.type       = .video
-        filter.duration   = .short
+        filter.type = .video
+        filter.duration = .short
         #expect(!filter.isDefault)
 
         filter = .default
@@ -127,10 +128,10 @@ struct SearchFilterCombinedParamsTests {
     @Test("Setting all fields produces non-nil params")
     func allFieldsSetProducesParams() {
         var filter = SearchFilter()
-        filter.sortOrder  = .viewCount
+        filter.sortOrder = .viewCount
         filter.uploadDate = .thisWeek
-        filter.type       = .video
-        filter.duration   = .long
+        filter.type = .video
+        filter.duration = .long
         #expect(filter.encodedParams() != nil)
     }
 

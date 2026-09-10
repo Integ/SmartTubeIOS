@@ -49,7 +49,7 @@ extension TOSPlayerViewModel {
     /// player and any future TOS session can reuse it too.
     func fetchSponsorSegments() async {
         guard settings.sponsorBlockEnabled,
-              !settings.activeSponsorCategories.isEmpty
+            !settings.activeSponsorCategories.isEmpty
         else { return }
 
         // UI-testing deterministic injection — mirrors the
@@ -75,28 +75,32 @@ extension TOSPlayerViewModel {
                 guard parts.count == 2 else { return nil }
                 let range = parts[0].split(separator: "-")
                 guard range.count == 2,
-                      let start = Double(range[0]),
-                      let end = Double(range[1]),
-                      let category = SponsorSegment.Category(rawValue: String(parts[1]))
+                    let start = Double(range[0]),
+                    let end = Double(range[1]),
+                    let category = SponsorSegment.Category(rawValue: String(parts[1]))
                 else { return nil }
                 return SponsorSegment(start: start, end: end, category: category)
             }
             guard !injected.isEmpty else { return }
             sponsorSegments = injected
-            let summary = injected
+            let summary =
+                injected
                 .map { seg -> String in
                     let start = String(format: "%.1f", seg.start)
                     let end = String(format: "%.1f", seg.end)
                     return "\(seg.category.rawValue)[\(start)–\(end)s]"
                 }
                 .joined(separator: ", ")
-            tosLog.notice("[SponsorBlock] UI-TEST INJECT — bypassing cache/network, applied \(injected.count) synthetic segment(s): \(summary)")
+            tosLog.notice(
+                "[SponsorBlock] UI-TEST INJECT — bypassing cache/network, applied \(injected.count) synthetic segment(s): \(summary)"
+            )
             return
         }
 
-        let channelIsExcluded = channelId.map {
-            settings.sponsorBlockExcludedChannels.keys.contains($0)
-        } ?? false
+        let channelIsExcluded =
+            channelId.map {
+                settings.sponsorBlockExcludedChannels.keys.contains($0)
+            } ?? false
         guard !channelIsExcluded else {
             tosLog.notice("[SponsorBlock] channel excluded — skipping for \(self.videoId)")
             return
@@ -113,7 +117,9 @@ extension TOSPlayerViewModel {
         if let cachedSegments = cached.sponsorSegments {
             let isStale = cached.staleFields.contains(.sponsorSegments)
             sponsorSegments = filtered(cachedSegments)
-            tosLog.notice("[SponsorBlock] cache \(isStale ? "STALE" : "HIT") — applied \(self.sponsorSegments.count) segment(s) for \(videoId)")
+            tosLog.notice(
+                "[SponsorBlock] cache \(isStale ? "STALE" : "HIT") — applied \(self.sponsorSegments.count) segment(s) for \(videoId)"
+            )
             guard isStale else { return }
             // Revalidate silently — re-apply when it lands so a long-running session
             // picks up the refreshed list (mirrors Phase 2's stale-revalidation path).
@@ -123,7 +129,8 @@ extension TOSPlayerViewModel {
                 await VideoPreloadCache.shared.store(sponsorSegments: fresh, for: videoId)
                 await MainActor.run {
                     self.sponsorSegments = filtered(fresh)
-                    tosLog.notice("[SponsorBlock] revalidated — \(self.sponsorSegments.count) segment(s) for \(videoId)")
+                    tosLog.notice(
+                        "[SponsorBlock] revalidated — \(self.sponsorSegments.count) segment(s) for \(videoId)")
                 }
             }
             return
@@ -133,7 +140,9 @@ extension TOSPlayerViewModel {
         let segments = await sponsorService.fetchSegments(videoId: videoId, categories: categories)
         await VideoPreloadCache.shared.store(sponsorSegments: segments, for: videoId)
         sponsorSegments = filtered(segments)
-        tosLog.notice("[SponsorBlock] cache MISS — fetched & applied \(self.sponsorSegments.count) of \(segments.count) loaded segment(s) for \(videoId)")
+        tosLog.notice(
+            "[SponsorBlock] cache MISS — fetched & applied \(self.sponsorSegments.count) of \(segments.count) loaded segment(s) for \(videoId)"
+        )
     }
 
     /// Evaluates the current playback time against loaded segments and either
@@ -162,7 +171,9 @@ extension TOSPlayerViewModel {
             // for to correlate a skip with the segment that caused it. The "AFTER"/landing
             // line (logged from the "tick" handler once the seek is confirmed) carries the
             // matching beforeTime so the pair can be joined without timestamps.
-            tosLog.notice("[SponsorBlock] skip TRIGGER category=\(seg.category.rawValue) action=skip segment=[\(seg.start, format: .fixed(precision: 1))s–\(seg.end, format: .fixed(precision: 1))s] (duration=\(seg.end - seg.start, format: .fixed(precision: 1))s) before=\(time, format: .fixed(precision: 2))s target=\(target, format: .fixed(precision: 2))s")
+            tosLog.notice(
+                "[SponsorBlock] skip TRIGGER category=\(seg.category.rawValue) action=skip segment=[\(seg.start, format: .fixed(precision: 1))s–\(seg.end, format: .fixed(precision: 1))s] (duration=\(seg.end - seg.start, format: .fixed(precision: 1))s) before=\(time, format: .fixed(precision: 2))s target=\(target, format: .fixed(precision: 2))s"
+            )
             pendingSkipLog = PendingSkipLog(
                 category: seg.category,
                 segmentStart: seg.start,
@@ -189,7 +200,9 @@ extension TOSPlayerViewModel {
             currentToastSegment = nil
             if lastLoggedNearEndSegment?.start != seg.start || lastLoggedNearEndSegment?.category != seg.category {
                 lastLoggedNearEndSegment = seg
-                tosLog.notice("[SponsorBlock] near-end segment — letting playback continue to natural end category=\(seg.category.rawValue) segment=[\(seg.start, format: .fixed(precision: 1))s–\(seg.end, format: .fixed(precision: 1))s]")
+                tosLog.notice(
+                    "[SponsorBlock] near-end segment — letting playback continue to natural end category=\(seg.category.rawValue) segment=[\(seg.start, format: .fixed(precision: 1))s–\(seg.end, format: .fixed(precision: 1))s]"
+                )
             }
 
         case .showToast(let seg):
@@ -198,7 +211,9 @@ extension TOSPlayerViewModel {
             // would spam ~4 identical lines/second for the toast's entire visible window.
             if lastLoggedToastSegment?.start != seg.start || lastLoggedToastSegment?.category != seg.category {
                 lastLoggedToastSegment = seg
-                tosLog.notice("[SponsorBlock] toast SHOW category=\(seg.category.rawValue) action=showToast segment=[\(seg.start, format: .fixed(precision: 1))s–\(seg.end, format: .fixed(precision: 1))s] at t=\(time, format: .fixed(precision: 2))s")
+                tosLog.notice(
+                    "[SponsorBlock] toast SHOW category=\(seg.category.rawValue) action=showToast segment=[\(seg.start, format: .fixed(precision: 1))s–\(seg.end, format: .fixed(precision: 1))s] at t=\(time, format: .fixed(precision: 2))s"
+                )
             }
             currentToastSegment = seg
 
@@ -225,7 +240,9 @@ extension TOSPlayerViewModel {
         // moved us here.
         if time >= pending.targetTime - 0.5 {
             let skippedSeconds = time - pending.beforeTime
-            tosLog.notice("[SponsorBlock] skip LANDED category=\(pending.category.rawValue) before=\(pending.beforeTime, format: .fixed(precision: 2))s after=\(time, format: .fixed(precision: 2))s skipped≈\(skippedSeconds, format: .fixed(precision: 2))s (target was \(pending.targetTime, format: .fixed(precision: 2))s, Δtarget=\(time - pending.targetTime, format: .fixed(precision: 2))s) ticksWaited=\(pending.ticksWaited)")
+            tosLog.notice(
+                "[SponsorBlock] skip LANDED category=\(pending.category.rawValue) before=\(pending.beforeTime, format: .fixed(precision: 2))s after=\(time, format: .fixed(precision: 2))s skipped≈\(skippedSeconds, format: .fixed(precision: 2))s (target was \(pending.targetTime, format: .fixed(precision: 2))s, Δtarget=\(time - pending.targetTime, format: .fixed(precision: 2))s) ticksWaited=\(pending.ticksWaited)"
+            )
             pendingSkipLog = nil
             return
         }
@@ -235,11 +252,13 @@ extension TOSPlayerViewModel {
         // failure-to-seek surfaces in the log quickly rather than hanging silently.
         pending.ticksWaited += 1
         if pending.ticksWaited > 16 {
-            tosLog.notice("[SponsorBlock] skip TIMEOUT category=\(pending.category.rawValue) before=\(pending.beforeTime, format: .fixed(precision: 2))s target=\(pending.targetTime, format: .fixed(precision: 2))s — still at \(time, format: .fixed(precision: 2))s after \(pending.ticksWaited) ticks; seek may not have taken effect")
+            tosLog.notice(
+                "[SponsorBlock] skip TIMEOUT category=\(pending.category.rawValue) before=\(pending.beforeTime, format: .fixed(precision: 2))s target=\(pending.targetTime, format: .fixed(precision: 2))s — still at \(time, format: .fixed(precision: 2))s after \(pending.ticksWaited) ticks; seek may not have taken effect"
+            )
             pendingSkipLog = nil
         } else {
             pendingSkipLog = pending
         }
     }
 }
-#endif // !os(tvOS)
+#endif  // !os(tvOS)

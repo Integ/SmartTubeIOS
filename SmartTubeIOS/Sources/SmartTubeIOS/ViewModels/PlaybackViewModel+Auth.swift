@@ -1,6 +1,6 @@
 import Foundation
-import os
 import SmartTubeIOSCore
+import os
 
 private let playerLog = CrashlyticsLogger(category: "Player")
 

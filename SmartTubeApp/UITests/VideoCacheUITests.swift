@@ -53,8 +53,9 @@ final class VideoCacheUITests: XCTestCase {
     private func waitForFirstVideoCard(timeout: TimeInterval = 25) -> XCUIElement? {
         let predicate = NSPredicate(format: "identifier BEGINSWITH 'video.card.'")
         let cards = app.descendants(matching: .any).matching(predicate)
-        let expectation = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count > 0"),
-                                                    object: cards)
+        let expectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "count > 0"),
+            object: cards)
         guard XCTWaiter().wait(for: [expectation], timeout: timeout) == .completed else {
             return nil
         }
@@ -67,7 +68,7 @@ final class VideoCacheUITests: XCTestCase {
 
     private func swipeLeft() {
         let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.75, dy: 0.5))
-        let end   = app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.5))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.5))
         start.press(forDuration: 0.05, thenDragTo: end)
     }
 
@@ -110,9 +111,10 @@ final class VideoCacheUITests: XCTestCase {
             object: titleLabel
         )
         let result = XCTWaiter().wait(for: [titleChanged], timeout: 20)
-        XCTAssertEqual(result, .completed,
-                       "Player title did not change after swipe — next video did not load. " +
-                       "First title: '\(firstTitle)', current: '\(titleLabel.label)'")
+        XCTAssertEqual(
+            result, .completed,
+            "Player title did not change after swipe — next video did not load. "
+                + "First title: '\(firstTitle)', current: '\(titleLabel.label)'")
     }
 }
 

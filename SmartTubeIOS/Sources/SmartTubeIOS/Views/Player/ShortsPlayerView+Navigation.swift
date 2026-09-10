@@ -1,6 +1,7 @@
-import SwiftUI
 import SmartTubeIOSCore
+import SwiftUI
 import os
+
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -26,10 +27,10 @@ extension ShortsPlayerView {
         }
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(220))
-            action()                                       // switch video, clears AVPlayer
-            slideOffset = -direction * screenHeight        // snap to opposite side (off-screen)
+            action()  // switch video, clears AVPlayer
+            slideOffset = -direction * screenHeight  // snap to opposite side (off-screen)
             withAnimation(.easeOut(duration: 0.25)) {
-                slideOffset = 0                            // slide new content in
+                slideOffset = 0  // slide new content in
             }
             try? await Task.sleep(for: .milliseconds(270))
             isTransitioning = false
@@ -102,7 +103,7 @@ extension ShortsPlayerView {
     private func prewarmStandby(for index: Int) {
         let nextIndex = index + 1
         guard nextIndex < videos.count else {
-            standbyVM = nil   // end of feed — no next Short to pre-warm
+            standbyVM = nil  // end of feed — no next Short to pre-warm
             return
         }
         let nextVideo = videos[nextIndex]
@@ -125,12 +126,18 @@ extension ShortsPlayerView {
             // mounted BEFORE loadShortAsStandby starts polling for isReady, not
             // after. See #274.
             standbyVM = standby
-            shortsLog.notice("[prewarm] starting — \(standby.logTag, privacy: .public) nextVideo=\(nextVideo.id, privacy: .public) forIndex=\(index, privacy: .public)")
+            shortsLog.notice(
+                "[prewarm] starting — \(standby.logTag, privacy: .public) nextVideo=\(nextVideo.id, privacy: .public) forIndex=\(index, privacy: .public)"
+            )
             await standby.loadShortAsStandby(video: nextVideo)
             if currentIndex == index {
-                shortsLog.notice("[prewarm] standby ready — \(standby.logTag, privacy: .public) nextVideo=\(nextVideo.id, privacy: .public) isReady=\(standby.isReady, privacy: .public)")
+                shortsLog.notice(
+                    "[prewarm] standby ready — \(standby.logTag, privacy: .public) nextVideo=\(nextVideo.id, privacy: .public) isReady=\(standby.isReady, privacy: .public)"
+                )
             } else {
-                shortsLog.notice("[prewarm] standby discarded — \(standby.logTag, privacy: .public) user already moved past index \(index, privacy: .public)")
+                shortsLog.notice(
+                    "[prewarm] standby discarded — \(standby.logTag, privacy: .public) user already moved past index \(index, privacy: .public)"
+                )
             }
         }
     }
@@ -202,7 +209,9 @@ extension ShortsPlayerView {
     /// `ShortsEndOfVideoDecision` (Task 3) — called from `.onChange(of:
     /// vm.playerState)` when the TOS embed's `"stateChange"` reports `.ended`.
     func handleShortEnded() {
-        switch ShortsEndOfVideoDecision.decide(settings: store.settings, currentIndex: currentIndex, count: videos.count) {
+        switch ShortsEndOfVideoDecision.decide(
+            settings: store.settings, currentIndex: currentIndex, count: videos.count)
+        {
         case .replay:
             vm.seekTo(0)
             vm.play()
@@ -224,7 +233,9 @@ extension ShortsPlayerView {
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(1500))
             guard vm.currentVideoId == erroredVideoId, !isTransitioning else { return }
-            if let next = ShortsNavigation.targetIndex(vertical: -100, horizontal: 0, current: currentIndex, count: videos.count) {
+            if let next = ShortsNavigation.targetIndex(
+                vertical: -100, horizontal: 0, current: currentIndex, count: videos.count)
+            {
                 performVerticalTransition(direction: -1) { goTo(next) }
             } else {
                 vm.videoEnded = true
@@ -239,20 +250,22 @@ extension ShortsPlayerView {
     private func logEmbedLoadError(_ error: TOSPlayerError, videoId: String) {
         let reason: String
         switch error {
-        case .notFound:              reason = "notFound"
-        case .embeddingDisabled:     reason = "embeddingDisabled"
+        case .notFound: reason = "notFound"
+        case .embeddingDisabled: reason = "embeddingDisabled"
         case .iframeError(let code): reason = "iframeError(\(code))"
-        case .webViewLoadFailed:     reason = "readyTimeout"
+        case .webViewLoadFailed: reason = "readyTimeout"
         }
         let nsError = NSError(
             domain: "SmartTube.ShortsEmbedLoadFailure",
             code: 0,
             userInfo: [NSLocalizedDescriptionKey: "Shorts embed load failure: \(reason) (video \(videoId))"]
         )
-        CrashlyticsLogger(category: "ShortsPlayer").recordNonFatal(nsError, userInfo: [
-            "video_id": videoId,
-            "reason": reason
-        ])
+        CrashlyticsLogger(category: "ShortsPlayer").recordNonFatal(
+            nsError,
+            userInfo: [
+                "video_id": videoId,
+                "reason": reason,
+            ])
     }
 
     #endif

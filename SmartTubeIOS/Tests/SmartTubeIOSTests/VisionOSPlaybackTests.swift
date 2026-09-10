@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOS
 @testable import SmartTubeIOSCore
 
@@ -52,15 +53,18 @@ struct VisionOSPlaybackTests {
     @Test("VisionOS picker exposes only H.264 formats through 1080p")
     func visionOSPickerCompatibility() {
         let policy = HLSPlaybackPolicy.resolve(label: "VisionOS/HLS", isHLS: true)
-        #expect(policy.allowsFormat(
-            height: 1080, mimeType: "video/mp4; codecs=\"avc1.64002A\""
-        ))
-        #expect(!policy.allowsFormat(
-            height: 1080, mimeType: "video/mp4; codecs=\"vp09.00.41.08\""
-        ))
-        #expect(!policy.allowsFormat(
-            height: 2160, mimeType: "video/mp4; codecs=\"avc1.640033\""
-        ))
+        #expect(
+            policy.allowsFormat(
+                height: 1080, mimeType: "video/mp4; codecs=\"avc1.64002A\""
+            ))
+        #expect(
+            !policy.allowsFormat(
+                height: 1080, mimeType: "video/mp4; codecs=\"vp09.00.41.08\""
+            ))
+        #expect(
+            !policy.allowsFormat(
+                height: 2160, mimeType: "video/mp4; codecs=\"avc1.640033\""
+            ))
     }
 
     @Test("WebSafari HLS retains its browser UA without a height cap")
@@ -74,15 +78,15 @@ struct VisionOSPlaybackTests {
     @Test("filtered master keeps audio while removing VP9 and UHD variants")
     func filtersMasterForTVOS() {
         let manifest = """
-        #EXTM3U
-        #EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="234",NAME="English - original",DEFAULT=NO,AUTOSELECT=YES,URI="audio.m3u8"
-        #EXT-X-STREAM-INF:BANDWIDTH=6000000,RESOLUTION=1920x1080,CODECS="avc1.64002A,mp4a.40.2",AUDIO="234"
-        h264-1080.m3u8
-        #EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920x1080,CODECS="vp09.00.41.08,mp4a.40.2",AUDIO="234"
-        vp9-1080.m3u8
-        #EXT-X-STREAM-INF:BANDWIDTH=18000000,RESOLUTION=3840x2160,CODECS="avc1.640033,mp4a.40.2",AUDIO="234"
-        h264-2160.m3u8
-        """
+            #EXTM3U
+            #EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="234",NAME="English - original",DEFAULT=NO,AUTOSELECT=YES,URI="audio.m3u8"
+            #EXT-X-STREAM-INF:BANDWIDTH=6000000,RESOLUTION=1920x1080,CODECS="avc1.64002A,mp4a.40.2",AUDIO="234"
+            h264-1080.m3u8
+            #EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920x1080,CODECS="vp09.00.41.08,mp4a.40.2",AUDIO="234"
+            vp9-1080.m3u8
+            #EXT-X-STREAM-INF:BANDWIDTH=18000000,RESOLUTION=3840x2160,CODECS="avc1.640033,mp4a.40.2",AUDIO="234"
+            h264-2160.m3u8
+            """
 
         let filtered = filterHLSMasterManifest(
             manifest, maximumHeight: 1080, requiredVideoCodec: "avc1"

@@ -111,7 +111,7 @@ final class VideoPlaybackBenchmarkUITests: XCTestCase {
         }
         let coldElapsed = Date().timeIntervalSince(coldStart)
         var timings: [(id: String, elapsedSeconds: Double, hot: Bool)] = [
-            (videoIDs[0], coldElapsed, false),
+            (videoIDs[0], coldElapsed, false)
         ]
         print("[benchmark] \(videoIDs[0])  cold  \(String(format: "%.2f", coldElapsed))s")
 
@@ -169,7 +169,9 @@ final class VideoPlaybackBenchmarkUITests: XCTestCase {
                 let elapsed = Date().timeIntervalSince(start)
 
                 guard titleChanged else {
-                    XCTFail("Title did not change for video \(videoID) within 60 s (elapsed: \(String(format: "%.1f", elapsed))s, prevLabel: '\(prevLabel)')")
+                    XCTFail(
+                        "Title did not change for video \(videoID) within 60 s (elapsed: \(String(format: "%.1f", elapsed))s, prevLabel: '\(prevLabel)')"
+                    )
                     return
                 }
 
@@ -197,7 +199,8 @@ final class VideoPlaybackBenchmarkUITests: XCTestCase {
         attachment.lifetime = .keepAlways
         add(attachment)
 
-        XCTAssertEqual(timings.count, videoIDs.count,
-                       "Expected \(videoIDs.count) timing entries, got \(timings.count)")
+        XCTAssertEqual(
+            timings.count, videoIDs.count,
+            "Expected \(videoIDs.count) timing entries, got \(timings.count)")
     }
 }

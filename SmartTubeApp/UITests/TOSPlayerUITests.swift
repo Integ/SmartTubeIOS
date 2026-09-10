@@ -144,15 +144,17 @@ final class TOSPlayerUITests: XCTestCase {
         // animation that precedes the stateLabel appearing. Expectations must
         // be created BEFORE the click so they capture notifications that fire
         // before the player view is visible.
-        let loadStartNote  = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.loadstarted")
-        let navNote        = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.navfinished")
-        let bridgeNote     = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.bridge")
-        let readyNote      = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.ready")
-        let tickStartNote  = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.tickstarted")
-        let playingNote    = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.playing")
+        let loadStartNote = XCTDarwinNotificationExpectation(
+            notificationName: "com.void.smarttube.tosplayer.loadstarted")
+        let navNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.navfinished")
+        let bridgeNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.bridge")
+        let readyNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.ready")
+        let tickStartNote = XCTDarwinNotificationExpectation(
+            notificationName: "com.void.smarttube.tosplayer.tickstarted")
+        let playingNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.playing")
         // State-transition diagnostics (via tick handler): observe which states are hit
-        let stateBuffNote  = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.state.3")
-        let stateCuedNote  = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.state.5")
+        let stateBuffNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.state.3")
+        let stateCuedNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.state.5")
         let statePauseNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.state.2")
         let stateEndedNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.state.0")
 
@@ -190,7 +192,8 @@ final class TOSPlayerUITests: XCTestCase {
 
         // Stage 1: Bridge check — does JS<->Swift messaging work at all?
         let bridgeTimeout: Double = navResult == .completed ? 3 : 0
-        let bridgeResult = navResult == .completed
+        let bridgeResult =
+            navResult == .completed
             ? XCTWaiter().wait(for: [bridgeNote], timeout: bridgeTimeout)
             : .timedOut
         if bridgeResult == .completed {
@@ -201,7 +204,8 @@ final class TOSPlayerUITests: XCTestCase {
 
         // Stage 2: onPlayerReady — did the iframe_api script load?
         let readyTimeout: Double = bridgeResult == .completed ? 30 : 0
-        let readyResult = bridgeResult == .completed
+        let readyResult =
+            bridgeResult == .completed
             ? XCTWaiter().wait(for: [readyNote], timeout: readyTimeout)
             : .timedOut
         if readyResult == .completed {
@@ -211,7 +215,8 @@ final class TOSPlayerUITests: XCTestCase {
         }
 
         // Stage 2.5: Tick poll — is startPolling() running?
-        let tickResult = readyResult == .completed
+        let tickResult =
+            readyResult == .completed
             ? XCTWaiter().wait(for: [tickStartNote], timeout: 3)
             : .timedOut
         if tickResult == .completed {
@@ -222,7 +227,8 @@ final class TOSPlayerUITests: XCTestCase {
 
         // Stage 3: playing state
         let playingTimeout: Double = readyResult == .completed ? 15 : 0
-        let playResult = readyResult == .completed
+        let playResult =
+            readyResult == .completed
             ? XCTWaiter().wait(for: [playingNote], timeout: playingTimeout)
             : .timedOut
 
@@ -235,20 +241,24 @@ final class TOSPlayerUITests: XCTestCase {
             // Darwin notification timed out — check AX state (label or value).
             // On macOS 26, SwiftUI Text exposes text content via AXValue (not AXTitle).
             let labelValue = stateLabel.exists ? stateLabel.label : "(not found)"
-            let valueStr   = stateLabel.exists ? (stateLabel.value as? String ?? "") : ""
-            let stateStr   = labelValue.isEmpty ? valueStr : labelValue
+            let valueStr = stateLabel.exists ? (stateLabel.value as? String ?? "") : ""
+            let stateStr = labelValue.isEmpty ? valueStr : labelValue
             isPlaying = stateStr == "playing" || stateStr == "buffering"
             // Report which states were observed (helps diagnose autoplay blocking)
-            let seenBuffering = XCTWaiter().wait(for: [stateBuffNote],  timeout: 0) == .completed
-            let seenCued      = XCTWaiter().wait(for: [stateCuedNote],  timeout: 0) == .completed
-            let seenPaused    = XCTWaiter().wait(for: [statePauseNote], timeout: 0) == .completed
-            let seenEnded     = XCTWaiter().wait(for: [stateEndedNote], timeout: 0) == .completed
-            let statesSeen    = [seenBuffering ? "buffering(3)" : nil,
-                                 seenCued      ? "cued(5)"      : nil,
-                                 seenPaused    ? "paused(2)"    : nil,
-                                 seenEnded     ? "ended(0)"     : nil]
-                .compactMap { $0 }.joined(separator: ",")
-            print("[TOS] playing notification timed out — stateLabel='\(stateStr)' states=[\(statesSeen.isEmpty ? "none — stuck at -1/unstarted" : statesSeen)]")
+            let seenBuffering = XCTWaiter().wait(for: [stateBuffNote], timeout: 0) == .completed
+            let seenCued = XCTWaiter().wait(for: [stateCuedNote], timeout: 0) == .completed
+            let seenPaused = XCTWaiter().wait(for: [statePauseNote], timeout: 0) == .completed
+            let seenEnded = XCTWaiter().wait(for: [stateEndedNote], timeout: 0) == .completed
+            let statesSeen = [
+                seenBuffering ? "buffering(3)" : nil,
+                seenCued ? "cued(5)" : nil,
+                seenPaused ? "paused(2)" : nil,
+                seenEnded ? "ended(0)" : nil,
+            ]
+            .compactMap { $0 }.joined(separator: ",")
+            print(
+                "[TOS] playing notification timed out — stateLabel='\(stateStr)' states=[\(statesSeen.isEmpty ? "none — stuck at -1/unstarted" : statesSeen)]"
+            )
         }
 
         XCTAssertTrue(
@@ -368,7 +378,7 @@ final class TOSPlayerUITests: XCTestCase {
 
         // ── 2. Register Darwin expectations BEFORE clicking — notifications can ──
         //      fire during the open animation (see smoke test's comment for why).
-        let readyNote   = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.ready")
+        let readyNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.ready")
         let playingNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.playing")
 
         // ── 3. Open the player and confirm it actually starts playing ────────────
@@ -402,7 +412,8 @@ final class TOSPlayerUITests: XCTestCase {
         //      "before the action" requirement as step 2: pause() fires synchronously
         //      from onDisappear, which can run as part of Esc's view-removal,
         //      racing a post-keypress registration.
-        let pausedNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.pausedAllMedia")
+        let pausedNote = XCTDarwinNotificationExpectation(
+            notificationName: "com.void.smarttube.tosplayer.pausedAllMedia")
 
         // ── 5. Dismiss the player via Esc — the only dismissal path (see ──────────
         //      TOSPlayerView body's .onExitCommand doc comment).
@@ -430,13 +441,13 @@ final class TOSPlayerUITests: XCTestCase {
         let pausedResult = XCTWaiter().wait(for: [pausedNote], timeout: 10)
         XCTAssertEqual(
             pausedResult, .completed,
-            "com.void.smarttube.tosplayer.pausedAllMedia never fired after dismissal — " +
-            "TOSPlayerView.onDisappear did not actually stop playback (audio is likely " +
-            "still audible — this is the reported bug). Check the device log for " +
-            "'[TOSPlayerView] onDisappear' / '[pause] requested' / '[pause] " +
-            "pauseAllMediaPlayback completed' lines and confirm pause() calls " +
-            "WKWebView.pauseAllMediaPlayback() rather than the eval-based " +
-            "document.querySelector('video') no-op (see TOSPlayerViewModel.pause())."
+            "com.void.smarttube.tosplayer.pausedAllMedia never fired after dismissal — "
+                + "TOSPlayerView.onDisappear did not actually stop playback (audio is likely "
+                + "still audible — this is the reported bug). Check the device log for "
+                + "'[TOSPlayerView] onDisappear' / '[pause] requested' / '[pause] "
+                + "pauseAllMediaPlayback completed' lines and confirm pause() calls "
+                + "WKWebView.pauseAllMediaPlayback() rather than the eval-based "
+                + "document.querySelector('video') no-op (see TOSPlayerViewModel.pause())."
         )
         print("[TOS-pauseondismiss] ✓ pausedAllMedia notification received — playback actually stopped on dismiss")
     }
@@ -567,14 +578,16 @@ final class TOSPlayerUITests: XCTestCase {
             let menuLabelsWithX = app.menuItems.allElementsBoundByIndex.map(\.label).filter { $0.contains("×") }
             let buttonLabelsWithX = app.buttons.allElementsBoundByIndex.map(\.label).filter { $0.contains("×") }
             let staticLabelsWithX = app.staticTexts.allElementsBoundByIndex.map(\.label).filter { $0.contains("×") }
-            XCTFail("speed option '1.5×' not found via descendants(.any) after clicking " +
-                    "tosPlayer.speedButton (frame=\(speedButton.frame)). " +
-                    "menuItems with '×': \(menuLabelsWithX), " +
-                    "buttons with '×': \(buttonLabelsWithX), " +
-                    "staticTexts with '×': \(staticLabelsWithX)")
+            XCTFail(
+                "speed option '1.5×' not found via descendants(.any) after clicking "
+                    + "tosPlayer.speedButton (frame=\(speedButton.frame)). "
+                    + "menuItems with '×': \(menuLabelsWithX), " + "buttons with '×': \(buttonLabelsWithX), "
+                    + "staticTexts with '×': \(staticLabelsWithX)")
             return
         }
-        print("[TOS-speedpicker] found '1.5×' option — type=\(speedOption.elementType.rawValue) frame=\(speedOption.frame)")
+        print(
+            "[TOS-speedpicker] found '1.5×' option — type=\(speedOption.elementType.rawValue) frame=\(speedOption.frame)"
+        )
         speedOption.click()
         print("[TOS-speedpicker] ✓ selected 1.5× — vm.setPlaybackRate(1.5) should have fired")
 
@@ -592,8 +605,9 @@ final class TOSPlayerUITests: XCTestCase {
             XCTWaiter().wait(for: [dismissExpect], timeout: 5), .completed,
             "tosPlayer.stateLabel still visible after Esc — player did not dismiss"
         )
-        print("[TOS-speedpicker] ✓ player dismissed — test complete (inspect device log for " +
-              "'[eval] setPlaybackRate(1.5) result:' — found should be 1, not 0)")
+        print(
+            "[TOS-speedpicker] ✓ player dismissed — test complete (inspect device log for "
+                + "'[eval] setPlaybackRate(1.5) result:' — found should be 1, not 0)")
     }
 
     // MARK: - SponsorBlock auto-skip test
@@ -641,9 +655,9 @@ final class TOSPlayerUITests: XCTestCase {
 
         // ── 2. Register Darwin expectations BEFORE clicking (see smoke test above ─
         //      for why: notifications can fire during the open animation).
-        let readyNote   = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.ready")
+        let readyNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.ready")
         let playingNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.playing")
-        let skipNote    = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.sponsorskip")
+        let skipNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.sponsorskip")
 
         // ── 3. Open the player ────────────────────────────────────────────────────
         if !card.isHittable {
@@ -679,10 +693,10 @@ final class TOSPlayerUITests: XCTestCase {
         let skipResult = XCTWaiter().wait(for: [skipNote], timeout: 25)
         XCTAssertEqual(
             skipResult, .completed,
-            "com.void.smarttube.tosplayer.sponsorskip never fired — TOS player did not " +
-            "auto-skip the injected sponsor segment [2–6]s. Check the device log for " +
-            "'[SponsorBlock] UI-TEST INJECT' (segment applied?) and 'skip TRIGGER' (guard " +
-            "conditions in checkSponsorSkip — sponsorBlockEnabled / activeSkipEnd / sponsorAction)."
+            "com.void.smarttube.tosplayer.sponsorskip never fired — TOS player did not "
+                + "auto-skip the injected sponsor segment [2–6]s. Check the device log for "
+                + "'[SponsorBlock] UI-TEST INJECT' (segment applied?) and 'skip TRIGGER' (guard "
+                + "conditions in checkSponsorSkip — sponsorBlockEnabled / activeSkipEnd / sponsorAction)."
         )
         print("[TOS-sponsorskip] ✓ auto-skip notification received — checkSponsorSkip fired seekTo()")
 
@@ -714,7 +728,9 @@ final class TOSPlayerUITests: XCTestCase {
             XCTWaiter().wait(for: [dismissExpect], timeout: 5), .completed,
             "tosPlayer.stateLabel still visible after Esc — player did not dismiss"
         )
-        print("[TOS-sponsorskip] ✓ player dismissed — test complete (inspect device log for skip TRIGGER/LANDED before/after times)")
+        print(
+            "[TOS-sponsorskip] ✓ player dismissed — test complete (inspect device log for skip TRIGGER/LANDED before/after times)"
+        )
     }
 
     // MARK: - Helpers
@@ -730,4 +746,4 @@ final class TOSPlayerUITests: XCTestCase {
     }
 }
 
-#endif // os(macOS)
+#endif  // os(macOS)

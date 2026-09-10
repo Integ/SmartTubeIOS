@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - CurrentQueueStoreTests
@@ -377,4 +378,3 @@ struct CurrentQueueStoreTests {
         #expect(result.isEmpty)
     }
 }
-

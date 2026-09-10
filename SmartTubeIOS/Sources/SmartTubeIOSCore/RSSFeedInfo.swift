@@ -29,7 +29,8 @@ extension RSSFeedInfo {
     /// Returns `nil` for non-YouTube-feed URLs.
     public static func channelId(from url: URL) -> String? {
         guard url.host == "www.youtube.com",
-              url.path == "/feeds/videos.xml" else { return nil }
+            url.path == "/feeds/videos.xml"
+        else { return nil }
         return URLComponents(url: url, resolvingAgainstBaseURL: false)?
             .queryItems?
             .first(where: { $0.name == "channel_id" })?

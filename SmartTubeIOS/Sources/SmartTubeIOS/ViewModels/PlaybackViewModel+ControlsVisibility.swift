@@ -1,6 +1,6 @@
 import Foundation
-import os
 import SmartTubeIOSCore
+import os
 
 private let playerLog = CrashlyticsLogger(category: "Player")
 
@@ -42,10 +42,13 @@ extension PlaybackViewModel {
         #endif
         // Fix #125: in landscape (fullscreen), give the user 50% more time before controls
         // disappear. The default timeout (from AppSettings) is 4 s → 6 s in landscape.
-        let timeout = isLandscape
+        let timeout =
+            isLandscape
             ? Double(settings.controlsHideTimeout) * 1.5
             : Double(settings.controlsHideTimeout)
-        playerLog.debug("[controls] scheduleControlsHide — resetting \(timeout)s timer (landscape=\(self.isLandscape)), isScrubbing=\(self.isScrubbing)")
+        playerLog.debug(
+            "[controls] scheduleControlsHide — resetting \(timeout)s timer (landscape=\(self.isLandscape)), isScrubbing=\(self.isScrubbing)"
+        )
         controlsTimer?.cancel()
         controlsTimer = Task {
             try? await Task.sleep(for: .seconds(timeout))

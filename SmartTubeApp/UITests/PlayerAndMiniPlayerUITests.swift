@@ -154,21 +154,25 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
         )
 
         UITestHelpers.tapTab(named: "Search", in: app)
-        XCTAssertTrue(miniPlayerBar.waitForExistence(timeout: 5),
-                      "Mini player must persist across tab switch")
+        XCTAssertTrue(
+            miniPlayerBar.waitForExistence(timeout: 5),
+            "Mini player must persist across tab switch")
         let onSearchTab = app.textFields["search.bar"].waitForExistence(timeout: 5)
-        XCTAssertTrue(onSearchTab, "Tapping Search tab must navigate there (tab bar must be accessible under mini player)")
+        XCTAssertTrue(
+            onSearchTab, "Tapping Search tab must navigate there (tab bar must be accessible under mini player)")
     }
 
     func testMiniPlayerAppearsAfterBackButton() throws {
         try XCTSkipIf(Self.skipAllTests, Self.skipReason)
         try openPlayerFromHome()
         minimizePlayer()
-        XCTAssertTrue(miniPlayerBar.waitForExistence(timeout: 5),
-                      "miniPlayer.bar should appear after tapping the back button")
+        XCTAssertTrue(
+            miniPlayerBar.waitForExistence(timeout: 5),
+            "miniPlayer.bar should appear after tapping the back button")
         let chipBar = app.scrollViews["home.chipBar"]
-        XCTAssertTrue(chipBar.waitForExistence(timeout: 5),
-                      "home.chipBar should be visible while mini-player is showing")
+        XCTAssertTrue(
+            chipBar.waitForExistence(timeout: 5),
+            "home.chipBar should be visible while mini-player is showing")
     }
 
     func testMiniPlayerShowsCorrectTitle() throws {
@@ -181,8 +185,9 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
         guard miniPlayerBar.waitForExistence(timeout: 5) else {
             try captureAndSkip("miniPlayer.bar not found — mini-player may not be active in this environment", in: app)
         }
-        XCTAssertEqual(miniPlayerTitle.label, title,
-                       "miniPlayer.titleLabel should match the video that was playing")
+        XCTAssertEqual(
+            miniPlayerTitle.label, title,
+            "miniPlayer.titleLabel should match the video that was playing")
     }
 
     func testMiniPlayerPlayPauseToggle() throws {
@@ -194,12 +199,14 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
         }
         miniPlayerPlayPause.tap()
         Thread.sleep(forTimeInterval: 0.5)
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must not crash after tapping play/pause in mini-player")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must not crash after tapping play/pause in mini-player")
         miniPlayerPlayPause.tap()
         Thread.sleep(forTimeInterval: 0.5)
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must not crash after toggling play/pause twice in mini-player")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must not crash after toggling play/pause twice in mini-player")
     }
 
     func testMiniPlayerCloseStopsPlayback() throws {
@@ -215,8 +222,9 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
         XCTWaiter().wait(for: [disappear], timeout: 3)
         XCTAssertFalse(miniPlayerBar.exists, "miniPlayer.bar should disappear after tapping close")
         let chipBar = app.scrollViews["home.chipBar"]
-        XCTAssertTrue(chipBar.waitForExistence(timeout: 5),
-                      "home.chipBar should remain visible after closing the mini-player")
+        XCTAssertTrue(
+            chipBar.waitForExistence(timeout: 5),
+            "home.chipBar should remain visible after closing the mini-player")
     }
 
     func testTappingMiniPlayerExpandsToFullScreen() throws {
@@ -227,10 +235,12 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
             try captureAndSkip("miniPlayer.bar not found — mini-player may not be active in this environment", in: app)
         }
         miniPlayerBar.tap()
-        XCTAssertTrue(playerTitle.waitForExistence(timeout: 5),
-                      "player.titleLabel should reappear after tapping the mini-player bar")
-        XCTAssertEqual(playerTitle.label, title,
-                       "Expanded player should show the same video that was minimized")
+        XCTAssertTrue(
+            playerTitle.waitForExistence(timeout: 5),
+            "player.titleLabel should reappear after tapping the mini-player bar")
+        XCTAssertEqual(
+            playerTitle.label, title,
+            "Expanded player should show the same video that was minimized")
     }
 
     func testMiniPlayerPersistsAcrossTabNavigation() throws {
@@ -243,8 +253,9 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
         for tab in ["Search", "Library", "Settings", "Home"] {
             UITestHelpers.tapTab(named: tab, in: app)
             Thread.sleep(forTimeInterval: 0.5)
-            XCTAssertTrue(miniPlayerBar.exists,
-                          "miniPlayer.bar should persist while on the \(tab) tab")
+            XCTAssertTrue(
+                miniPlayerBar.exists,
+                "miniPlayer.bar should persist while on the \(tab) tab")
         }
     }
 
@@ -252,17 +263,20 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
         try XCTSkipIf(Self.skipAllTests, Self.skipReason)
         try openPlayerFromHome()
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-        XCTAssertTrue(backButton.waitForExistence(timeout: 5),
-                      "player.backButton must exist after opening the player")
+        XCTAssertTrue(
+            backButton.waitForExistence(timeout: 5),
+            "player.backButton must exist after opening the player")
         backButton.tap()
-        XCTAssertTrue(miniPlayerBar.waitForExistence(timeout: 5),
-                      "miniPlayer.bar must appear after a single back-button tap — " +
-                      "regression for the dismissPlayerAction bypass fix")
+        XCTAssertTrue(
+            miniPlayerBar.waitForExistence(timeout: 5),
+            "miniPlayer.bar must appear after a single back-button tap — "
+                + "regression for the dismissPlayerAction bypass fix")
         let fullScreenGone = NSPredicate(format: "exists == false")
         let expectation = XCTNSPredicateExpectation(predicate: fullScreenGone, object: backButton)
         let result = XCTWaiter().wait(for: [expectation], timeout: 3)
-        XCTAssertEqual(result, .completed,
-                       "player.backButton should not be visible once mini-player is showing")
+        XCTAssertEqual(
+            result, .completed,
+            "player.backButton should not be visible once mini-player is showing")
     }
 
     func testMiniPlayerGhostAudioGuard() throws {
@@ -283,8 +297,9 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
         guard UITestHelpers.openPlayer(from: card, in: app) else {
             try captureAndSkip("Player did not reopen within 15 s — network unavailable or timing-dependent", in: app)
         }
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must be running after re-opening the player")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must be running after re-opening the player")
     }
 
     func testMiniPlayerCloseDeactivatesAudioSession() throws {
@@ -308,8 +323,9 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
         guard UITestHelpers.openPlayer(from: card, in: app) else {
             try captureAndSkip("Player did not reopen within 15 s — timing-dependent", in: app)
         }
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must be in foreground — crash would indicate AVAudioSession reactivation failure")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must be in foreground — crash would indicate AVAudioSession reactivation failure")
     }
 
     func testMiniPlayerCloseDoesNotRestoreFullScreen() throws {
@@ -318,15 +334,18 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         XCTAssertTrue(backButton.waitForExistence(timeout: 5))
         backButton.tap()
-        XCTAssertTrue(miniPlayerBar.waitForExistence(timeout: 5),
-                      "miniPlayer.bar must appear after minimizing")
+        XCTAssertTrue(
+            miniPlayerBar.waitForExistence(timeout: 5),
+            "miniPlayer.bar must appear after minimizing")
         miniPlayerClose.tap()
         Thread.sleep(forTimeInterval: 3)
-        XCTAssertFalse(miniPlayerBar.exists,
-                       "miniPlayer.bar must not exist after tapping close")
-        XCTAssertFalse(backButton.exists,
-                       "player.backButton (fullscreen indicator) must not reappear after close — " +
-                       "regression for task #34 fullscreen-restore bug")
+        XCTAssertFalse(
+            miniPlayerBar.exists,
+            "miniPlayer.bar must not exist after tapping close")
+        XCTAssertFalse(
+            backButton.exists,
+            "player.backButton (fullscreen indicator) must not reappear after close — "
+                + "regression for task #34 fullscreen-restore bug")
     }
 
     // MARK: - Tests (from PlayerControlsUITests)
@@ -336,7 +355,9 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
         try openPlayerFromHome()
         showControls()
         guard playPauseButton.waitForExistence(timeout: 5) else {
-            try captureAndSkip("player.playPauseButton did not appear — controls overlay may not respond to tap reliably on simulator (timing-dependent)", in: app)
+            try captureAndSkip(
+                "player.playPauseButton did not appear — controls overlay may not respond to tap reliably on simulator (timing-dependent)",
+                in: app)
         }
     }
 
@@ -345,7 +366,9 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
         try openPlayerFromHome()
         showControls()
         guard playPauseButton.waitForExistence(timeout: 5) else {
-            try captureAndSkip("player.playPauseButton did not appear — controls overlay may not respond to tap reliably on simulator (timing-dependent)", in: app)
+            try captureAndSkip(
+                "player.playPauseButton did not appear — controls overlay may not respond to tap reliably on simulator (timing-dependent)",
+                in: app)
         }
         playPauseButton.tap()
         Thread.sleep(forTimeInterval: 0.5)
@@ -354,29 +377,34 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
             try captureAndSkip("player.playPauseButton did not reappear after re-tap — timing-dependent", in: app)
         }
         playPauseButton.tap()
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must still be running after toggling play/pause")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must still be running after toggling play/pause")
     }
 
     func testBackButtonDismissesPlayer() throws {
         try XCTSkipIf(Self.skipAllTests, Self.skipReason)
         try openPlayerFromHome()
-        XCTAssertTrue(backButton.waitForExistence(timeout: 5),
-                      "player.backButton must be present")
+        XCTAssertTrue(
+            backButton.waitForExistence(timeout: 5),
+            "player.backButton must be present")
         backButton.tap()
         let miniPlayerBar = app.otherElements["miniPlayer.bar"].firstMatch
-        XCTAssertTrue(miniPlayerBar.waitForExistence(timeout: 5),
-                      "miniPlayer.bar should appear after tapping the back button")
+        XCTAssertTrue(
+            miniPlayerBar.waitForExistence(timeout: 5),
+            "miniPlayer.bar should appear after tapping the back button")
         let miniPlayerClose = app.buttons["miniPlayer.closeButton"].firstMatch
         guard miniPlayerClose.waitForExistence(timeout: 3) else {
             try captureAndSkip("miniPlayer.closeButton not found — in-app PiP may not be active on this build", in: app)
         }
         miniPlayerClose.tap()
         let chipBar = app.scrollViews["home.chipBar"]
-        XCTAssertTrue(chipBar.waitForExistence(timeout: 5),
-                      "home.chipBar should reappear after closing the mini-player")
-        XCTAssertFalse(miniPlayerBar.exists,
-                       "miniPlayer.bar should be gone after tapping close")
+        XCTAssertTrue(
+            chipBar.waitForExistence(timeout: 5),
+            "home.chipBar should reappear after closing the mini-player")
+        XCTAssertFalse(
+            miniPlayerBar.exists,
+            "miniPlayer.bar should be gone after tapping close")
     }
 
     func testNoErrorBannerOnNormalPlayback() throws {
@@ -391,8 +419,9 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
         try openPlayerFromHome()
         showControls()
         Thread.sleep(forTimeInterval: 2)
-        XCTAssertTrue(playerTitle.exists,
-                      "player.titleLabel should still be visible after tapping the player — player must not dismiss unexpectedly")
+        XCTAssertTrue(
+            playerTitle.exists,
+            "player.titleLabel should still be visible after tapping the player — player must not dismiss unexpectedly")
     }
 
     func testNextVideoButtonLoadsNewVideo() throws {
@@ -410,7 +439,8 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
             }
         }
         guard nextEnabled else {
-            try captureAndSkip("player.nextBtn did not become enabled within 20 s — related videos may not have loaded", in: app)
+            try captureAndSkip(
+                "player.nextBtn did not become enabled within 20 s — related videos may not have loaded", in: app)
         }
 
         nextButton.tap()
@@ -422,7 +452,8 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
             newTitle = playerTitle.label
         }
         guard newTitle != initialTitle else {
-            try captureAndSkip("Title did not change within 30s — next video may share the same title or network is slow", in: app)
+            try captureAndSkip(
+                "Title did not change within 30s — next video may share the same title or network is slow", in: app)
         }
     }
 
@@ -449,15 +480,18 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
         }
 
         guard foundNext else {
-            try captureAndSkip("player.nextBtn did not become hittable in portrait within 20 s — timing-dependent", in: app)
+            try captureAndSkip(
+                "player.nextBtn did not become hittable in portrait within 20 s — timing-dependent", in: app)
         }
-        XCTAssertTrue(nextButton.isHittable,
-                      "player.nextBtn must be hittable in portrait — regression for task #45 hit-area fix")
+        XCTAssertTrue(
+            nextButton.isHittable,
+            "player.nextBtn must be hittable in portrait — regression for task #45 hit-area fix")
 
         let prevButton = app.buttons["player.prevBtn"].firstMatch
         if prevButton.waitForExistence(timeout: 3) {
-            XCTAssertTrue(prevButton.isHittable,
-                          "player.prevBtn must be hittable in portrait — regression for task #45 hit-area fix")
+            XCTAssertTrue(
+                prevButton.isHittable,
+                "player.prevBtn must be hittable in portrait — regression for task #45 hit-area fix")
         }
     }
 
@@ -485,11 +519,11 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
         // Drag from ~20% to ~70% of the seek bar width.
         let barFrame = progressBar.frame
         let startX = barFrame.minX + barFrame.width * 0.20
-        let endX   = barFrame.minX + barFrame.width * 0.70
-        let midY   = barFrame.midY
+        let endX = barFrame.minX + barFrame.width * 0.70
+        let midY = barFrame.midY
         let startCoord = app.coordinate(withNormalizedOffset: .zero)
             .withOffset(CGVector(dx: startX, dy: midY))
-        let endCoord   = app.coordinate(withNormalizedOffset: .zero)
+        let endCoord = app.coordinate(withNormalizedOffset: .zero)
             .withOffset(CGVector(dx: endX, dy: midY))
         startCoord.press(forDuration: 0.05, thenDragTo: endCoord)
 
@@ -497,10 +531,12 @@ final class PlayerAndMiniPlayerUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 2)
 
         // Player must still be open (not crashed or dismissed).
-        XCTAssertFalse(playerTitle.label.isEmpty,
-                       "Player was dismissed or crashed during seek-bar drag — title disappeared")
-        XCTAssertEqual(playerTitle.label, titleBefore,
-                       "Wrong video loaded after seek-bar drag")
+        XCTAssertFalse(
+            playerTitle.label.isEmpty,
+            "Player was dismissed or crashed during seek-bar drag — title disappeared")
+        XCTAssertEqual(
+            playerTitle.label, titleBefore,
+            "Wrong video loaded after seek-bar drag")
     }
     #endif
 }

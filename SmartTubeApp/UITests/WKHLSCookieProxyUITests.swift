@@ -74,7 +74,7 @@ final class WKHLSCookieProxyUITests: XCTestCase {
             "--uitesting-disable-tos-player-on-ios",
             "--uitesting-deeplink-video=\(Self.videoID)",
             "--uitesting-show-controls",
-            "--uitesting-disable-sponsorblock"
+            "--uitesting-disable-sponsorblock",
         ]
         app.launch()
     }
@@ -108,10 +108,9 @@ final class WKHLSCookieProxyUITests: XCTestCase {
         let enabledExp = XCTNSPredicateExpectation(predicate: enabledPred, object: playPause)
         guard XCTWaiter().wait(for: [enabledExp], timeout: 90) == .completed else {
             XCTFail(
-                "Video m1WGX1-uGvU did not become playable within 90 s. " +
-                "exhaustiveRetry failed for all client paths. " +
-                "Check device log for: rqh=1 403 errors, WKWebView extraction nil, " +
-                "network unavailable."
+                "Video m1WGX1-uGvU did not become playable within 90 s. "
+                    + "exhaustiveRetry failed for all client paths. "
+                    + "Check device log for: rqh=1 403 errors, WKWebView extraction nil, " + "network unavailable."
             )
             return
         }
@@ -129,8 +128,8 @@ final class WKHLSCookieProxyUITests: XCTestCase {
         let height = resolutionHeight(from: resLabel)
         XCTAssertGreaterThan(
             height, 0,
-            "Stats for Nerds shows no resolution — video may not be rendering. " +
-            "label='\(resLabel)'. Check device log for proxy errors."
+            "Stats for Nerds shows no resolution — video may not be rendering. "
+                + "label='\(resLabel)'. Check device log for proxy errors."
         )
 
         // ── Step 5: No proxy 403 assertion is done via AGENT-POST-RUN-CHECK ──
@@ -181,4 +180,4 @@ final class WKHLSCookieProxyUITests: XCTestCase {
     }
 }
 
-#endif // os(iOS)
+#endif  // os(iOS)

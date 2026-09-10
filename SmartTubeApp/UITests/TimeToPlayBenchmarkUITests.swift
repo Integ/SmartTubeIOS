@@ -61,16 +61,16 @@ private struct TTPTestCase {
 /// Full video corpus — add new IDs here, no matching test method needed.
 private let corpus: [TTPTestCase] = [
     // ── Established reference videos ──────────────────────────────────────────
-    TTPTestCase(videoId: "dQw4w9WgXcQ", scenario: "popular-CDN-hot"),              // Path A (BotGuard warm)
-    TTPTestCase(videoId: "l7To2evwGKs", scenario: "real-world-ref-2026-05-28"),    // Path A fast
-    TTPTestCase(videoId: "9bZkp7q19f0", scenario: "high-view-count"),              // Path A or B
-    TTPTestCase(videoId: "LSMQ3U1Thzw", scenario: "rqh1-multi-audio"),             // Path B or C
-    TTPTestCase(videoId: "v2ZtAi2rDzA", scenario: "rqh1-cold-worst-case"),         // Path B or C
-    TTPTestCase(videoId: "Dy9ki9Q5nXs", scenario: "scrubber-test"),                // Path A
-    TTPTestCase(videoId: "Wu8xNx4njoM", scenario: "hls-resolution"),               // Path A or B
-    TTPTestCase(videoId: "m1WGX1-uGvU", scenario: "wkwebview-cookie-proxy"),       // Path B
-    TTPTestCase(videoId: "jNQXAC9IVRw", scenario: "queue-prefetch-ref"),           // Path A
-    TTPTestCase(videoId: "MCv4EyEFgVg", scenario: "short-as-regular"),             // Path A or C
+    TTPTestCase(videoId: "dQw4w9WgXcQ", scenario: "popular-CDN-hot"),  // Path A (BotGuard warm)
+    TTPTestCase(videoId: "l7To2evwGKs", scenario: "real-world-ref-2026-05-28"),  // Path A fast
+    TTPTestCase(videoId: "9bZkp7q19f0", scenario: "high-view-count"),  // Path A or B
+    TTPTestCase(videoId: "LSMQ3U1Thzw", scenario: "rqh1-multi-audio"),  // Path B or C
+    TTPTestCase(videoId: "v2ZtAi2rDzA", scenario: "rqh1-cold-worst-case"),  // Path B or C
+    TTPTestCase(videoId: "Dy9ki9Q5nXs", scenario: "scrubber-test"),  // Path A
+    TTPTestCase(videoId: "Wu8xNx4njoM", scenario: "hls-resolution"),  // Path A or B
+    TTPTestCase(videoId: "m1WGX1-uGvU", scenario: "wkwebview-cookie-proxy"),  // Path B
+    TTPTestCase(videoId: "jNQXAC9IVRw", scenario: "queue-prefetch-ref"),  // Path A
+    TTPTestCase(videoId: "MCv4EyEFgVg", scenario: "short-as-regular"),  // Path A or C
     // ── Real home-feed videos (scrolled live, 2026-06-02) ────────────────────
     TTPTestCase(videoId: "9XGXs23wUec", scenario: "home-Polestar5Review"),
     TTPTestCase(videoId: "Pg8jy6PmGas", scenario: "home-UnlimitedEnergy"),
@@ -255,7 +255,9 @@ final class TimeToPlayBenchmarkUITests: XCTestCase {
         ]
         print("[bench] \(videoId) launching with args: \(app.launchArguments)")
         app.launch()
-        print("[bench] \(videoId) launched — pid=\(app.debugDescription.components(separatedBy: "pid=").dropFirst().first?.components(separatedBy: ",").first ?? "?")")
+        print(
+            "[bench] \(videoId) launched — pid=\(app.debugDescription.components(separatedBy: "pid=").dropFirst().first?.components(separatedBy: ",").first ?? "?")"
+        )
 
         // ── 2. Navigate to the Recommended chip so injected video is visible ──
         // `--uitesting-inject-recommended-ids` populates the Recommended chip feed,
@@ -280,12 +282,15 @@ final class TimeToPlayBenchmarkUITests: XCTestCase {
         // Scroll chip into view if it's clipped by the horizontal chip bar.
         let screenWidth = app.windows.firstMatch.frame.width
         let nearEdge = chipBar.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5))
-        let farEdge  = chipBar.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5))
+        let farEdge = chipBar.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5))
         for _ in 0..<8 {
             let f = recommendedChip.frame
             if f.origin.x >= 4 && f.maxX <= screenWidth - 4 { break }
-            if f.origin.x < 4 { nearEdge.press(forDuration: 0.05, thenDragTo: farEdge) }
-            else               { farEdge.press(forDuration: 0.05, thenDragTo: nearEdge) }
+            if f.origin.x < 4 {
+                nearEdge.press(forDuration: 0.05, thenDragTo: farEdge)
+            } else {
+                farEdge.press(forDuration: 0.05, thenDragTo: nearEdge)
+            }
         }
         print("[bench] \(videoId) tapping Recommended chip")
         recommendedChip.tap()
@@ -304,8 +309,9 @@ final class TimeToPlayBenchmarkUITests: XCTestCase {
         print("[bench] \(videoId) card found — identifier='\(cardId)'")
 
         // Guard: the card that appeared must contain the expected video ID.
-        XCTAssertTrue(cardId.contains(videoId),
-                      "[bench] WRONG CARD — expected video.card.\(videoId) but got '\(cardId)'")
+        XCTAssertTrue(
+            cardId.contains(videoId),
+            "[bench] WRONG CARD — expected video.card.\(videoId) but got '\(cardId)'")
 
         let card = specificCard
 
@@ -336,8 +342,9 @@ final class TimeToPlayBenchmarkUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 3.0)
 
         // ── 6. Assertions ────────────────────────────────────────────────────
-        XCTAssertEqual(app.state, .runningForeground,
-                       "[\(videoId)] App is not in foreground — may have crashed during playback")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "[\(videoId)] App is not in foreground — may have crashed during playback")
         if didPlay {
             UITestHelpers.assertNoPlayerErrorBanner(in: app, videoTitle: videoId)
         }

@@ -35,7 +35,10 @@ final class RecommendedChipUITests: XCTestCase {
     override class func setUp() {
         super.setUp()
         sharedApp = XCUIApplication()
-        sharedApp.launchArguments += ["--uitesting", "--uitesting-disable-tos-player-on-ios", "--uitesting-extended-fetch-timeout", Self.injectArg]
+        sharedApp.launchArguments += [
+            "--uitesting", "--uitesting-disable-tos-player-on-ios", "--uitesting-extended-fetch-timeout",
+            Self.injectArg,
+        ]
         sharedApp.launch()
     }
 
@@ -73,8 +76,9 @@ final class RecommendedChipUITests: XCTestCase {
         tapTab(named: "Home")
 
         let chipBar = app.scrollViews["home.chipBar"]
-        XCTAssertTrue(chipBar.waitForExistence(timeout: 10),
-                      "home.chipBar must appear on the Home tab")
+        XCTAssertTrue(
+            chipBar.waitForExistence(timeout: 10),
+            "home.chipBar must appear on the Home tab")
 
         let chip = chipBar.buttons["Recommended"]
         guard chip.waitForExistence(timeout: 5) else {
@@ -90,8 +94,9 @@ final class RecommendedChipUITests: XCTestCase {
         tapTab(named: "Home")
 
         let chipBar = app.scrollViews["home.chipBar"]
-        XCTAssertTrue(chipBar.waitForExistence(timeout: 10),
-                      "home.chipBar must appear on the Home tab")
+        XCTAssertTrue(
+            chipBar.waitForExistence(timeout: 10),
+            "home.chipBar must appear on the Home tab")
 
         let chip = chipBar.buttons["Recommended"]
         guard chip.waitForExistence(timeout: 5) else {
@@ -103,10 +108,12 @@ final class RecommendedChipUITests: XCTestCase {
         // First verify that injected video cards appear (proves the inject is working).
         let cardPredicate0 = NSPredicate(format: "identifier BEGINSWITH 'video.card.'")
         let allCards0 = app.descendants(matching: .any).matching(cardPredicate0)
-        let anyCard0 = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count > 0"),
-                                                 object: allCards0)
+        let anyCard0 = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "count > 0"),
+            object: allCards0)
         guard XCTWaiter().wait(for: [anyCard0], timeout: 15) == .completed else {
-            try captureAndSkip("No video.card.* appeared within 15 s after tapping Recommended — inject may not have run", in: app)
+            try captureAndSkip(
+                "No video.card.* appeared within 15 s after tapping Recommended — inject may not have run", in: app)
         }
 
         // Wait for the section feed container to appear.
@@ -118,14 +125,17 @@ final class RecommendedChipUITests: XCTestCase {
         // At least one video card must appear.
         let cardPredicate = NSPredicate(format: "identifier BEGINSWITH 'video.card.'")
         let cards = feedScrollView.descendants(matching: .any).matching(cardPredicate)
-        let feedLoaded = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count > 0"),
-                                                   object: cards)
-        XCTAssertEqual(XCTWaiter().wait(for: [feedLoaded], timeout: 20), .completed,
-                       "No video cards in Recommended feed within 20 s — injected IDs should have populated the feed")
+        let feedLoaded = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "count > 0"),
+            object: cards)
+        XCTAssertEqual(
+            XCTWaiter().wait(for: [feedLoaded], timeout: 20), .completed,
+            "No video cards in Recommended feed within 20 s — injected IDs should have populated the feed")
 
         // Assert no HTTP error alert appeared.
-        XCTAssertFalse(app.alerts["Error"].exists,
-                       "An 'Error' alert appeared while loading the Recommended feed")
+        XCTAssertFalse(
+            app.alerts["Error"].exists,
+            "An 'Error' alert appeared while loading the Recommended feed")
     }
 
     /// Tapping the Recommended chip must select it (toggle its selected state)
@@ -134,11 +144,12 @@ final class RecommendedChipUITests: XCTestCase {
         tapTab(named: "Home")
 
         let chipBar = app.scrollViews["home.chipBar"]
-        XCTAssertTrue(chipBar.waitForExistence(timeout: 10),
-                      "home.chipBar must appear on the Home tab")
+        XCTAssertTrue(
+            chipBar.waitForExistence(timeout: 10),
+            "home.chipBar must appear on the Home tab")
 
         let homeChip = chipBar.buttons["Home"]
-        let recChip  = chipBar.buttons["Recommended"]
+        let recChip = chipBar.buttons["Recommended"]
         guard recChip.waitForExistence(timeout: 5) else {
             try captureAndSkip("Recommended chip not found", in: app)
         }
@@ -151,7 +162,7 @@ final class RecommendedChipUITests: XCTestCase {
         recChip.tap()
 
         // After tap: Recommended is selected, Home is not.
-        XCTAssertTrue(recChip.isSelected,  "Recommended chip must be selected after tapping it")
+        XCTAssertTrue(recChip.isSelected, "Recommended chip must be selected after tapping it")
         XCTAssertFalse(homeChip.isSelected, "Home chip must be deselected after tapping Recommended")
     }
 
@@ -160,8 +171,9 @@ final class RecommendedChipUITests: XCTestCase {
         tapTab(named: "Home")
 
         let chipBar = app.scrollViews["home.chipBar"]
-        XCTAssertTrue(chipBar.waitForExistence(timeout: 10),
-                      "home.chipBar must appear on the Home tab")
+        XCTAssertTrue(
+            chipBar.waitForExistence(timeout: 10),
+            "home.chipBar must appear on the Home tab")
 
         let chip = chipBar.buttons["Recommended"]
         guard chip.waitForExistence(timeout: 5) else {
@@ -177,14 +189,16 @@ final class RecommendedChipUITests: XCTestCase {
 
         let cardPredicate = NSPredicate(format: "identifier BEGINSWITH 'video.card.'")
         let firstCard = feedScrollView.descendants(matching: .any).matching(cardPredicate).firstMatch
-        XCTAssertTrue(firstCard.waitForExistence(timeout: 20),
-                      "No video cards in Recommended feed within 20 s — injected IDs should have populated the feed")
+        XCTAssertTrue(
+            firstCard.waitForExistence(timeout: 20),
+            "No video cards in Recommended feed within 20 s — injected IDs should have populated the feed")
 
         firstCard.tap()
 
         let titleLabel = app.staticTexts["player.titleLabel"].firstMatch
-        XCTAssertTrue(titleLabel.waitForExistence(timeout: 15),
-                      "player.titleLabel must appear — PlayerView did not open from Recommended feed")
+        XCTAssertTrue(
+            titleLabel.waitForExistence(timeout: 15),
+            "player.titleLabel must appear — PlayerView did not open from Recommended feed")
     }
 
     /// Tapping Recommended then Home must switch back to the merged home feed.
@@ -192,10 +206,11 @@ final class RecommendedChipUITests: XCTestCase {
         tapTab(named: "Home")
 
         let chipBar = app.scrollViews["home.chipBar"]
-        XCTAssertTrue(chipBar.waitForExistence(timeout: 10),
-                      "home.chipBar must appear on the Home tab")
+        XCTAssertTrue(
+            chipBar.waitForExistence(timeout: 10),
+            "home.chipBar must appear on the Home tab")
 
-        let recChip  = chipBar.buttons["Recommended"]
+        let recChip = chipBar.buttons["Recommended"]
         let homeChip = chipBar.buttons["Home"]
         guard recChip.waitForExistence(timeout: 5) else {
             try captureAndSkip("Recommended chip not found", in: app)
@@ -208,16 +223,18 @@ final class RecommendedChipUITests: XCTestCase {
         scrollChipIntoView(homeChip, in: chipBar)
         homeChip.tap()
 
-        XCTAssertTrue(homeChip.isSelected,  "Home chip must be selected after tapping back")
-        XCTAssertFalse(recChip.isSelected,  "Recommended chip must be deselected after switching back to Home")
+        XCTAssertTrue(homeChip.isSelected, "Home chip must be selected after tapping back")
+        XCTAssertFalse(recChip.isSelected, "Recommended chip must be deselected after switching back to Home")
 
         // The home feed should be visible again.
         let cardPredicate = NSPredicate(format: "identifier BEGINSWITH 'video.card.'")
         let cards = app.descendants(matching: .any).matching(cardPredicate)
-        let feedLoaded = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count > 0"),
-                                                   object: cards)
-        XCTAssertEqual(XCTWaiter().wait(for: [feedLoaded], timeout: 20), .completed,
-                       "Home feed should show video cards after switching back from Recommended")
+        let feedLoaded = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "count > 0"),
+            object: cards)
+        XCTAssertEqual(
+            XCTWaiter().wait(for: [feedLoaded], timeout: 20), .completed,
+            "Home feed should show video cards after switching back from Recommended")
     }
 
     /// When not signed in, the Recommended feed must load more videos after
@@ -229,8 +246,9 @@ final class RecommendedChipUITests: XCTestCase {
         tapTab(named: "Home")
 
         let chipBar = app.scrollViews["home.chipBar"]
-        XCTAssertTrue(chipBar.waitForExistence(timeout: 10),
-                      "home.chipBar must appear on the Home tab")
+        XCTAssertTrue(
+            chipBar.waitForExistence(timeout: 10),
+            "home.chipBar must appear on the Home tab")
 
         let chip = chipBar.buttons["Recommended"]
         guard chip.waitForExistence(timeout: 5) else {
@@ -246,10 +264,12 @@ final class RecommendedChipUITests: XCTestCase {
 
         let cardPredicate2 = NSPredicate(format: "identifier BEGINSWITH 'video.card.'")
         let cards2 = feedScrollView.descendants(matching: .any).matching(cardPredicate2)
-        let initialLoad = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count > 0"),
-                                                    object: cards2)
-        XCTAssertEqual(XCTWaiter().wait(for: [initialLoad], timeout: 20), .completed,
-                       "No video cards appeared within 20 s — injected IDs should have populated the feed")
+        let initialLoad = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "count > 0"),
+            object: cards2)
+        XCTAssertEqual(
+            XCTWaiter().wait(for: [initialLoad], timeout: 20), .completed,
+            "No video cards appeared within 20 s — injected IDs should have populated the feed")
 
         let countBefore = cards2.count
 
@@ -271,8 +291,9 @@ final class RecommendedChipUITests: XCTestCase {
             return
         }
 
-        XCTAssertGreaterThan(cards2.count, countBefore,
-                             "Recommended feed must load additional videos after reaching the end when not signed in")
+        XCTAssertGreaterThan(
+            cards2.count, countBefore,
+            "Recommended feed must load additional videos after reaching the end when not signed in")
     }
 
     /// Every visible video card in the Recommended feed must display a non-empty
@@ -284,8 +305,9 @@ final class RecommendedChipUITests: XCTestCase {
         tapTab(named: "Home")
 
         let chipBar = app.scrollViews["home.chipBar"]
-        XCTAssertTrue(chipBar.waitForExistence(timeout: 10),
-                      "home.chipBar must appear on the Home tab")
+        XCTAssertTrue(
+            chipBar.waitForExistence(timeout: 10),
+            "home.chipBar must appear on the Home tab")
 
         let chip = chipBar.buttons["Recommended"]
         guard chip.waitForExistence(timeout: 5) else {
@@ -301,10 +323,12 @@ final class RecommendedChipUITests: XCTestCase {
 
         let cardPredicate3 = NSPredicate(format: "identifier BEGINSWITH 'video.card.'")
         let cards3 = feedScrollView.descendants(matching: .any).matching(cardPredicate3)
-        let feedLoaded3 = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count > 0"),
-                                                   object: cards3)
-        XCTAssertEqual(XCTWaiter().wait(for: [feedLoaded3], timeout: 20), .completed,
-                       "No video cards appeared within 20 s — injected IDs should have populated the feed")
+        let feedLoaded3 = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "count > 0"),
+            object: cards3)
+        XCTAssertEqual(
+            XCTWaiter().wait(for: [feedLoaded3], timeout: 20), .completed,
+            "No video cards appeared within 20 s — injected IDs should have populated the feed")
 
         // Check up to the first 6 visible cards so the test finishes quickly.
         let checkCount = min(6, cards3.count)
@@ -319,27 +343,31 @@ final class RecommendedChipUITests: XCTestCase {
             }
         }
 
-        XCTAssertTrue(emptyTitleCards.isEmpty,
-                      "The following video cards have an empty title (lockupViewModel title parsing failure): \(emptyTitleCards.joined(separator: ", "))")
+        XCTAssertTrue(
+            emptyTitleCards.isEmpty,
+            "The following video cards have an empty title (lockupViewModel title parsing failure): \(emptyTitleCards.joined(separator: ", "))"
+        )
     }
 
     // MARK: - Helpers
 
-    private func tapTab(named label: String, timeout: TimeInterval = 5) {        let tabBarButton = app.tabBars.buttons[label]
+    private func tapTab(named label: String, timeout: TimeInterval = 5) {
+        let tabBarButton = app.tabBars.buttons[label]
         if tabBarButton.waitForExistence(timeout: min(timeout, 3)) {
             tabBarButton.tap()
             return
         }
         let sidebarButton = app.buttons[label].firstMatch
-        XCTAssertTrue(sidebarButton.waitForExistence(timeout: timeout),
-                      "'\(label)' navigation item not found in tab bar or sidebar")
+        XCTAssertTrue(
+            sidebarButton.waitForExistence(timeout: timeout),
+            "'\(label)' navigation item not found in tab bar or sidebar")
         sidebarButton.tap()
     }
 
     private func scrollChipIntoView(_ chip: XCUIElement, in chipBar: XCUIElement) {
         let screenWidth = app.windows.firstMatch.frame.width
         let near = chipBar.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.5))
-        let far  = chipBar.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5))
+        let far = chipBar.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5))
 
         for _ in 0..<8 {
             let frame = chip.frame

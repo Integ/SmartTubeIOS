@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - RateObserverStallRecoveryTests
@@ -33,7 +34,7 @@ struct RateObserverStallRecoveryTests {
     @Test func rateObserverRecoveryGuardUsesNegatedIsPlaying() {
         // Simulate: after rateObserver fires, isPlaying is set to false.
         var isPlaying = true
-        isPlaying = false // rateObserver sets this
+        isPlaying = false  // rateObserver sets this
 
         // Recovery guard: proceed only if !isPlaying (stalled) AND rate is still 0.
         // If user resumed manually between the stall and the 2s recovery window,
@@ -83,10 +84,13 @@ struct RateObserverStallRecoveryTests {
 
         // Scenario B: user manually resumed during seek — skip rate restore.
         var isPlayingB: Bool = true  // user pressed play
-        var rateB: Float = 1.0       // player already running
+        var rateB: Float = 1.0  // player already running
         let shouldRestoreB = !isPlayingB && rateB == 0
         #expect(!shouldRestoreB, "should not overwrite rate when user already resumed")
-        _ = isPlayingA; _ = rateA; _ = isPlayingB; _ = rateB
+        _ = isPlayingA
+        _ = rateA
+        _ = isPlayingB
+        _ = rateB
     }
 
     // MARK: - End-of-video false-stall guard (App Store review 2026-06-25)

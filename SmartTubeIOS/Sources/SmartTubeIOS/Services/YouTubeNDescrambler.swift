@@ -68,29 +68,31 @@ actor YouTubeNDescrambler {
             playerPath = path
         }
 
-        guard let libPath  = await findSolverFile("yt.solver.deno.lib.js"),
-              let corePath = await findSolverFile("yt.solver.core.js") else {
+        guard let libPath = await findSolverFile("yt.solver.deno.lib.js"),
+            let corePath = await findSolverFile("yt.solver.core.js")
+        else {
             log.error("yt-dlp EJS solver scripts not found under /opt/homebrew")
             return nil
         }
 
-        guard let libCode  = try? String(contentsOfFile: libPath, encoding: .utf8),
-              let coreCode = try? String(contentsOfFile: corePath, encoding: .utf8) else {
+        guard let libCode = try? String(contentsOfFile: libPath, encoding: .utf8),
+            let coreCode = try? String(contentsOfFile: corePath, encoding: .utf8)
+        else {
             log.error("Failed to read yt-dlp solver scripts")
             return nil
         }
 
-        let encodedN    = jsonString(scrambled)
+        let encodedN = jsonString(scrambled)
         let encodedPath = jsonString(playerPath)
 
         let script = """
-        \(libCode)
-        Object.assign(globalThis, lib);
-        \(coreCode)
-        const playerJs = await Deno.readTextFile(\(encodedPath));
-        const result = jsc({type:'player',player:playerJs,requests:[{type:'n',challenges:[\(encodedN)]}]});
-        console.log(JSON.stringify(result));
-        """
+            \(libCode)
+            Object.assign(globalThis, lib);
+            \(coreCode)
+            const playerJs = await Deno.readTextFile(\(encodedPath));
+            const result = jsc({type:'player',player:playerJs,requests:[{type:'n',challenges:[\(encodedN)]}]});
+            console.log(JSON.stringify(result));
+            """
 
         return await runDeno(script: script, scrambledKey: scrambled)
     }
@@ -107,7 +109,8 @@ actor YouTubeNDescrambler {
             log.notice("Reusing cached player.js v\(version)")
             return tempPath
         }
-        guard let playerURL = URL(string: "https://www.youtube.com/s/player/\(version)/player_es6.vflset/en_US/base.js") else { return nil }
+        guard let playerURL = URL(string: "https://www.youtube.com/s/player/\(version)/player_es6.vflset/en_US/base.js")
+        else { return nil }
         do {
             let (data, _) = try await URLSession.shared.data(from: playerURL)
             try data.write(to: URL(fileURLWithPath: tempPath))
@@ -127,7 +130,8 @@ actor YouTubeNDescrambler {
         )
         req.timeoutInterval = 10
         guard let (data, _) = try? await URLSession.shared.data(for: req),
-              let html = String(data: data, encoding: .utf8) else { return nil }
+            let html = String(data: data, encoding: .utf8)
+        else { return nil }
 
         // Match /s/player/XXXXXXXX/ (8 lowercase hex chars).
         guard let range = html.range(of: #"/s/player/([a-f0-9]{8})/"#, options: .regularExpression) else { return nil }
@@ -143,8 +147,10 @@ actor YouTubeNDescrambler {
     /// Finds the yt-dlp EJS vendor file under Homebrew using `posix_spawn`/`find`.
     private func findSolverFile(_ filename: String) async -> String? {
         return await Task.detached(priority: .background) { [filename] in
-            let args = ["/usr/bin/find", "/opt/homebrew", "-name", filename,
-                        "-path", "*/yt_dlp/*", "-maxdepth", "15"]
+            let args = [
+                "/usr/bin/find", "/opt/homebrew", "-name", filename,
+                "-path", "*/yt_dlp/*", "-maxdepth", "15",
+            ]
             let output = YouTubeNDescrambler.spawnAndRead(path: "/usr/bin/find", args: args)
             return output.components(separatedBy: "\n").first { !$0.isEmpty }
         }.value
@@ -159,22 +165,26 @@ actor YouTubeNDescrambler {
             // Write script to a temp file; avoids the stdin-deadlock risk with large payloads.
             let scriptPath = "/tmp/yt_n_solver_\(Int(Date().timeIntervalSince1970)).ts"
             guard let scriptData = script.data(using: .utf8),
-                  (try? scriptData.write(to: URL(fileURLWithPath: scriptPath))) != nil else { return nil }
+                (try? scriptData.write(to: URL(fileURLWithPath: scriptPath))) != nil
+            else { return nil }
             defer { try? FileManager.default.removeItem(atPath: scriptPath) }
 
-            let args = ["/opt/homebrew/bin/deno", "run",
-                        "--allow-read", "--allow-net", "--allow-env", scriptPath]
+            let args = [
+                "/opt/homebrew/bin/deno", "run",
+                "--allow-read", "--allow-net", "--allow-env", scriptPath,
+            ]
             let raw = YouTubeNDescrambler.spawnAndRead(
                 path: "/opt/homebrew/bin/deno", args: args
             ).trimmingCharacters(in: .whitespacesAndNewlines)
 
             // Expected: {"type":"result","responses":[{"type":"result","data":{"SCRAMBLED":"DESCRAMBLED"}}]}
             guard let jsonData = raw.data(using: .utf8),
-                  let root = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
-                  let responses = root["responses"] as? [[String: Any]],
-                  let first = responses.first,
-                  let resultData = first["data"] as? [String: String],
-                  let descrambled = resultData[scrambledKey] else {
+                let root = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
+                let responses = root["responses"] as? [[String: Any]],
+                let first = responses.first,
+                let resultData = first["data"] as? [String: String],
+                let descrambled = resultData[scrambledKey]
+            else {
                 log.error("Deno solver: unexpected output — raw='\(raw.prefix(300))'")
                 return nil
             }
@@ -192,7 +202,7 @@ actor YouTubeNDescrambler {
         // on this platform. Callers guard against empty output and fall back gracefully.
         return ""
         #else
-        var stdoutFDs = [Int32](repeating: 0, count: 2) // [0]=read [1]=write
+        var stdoutFDs = [Int32](repeating: 0, count: 2)  // [0]=read [1]=write
         guard Darwin.pipe(&stdoutFDs) == 0 else { return "" }
 
         var fileActions: posix_spawn_file_actions_t?
@@ -261,7 +271,8 @@ actor YouTubeNDescrambler {
     static func ytDlpHLSPlaylistURL(videoId: String) async -> URL? {
         // Guard: only allow valid YouTube video ID characters to prevent injection.
         guard videoId.allSatisfy({ $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" }),
-              !videoId.isEmpty else { return nil }
+            !videoId.isEmpty
+        else { return nil }
 
         // Fast path: read URL from a pre-fetched cache file (e.g. written by a host
         // pre-step before xcodebuild). posix_spawn /bin/cat reads the HOST filesystem
@@ -305,12 +316,15 @@ actor YouTubeNDescrambler {
         var visitorData: String? = nil
         if let (pageData, pageResp) = try? await URLSession.shared.data(for: watchReq) {
             let pageStatus = (pageResp as? HTTPURLResponse)?.statusCode ?? 0
-            log.notice("⚠️ [ytDlp/sim] watch page HTTP \(pageStatus, privacy: .public) bytes=\(pageData.count, privacy: .public)")
+            log.notice(
+                "⚠️ [ytDlp/sim] watch page HTTP \(pageStatus, privacy: .public) bytes=\(pageData.count, privacy: .public)"
+            )
             if let html = String(data: pageData, encoding: .utf8) {
                 // Extract VISITOR_DATA from ytcfg.set({…}) — this is X-Goog-Visitor-Id value.
                 if let startRange = html.range(of: "\"VISITOR_DATA\":\""),
-                   let endRange   = html[startRange.upperBound...].range(of: "\"") {
-                    visitorData = String(html[startRange.upperBound ..< endRange.lowerBound])
+                    let endRange = html[startRange.upperBound...].range(of: "\"")
+                {
+                    visitorData = String(html[startRange.upperBound..<endRange.lowerBound])
                     log.notice("⚠️ [ytDlp/sim] extracted visitorData len=\(visitorData?.count ?? 0, privacy: .public)")
                 } else {
                     log.notice("⚠️ [ytDlp/sim] VISITOR_DATA not found in page HTML")
@@ -328,8 +342,9 @@ actor YouTubeNDescrambler {
         // web_safari (yt-dlp nameID=1, Safari UA) returns hlsManifestUrl for non-embeddable
         // videos; with VISITOR_INFO1_LIVE present YouTube generates the URL WITH spc= tokens.
         // nosec: same published key used in InnerTubeAPI+Networking.swift
-        let wsApiKey = "AIzaSyDCU8hByM-4DrUqRUYnGn-3llEO78bcxq8" // gitleaks:allow
-        guard let apiURL = URL(string: "https://www.youtube.com/youtubei/v1/player?key=\(wsApiKey)&prettyPrint=false") else { return nil }
+        let wsApiKey = "AIzaSyDCU8hByM-4DrUqRUYnGn-3llEO78bcxq8"  // gitleaks:allow
+        guard let apiURL = URL(string: "https://www.youtube.com/youtubei/v1/player?key=\(wsApiKey)&prettyPrint=false")
+        else { return nil }
 
         var clientCtx: [String: Any] = [
             "clientName": "WEB",
@@ -351,7 +366,7 @@ actor YouTubeNDescrambler {
             "racyCheckOk": true,
             "contentCheckOk": true,
             "playbackContext": [
-                "contentPlaybackContext": ["html5Preference": "HTML5_PREF_WANTS"],
+                "contentPlaybackContext": ["html5Preference": "HTML5_PREF_WANTS"]
             ],
         ]
         guard let bodyData = try? JSONSerialization.data(withJSONObject: bodyObj) else { return nil }
@@ -375,26 +390,30 @@ actor YouTubeNDescrambler {
             return nil
         }
         let apiStatus = (apiResp as? HTTPURLResponse)?.statusCode ?? 0
-        log.notice("⚠️ [ytDlp/sim] web_safari /player HTTP \(apiStatus, privacy: .public) bytes=\(apiData.count, privacy: .public)")
+        log.notice(
+            "⚠️ [ytDlp/sim] web_safari /player HTTP \(apiStatus, privacy: .public) bytes=\(apiData.count, privacy: .public)"
+        )
 
         guard let json = try? JSONSerialization.jsonObject(with: apiData) as? [String: Any] else { return nil }
         let streamingKeys = (json["streamingData"] as? [String: Any]).map { Array($0.keys).sorted() } ?? []
         log.notice("⚠️ [ytDlp/sim] web_safari streamingKeys: \(streamingKeys, privacy: .public)")
 
         guard let streamingData = json["streamingData"] as? [String: Any],
-              let hlsManifestStr = streamingData["hlsManifestUrl"] as? String,
-              let hlsManifestURL = URL(string: hlsManifestStr)
+            let hlsManifestStr = streamingData["hlsManifestUrl"] as? String,
+            let hlsManifestURL = URL(string: hlsManifestStr)
         else {
             log.notice("⚠️ [ytDlp/sim] no hlsManifestUrl in web_safari response")
             return nil
         }
         let hasSpc = hlsManifestStr.contains("spc")
-        log.notice("⚠️ [ytDlp/sim] hlsManifestUrl hasSpc=\(hasSpc, privacy: .public): \(String(hlsManifestStr.prefix(80)), privacy: .public)")
+        log.notice(
+            "⚠️ [ytDlp/sim] hlsManifestUrl hasSpc=\(hasSpc, privacy: .public): \(String(hlsManifestStr.prefix(80)), privacy: .public)"
+        )
 
         // Step 3: Fetch HLS master manifest → pick best ≥720p per-quality hls_playlist URL.
         guard let (manifestData, manifestResp) = try? await URLSession.shared.data(from: hlsManifestURL),
-              (manifestResp as? HTTPURLResponse)?.statusCode == 200,
-              let manifest = String(data: manifestData, encoding: .utf8)
+            (manifestResp as? HTTPURLResponse)?.statusCode == 200,
+            let manifest = String(data: manifestData, encoding: .utf8)
         else {
             log.error("❌ [ytDlp/sim] HLS master manifest fetch failed")
             return nil
@@ -402,7 +421,9 @@ actor YouTubeNDescrambler {
 
         let result = parseBestHLSPlaylistURL(from: manifest, minHeight: 720)
         if let result {
-            log.notice("✅ [ytDlp/sim] self-contained HLS URL found: \(String(result.absoluteString.prefix(80)), privacy: .public)")
+            log.notice(
+                "✅ [ytDlp/sim] self-contained HLS URL found: \(String(result.absoluteString.prefix(80)), privacy: .public)"
+            )
         } else {
             log.notice("⚠️ [ytDlp/sim] no ≥720p playlist found in master manifest")
         }
@@ -417,10 +438,11 @@ actor YouTubeNDescrambler {
         let lines = manifest.components(separatedBy: .newlines)
         for (i, line) in lines.enumerated() {
             guard line.hasPrefix("#EXT-X-STREAM-INF:"),
-                  let resRange = line.range(of: "RESOLUTION=") else { continue }
+                let resRange = line.range(of: "RESOLUTION=")
+            else { continue }
             let afterRes = String(line[resRange.upperBound...])
-            let resPart  = afterRes.components(separatedBy: CharacterSet(charactersIn: ", \t\r\n")).first ?? afterRes
-            let dims     = resPart.components(separatedBy: "x")
+            let resPart = afterRes.components(separatedBy: CharacterSet(charactersIn: ", \t\r\n")).first ?? afterRes
+            let dims = resPart.components(separatedBy: "x")
             guard dims.count >= 2, let height = Int(dims[1]) else { continue }
             // The next non-empty, non-comment line is the playlist URL.
             let nextURL = lines[(i + 1)...].first(where: { !$0.isEmpty && !$0.hasPrefix("#") })
@@ -439,11 +461,13 @@ actor YouTubeNDescrambler {
         // NSJSONSerialization.dataWithJSONObject: throws an NSException (not a Swift Error)
         // when passed a bare String, so it must not be used here.
         if let data = try? JSONEncoder().encode(value),
-           let s = String(data: data, encoding: .utf8) {
+            let s = String(data: data, encoding: .utf8)
+        {
             return s
         }
         // Fallback: manual escaping.
-        let escaped = value
+        let escaped =
+            value
             .replacingOccurrences(of: "\\", with: "\\\\")
             .replacingOccurrences(of: "\"", with: "\\\"")
             .replacingOccurrences(of: "\n", with: "\\n")

@@ -89,8 +89,8 @@ final class TVFocusChainUITests: XCTestCase {
             .firstMatch
         XCTAssertTrue(
             sectionContainer.waitForExistence(timeout: 10),
-            "home.sectionContainer must appear after ↓ + → + select — " +
-            "focus was not in the chip bar after one ↓ press"
+            "home.sectionContainer must appear after ↓ + → + select — "
+                + "focus was not in the chip bar after one ↓ press"
         )
     }
 
@@ -122,8 +122,8 @@ final class TVFocusChainUITests: XCTestCase {
         // Verify the player opened (proves focus reached the video list)
         XCTAssertTrue(
             titleLabel.waitForExistence(timeout: 15),
-            "player.titleLabel must appear after pressing down twice and select — " +
-            "focus chain is broken (focus did not reach the video list)"
+            "player.titleLabel must appear after pressing down twice and select — "
+                + "focus chain is broken (focus did not reach the video list)"
         )
     }
 
@@ -184,15 +184,17 @@ final class TVFocusChainUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 0.4)
         remote.press(.up)
         Thread.sleep(forTimeInterval: 0.4)
-        XCTAssertTrue(app.buttons["player.moreButton"].firstMatch.exists,
-                      "Ellipsis control must be present before activation")
+        XCTAssertTrue(
+            app.buttons["player.moreButton"].firstMatch.exists,
+            "Ellipsis control must be present before activation")
 
         remote.press(.select)
         let speedRow = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == 'player.moreMenu.speedRow'"))
             .firstMatch
-        XCTAssertTrue(speedRow.waitForExistence(timeout: 5),
-                      "One Select press on highlighted ellipsis must open the more menu")
+        XCTAssertTrue(
+            speedRow.waitForExistence(timeout: 5),
+            "One Select press on highlighted ellipsis must open the more menu")
     }
 
     /// Pressing the Menu button while the player is open dismisses the player
@@ -326,7 +328,7 @@ final class TVFocusChainUITests: XCTestCase {
         remote.press(.select)
 
         XCTAssertTrue(titleLabel.waitForExistence(timeout: 15), "Player must open")
-        Thread.sleep(forTimeInterval: 2.0)   // let a few seconds of video load
+        Thread.sleep(forTimeInterval: 2.0)  // let a few seconds of video load
 
         // Seek left (-10 s) and right (+10 s) — player must stay open
         remote.press(.left)

@@ -22,7 +22,7 @@ extension ShortsEmbedPlayerViewModel {
     /// below) for every loaded Short.
     func fetchSponsorSegments() async {
         guard settings.sponsorBlockEnabled,
-              !settings.activeSponsorCategories.isEmpty
+            !settings.activeSponsorCategories.isEmpty
         else { return }
 
         // UI-testing deterministic injection — same seam as
@@ -38,28 +38,32 @@ extension ShortsEmbedPlayerViewModel {
                 guard parts.count == 2 else { return nil }
                 let range = parts[0].split(separator: "-")
                 guard range.count == 2,
-                      let start = Double(range[0]),
-                      let end = Double(range[1]),
-                      let category = SponsorSegment.Category(rawValue: String(parts[1]))
+                    let start = Double(range[0]),
+                    let end = Double(range[1]),
+                    let category = SponsorSegment.Category(rawValue: String(parts[1]))
                 else { return nil }
                 return SponsorSegment(start: start, end: end, category: category)
             }
             guard !injected.isEmpty else { return }
             sponsorSegments = injected
-            let summary = injected
+            let summary =
+                injected
                 .map { seg -> String in
                     let start = String(format: "%.1f", seg.start)
                     let end = String(format: "%.1f", seg.end)
                     return "\(seg.category.rawValue)[\(start)–\(end)s]"
                 }
                 .joined(separator: ", ")
-            shortsLog.notice("[SponsorBlock] UI-TEST INJECT — bypassing cache/network, applied \(injected.count) synthetic segment(s): \(summary)")
+            shortsLog.notice(
+                "[SponsorBlock] UI-TEST INJECT — bypassing cache/network, applied \(injected.count) synthetic segment(s): \(summary)"
+            )
             return
         }
 
-        let channelIsExcluded = channelId.map {
-            settings.sponsorBlockExcludedChannels.keys.contains($0)
-        } ?? false
+        let channelIsExcluded =
+            channelId.map {
+                settings.sponsorBlockExcludedChannels.keys.contains($0)
+            } ?? false
         guard !channelIsExcluded else {
             shortsLog.notice("[SponsorBlock] channel excluded — skipping for \(self.videoId)")
             return
@@ -76,7 +80,9 @@ extension ShortsEmbedPlayerViewModel {
         if let cachedSegments = cached.sponsorSegments {
             let isStale = cached.staleFields.contains(.sponsorSegments)
             sponsorSegments = filtered(cachedSegments)
-            shortsLog.notice("[SponsorBlock] cache \(isStale ? "STALE" : "HIT") — applied \(self.sponsorSegments.count) segment(s) for \(videoId)")
+            shortsLog.notice(
+                "[SponsorBlock] cache \(isStale ? "STALE" : "HIT") — applied \(self.sponsorSegments.count) segment(s) for \(videoId)"
+            )
             guard isStale else { return }
             // Revalidate silently — re-apply when it lands.
             Task(priority: .background) { [weak self] in
@@ -85,7 +91,8 @@ extension ShortsEmbedPlayerViewModel {
                 await VideoPreloadCache.shared.store(sponsorSegments: fresh, for: videoId)
                 await MainActor.run {
                     self.sponsorSegments = filtered(fresh)
-                    shortsLog.notice("[SponsorBlock] revalidated — \(self.sponsorSegments.count) segment(s) for \(videoId)")
+                    shortsLog.notice(
+                        "[SponsorBlock] revalidated — \(self.sponsorSegments.count) segment(s) for \(videoId)")
                 }
             }
             return
@@ -95,7 +102,9 @@ extension ShortsEmbedPlayerViewModel {
         let segments = await sponsorService.fetchSegments(videoId: videoId, categories: categories)
         await VideoPreloadCache.shared.store(sponsorSegments: segments, for: videoId)
         sponsorSegments = filtered(segments)
-        shortsLog.notice("[SponsorBlock] cache MISS — fetched & applied \(self.sponsorSegments.count) of \(segments.count) loaded segment(s) for \(videoId)")
+        shortsLog.notice(
+            "[SponsorBlock] cache MISS — fetched & applied \(self.sponsorSegments.count) of \(segments.count) loaded segment(s) for \(videoId)"
+        )
     }
 
     /// Evaluates the current playback time against loaded segments and either
@@ -124,7 +133,9 @@ extension ShortsEmbedPlayerViewModel {
             // for to correlate a skip with the segment that caused it. The "AFTER"/landing
             // line (logged from logSkipLanding once the seek is confirmed) carries the
             // matching beforeTime so the pair can be joined without timestamps.
-            shortsLog.notice("[SponsorBlock] skip TRIGGER category=\(seg.category.rawValue) action=skip segment=[\(seg.start, format: .fixed(precision: 1))s–\(seg.end, format: .fixed(precision: 1))s] (duration=\(seg.end - seg.start, format: .fixed(precision: 1))s) before=\(time, format: .fixed(precision: 2))s target=\(target, format: .fixed(precision: 2))s")
+            shortsLog.notice(
+                "[SponsorBlock] skip TRIGGER category=\(seg.category.rawValue) action=skip segment=[\(seg.start, format: .fixed(precision: 1))s–\(seg.end, format: .fixed(precision: 1))s] (duration=\(seg.end - seg.start, format: .fixed(precision: 1))s) before=\(time, format: .fixed(precision: 2))s target=\(target, format: .fixed(precision: 2))s"
+            )
             pendingSkipLog = PendingSkipLog(
                 category: seg.category,
                 segmentStart: seg.start,
@@ -149,7 +160,9 @@ extension ShortsEmbedPlayerViewModel {
             currentToastSegment = nil
             if lastLoggedNearEndSegment?.start != seg.start || lastLoggedNearEndSegment?.category != seg.category {
                 lastLoggedNearEndSegment = seg
-                shortsLog.notice("[SponsorBlock] near-end segment — letting playback continue to natural end category=\(seg.category.rawValue) segment=[\(seg.start, format: .fixed(precision: 1))s–\(seg.end, format: .fixed(precision: 1))s]")
+                shortsLog.notice(
+                    "[SponsorBlock] near-end segment — letting playback continue to natural end category=\(seg.category.rawValue) segment=[\(seg.start, format: .fixed(precision: 1))s–\(seg.end, format: .fixed(precision: 1))s]"
+                )
             }
 
         case .showToast(let seg):
@@ -158,7 +171,9 @@ extension ShortsEmbedPlayerViewModel {
             // would spam ~4 identical lines/second for the toast's entire visible window.
             if lastLoggedToastSegment?.start != seg.start || lastLoggedToastSegment?.category != seg.category {
                 lastLoggedToastSegment = seg
-                shortsLog.notice("[SponsorBlock] toast SHOW category=\(seg.category.rawValue) action=showToast segment=[\(seg.start, format: .fixed(precision: 1))s–\(seg.end, format: .fixed(precision: 1))s] at t=\(time, format: .fixed(precision: 2))s")
+                shortsLog.notice(
+                    "[SponsorBlock] toast SHOW category=\(seg.category.rawValue) action=showToast segment=[\(seg.start, format: .fixed(precision: 1))s–\(seg.end, format: .fixed(precision: 1))s] at t=\(time, format: .fixed(precision: 2))s"
+                )
             }
             currentToastSegment = seg
 
@@ -176,18 +191,22 @@ extension ShortsEmbedPlayerViewModel {
 
         if time >= pending.targetTime - 0.5 {
             let skippedSeconds = time - pending.beforeTime
-            shortsLog.notice("[SponsorBlock] skip LANDED category=\(pending.category.rawValue) before=\(pending.beforeTime, format: .fixed(precision: 2))s after=\(time, format: .fixed(precision: 2))s skipped≈\(skippedSeconds, format: .fixed(precision: 2))s (target was \(pending.targetTime, format: .fixed(precision: 2))s, Δtarget=\(time - pending.targetTime, format: .fixed(precision: 2))s) ticksWaited=\(pending.ticksWaited)")
+            shortsLog.notice(
+                "[SponsorBlock] skip LANDED category=\(pending.category.rawValue) before=\(pending.beforeTime, format: .fixed(precision: 2))s after=\(time, format: .fixed(precision: 2))s skipped≈\(skippedSeconds, format: .fixed(precision: 2))s (target was \(pending.targetTime, format: .fixed(precision: 2))s, Δtarget=\(time - pending.targetTime, format: .fixed(precision: 2))s) ticksWaited=\(pending.ticksWaited)"
+            )
             pendingSkipLog = nil
             return
         }
 
         pending.ticksWaited += 1
         if pending.ticksWaited > 16 {
-            shortsLog.notice("[SponsorBlock] skip TIMEOUT category=\(pending.category.rawValue) before=\(pending.beforeTime, format: .fixed(precision: 2))s target=\(pending.targetTime, format: .fixed(precision: 2))s — still at \(time, format: .fixed(precision: 2))s after \(pending.ticksWaited) ticks; seek may not have taken effect")
+            shortsLog.notice(
+                "[SponsorBlock] skip TIMEOUT category=\(pending.category.rawValue) before=\(pending.beforeTime, format: .fixed(precision: 2))s target=\(pending.targetTime, format: .fixed(precision: 2))s — still at \(time, format: .fixed(precision: 2))s after \(pending.ticksWaited) ticks; seek may not have taken effect"
+            )
             pendingSkipLog = nil
         } else {
             pendingSkipLog = pending
         }
     }
 }
-#endif // !os(tvOS)
+#endif  // !os(tvOS)

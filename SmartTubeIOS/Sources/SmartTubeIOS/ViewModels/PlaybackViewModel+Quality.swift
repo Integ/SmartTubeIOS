@@ -1,6 +1,6 @@
 import AVFoundation
-import os
 import SmartTubeIOSCore
+import os
 
 private let qualityLog = CrashlyticsLogger(category: "Quality")
 
@@ -10,7 +10,9 @@ extension PlaybackViewModel {
 
     public func selectFormat(_ format: VideoFormat?) {
         if let fmt = format {
-            qualityLog.notice("[quality] selectFormat → \(fmt.qualityLabel) (\(fmt.codecShortLabel)) \(fmt.width)×\(fmt.height)@\(fmt.fps)fps")
+            qualityLog.notice(
+                "[quality] selectFormat → \(fmt.qualityLabel) (\(fmt.codecShortLabel)) \(fmt.width)×\(fmt.height)@\(fmt.fps)fps"
+            )
         } else {
             qualityLog.notice("[quality] selectFormat → Auto (clearing selectedFormat)")
         }

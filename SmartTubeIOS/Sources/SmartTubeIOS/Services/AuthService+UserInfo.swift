@@ -28,8 +28,8 @@ extension AuthService {
             "accountReadMask": [
                 "returnOwner": true,
                 "returnBrandAccounts": true,
-                "returnPersonaAccounts": false
-            ]
+                "returnPersonaAccounts": false,
+            ],
         ]
         req.httpBody = try JSONSerialization.data(withJSONObject: body)
         let (data, response) = try await URLSession.shared.data(for: req)
@@ -48,14 +48,16 @@ extension AuthService {
             return
         }
         if let nameDict = item["accountName"] as? [String: Any] {
-            accountName = (nameDict["runs"] as? [[String: Any]])?.compactMap { $0["text"] as? String }.joined()
+            accountName =
+                (nameDict["runs"] as? [[String: Any]])?.compactMap { $0["text"] as? String }.joined()
                 ?? nameDict["simpleText"] as? String
         }
         authLog.notice("fetchUserInfo() — accountName=\(self.accountName ?? "nil")")
         if let photoDict = item["accountPhoto"] as? [String: Any],
-           let thumbnails = photoDict["thumbnails"] as? [[String: Any]],
-           let last = thumbnails.last,
-           let urlStr = last["url"] as? String {
+            let thumbnails = photoDict["thumbnails"] as? [[String: Any]],
+            let last = thumbnails.last,
+            let urlStr = last["url"] as? String
+        {
             accountAvatarURL = URL(string: urlStr.hasPrefix("//") ? "https:\(urlStr)" : urlStr)
             authLog.notice("fetchUserInfo() — avatarURL=\(urlStr)")
         }
@@ -67,12 +69,12 @@ extension AuthService {
     /// Returns the first account with isSelected==true, or the first available account.
     func extractAccountItem(from json: [String: Any]) -> [String: Any]? {
         guard let contents = json["contents"] as? [[String: Any]],
-              let firstSection = contents.first,
-              let sectionListRenderer = firstSection["accountSectionListRenderer"] as? [String: Any],
-              let sectionContents = sectionListRenderer["contents"] as? [[String: Any]],
-              let firstItemSection = sectionContents.first,
-              let itemSectionRenderer = firstItemSection["accountItemSectionRenderer"] as? [String: Any],
-              let items = itemSectionRenderer["contents"] as? [[String: Any]]
+            let firstSection = contents.first,
+            let sectionListRenderer = firstSection["accountSectionListRenderer"] as? [String: Any],
+            let sectionContents = sectionListRenderer["contents"] as? [[String: Any]],
+            let firstItemSection = sectionContents.first,
+            let itemSectionRenderer = firstItemSection["accountItemSectionRenderer"] as? [String: Any],
+            let items = itemSectionRenderer["contents"] as? [[String: Any]]
         else { return nil }
         return items.compactMap { $0["accountItem"] as? [String: Any] }
             .first(where: { $0["isSelected"] as? Bool == true })

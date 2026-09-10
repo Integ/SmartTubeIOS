@@ -18,9 +18,9 @@ private let syncLog = Logger(subsystem: appSubsystem, category: "iCloudSync")
 
 public enum SyncableStore: String, Sendable {
     case subscriptions = "smarttube_subscriptions"
-    case rssFeeds      = "smarttube_rss_feeds"
-    case videoState    = "smarttube_video_state"
-    case currentQueue  = "smarttube_current_queue"
+    case rssFeeds = "smarttube_rss_feeds"
+    case videoState = "smarttube_video_state"
+    case currentQueue = "smarttube_current_queue"
 }
 
 // MARK: - iCloudSyncManager
@@ -86,7 +86,8 @@ public actor iCloudSyncManager {
             let data = try JSONEncoder().encode(value)
             kvStore.set(data, forKey: store.rawValue)
         } catch {
-            syncLog.error("[\(store.rawValue, privacy: .public)] push failed: \(error.localizedDescription, privacy: .public)")
+            syncLog.error(
+                "[\(store.rawValue, privacy: .public)] push failed: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -111,8 +112,9 @@ public actor iCloudSyncManager {
             object: nil,
             queue: nil
         ) { [weak self] notification in
-            let changedKeys = (notification.userInfo?[NSUbiquitousKeyValueStoreChangedKeysKey]
-                as? [String]) ?? []
+            let changedKeys =
+                (notification.userInfo?[NSUbiquitousKeyValueStoreChangedKeysKey]
+                    as? [String]) ?? []
             Task { await self?.handleExternalChange(changedKeys) }
         }
     }

@@ -1,5 +1,6 @@
-import Testing
 import AVFoundation
+import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - SponsorBlockSkipManager unit tests
@@ -47,9 +48,11 @@ struct SponsorBlockSkipManagerTests {
         let player = AVPlayer()
         manager.delegate = delegate
         manager.player = player
-        manager.sponsorSegments = [SponsorSegment(
-            id: UUID(), start: 10.0, end: 30.0, category: .sponsor
-        )]
+        manager.sponsorSegments = [
+            SponsorSegment(
+                id: UUID(), start: 10.0, end: 30.0, category: .sponsor
+            )
+        ]
         // Override delegate settings to use .skip for sponsor
         var settings = AppSettings()
         settings.sponsorBlockEnabled = true
@@ -68,9 +71,11 @@ struct SponsorBlockSkipManagerTests {
         let delegate = SpyDelegate()
         manager.delegate = delegate
         manager.player = AVPlayer()
-        manager.sponsorSegments = [SponsorSegment(
-            id: UUID(), start: 5.0, end: 20.0, category: .sponsor
-        )]
+        manager.sponsorSegments = [
+            SponsorSegment(
+                id: UUID(), start: 5.0, end: 20.0, category: .sponsor
+            )
+        ]
         var settings = AppSettings()
         settings.sponsorBlockEnabled = true
         settings.sponsorBlockActions[.sponsor] = .skip
@@ -114,9 +119,11 @@ struct SponsorBlockSkipManagerTests {
         delegate.duration = 30.0
         manager.delegate = delegate
         manager.player = nil  // no real player, uses delegate.duration
-        manager.sponsorSegments = [SponsorSegment(
-            id: UUID(), start: 25.0, end: 29.5, category: .sponsor
-        )]
+        manager.sponsorSegments = [
+            SponsorSegment(
+                id: UUID(), start: 25.0, end: 29.5, category: .sponsor
+            )
+        ]
         var settings = AppSettings()
         settings.sponsorBlockEnabled = true
         settings.sponsorBlockActions[.sponsor] = .skip

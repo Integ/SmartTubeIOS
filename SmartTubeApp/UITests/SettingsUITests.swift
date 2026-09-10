@@ -31,9 +31,11 @@ final class SettingsUITests: XCTestCase {
         app.launchArguments = ["--uitesting", "--uitesting-reset-settings", "--uitesting-sign-out"]
         app.launch()
         UITestHelpers.tapTab(named: "Settings", in: app)
-        let signInPredicate = NSPredicate(format: "identifier == 'settings.signInButton' OR label == 'Sign in with Google'")
+        let signInPredicate = NSPredicate(
+            format: "identifier == 'settings.signInButton' OR label == 'Sign in with Google'")
         let signInEl = app.descendants(matching: .any).matching(signInPredicate).firstMatch
-        XCTAssertTrue(signInEl.waitForExistence(timeout: 5),
-                      "'Sign in with Google' button must be visible when the session is cleared via --uitesting-sign-out")
+        XCTAssertTrue(
+            signInEl.waitForExistence(timeout: 5),
+            "'Sign in with Google' button must be visible when the session is cleared via --uitesting-sign-out")
     }
 }

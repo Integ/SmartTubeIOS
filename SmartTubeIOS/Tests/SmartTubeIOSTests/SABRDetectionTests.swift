@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - SABRDetectionTests
@@ -65,7 +66,7 @@ struct SABRDetectionTests {
     @Test func containsSabrFormats_muxedFormatOnly_returnsFalse() {
         // Muxed formats have ", " in mimeType — excluded from adaptive check
         let formats = [
-            makeFormat(mimeType: "video/mp4; codecs=\"avc1.42001E, mp4a.40.2\"", urlString: sabrURL),
+            makeFormat(mimeType: "video/mp4; codecs=\"avc1.42001E, mp4a.40.2\"", urlString: sabrURL)
         ]
         let info = makePlayerInfo(formats: formats)
         #expect(info.containsSabrFormats == false)
@@ -73,7 +74,7 @@ struct SABRDetectionTests {
 
     @Test func containsSabrFormats_normalAdaptiveURL_returnsFalse() {
         let formats = [
-            makeFormat(mimeType: "video/mp4; codecs=\"avc1.640028\"", urlString: normalURL),
+            makeFormat(mimeType: "video/mp4; codecs=\"avc1.640028\"", urlString: normalURL)
         ]
         let info = makePlayerInfo(formats: formats)
         #expect(info.containsSabrFormats == false)
@@ -82,7 +83,7 @@ struct SABRDetectionTests {
     @Test func containsSabrFormats_nilURL_returnsFalse() {
         // Formats with no URL are excluded from adaptive check
         let formats = [
-            makeFormat(mimeType: "video/mp4; codecs=\"avc1.640028\"", urlString: nil),
+            makeFormat(mimeType: "video/mp4; codecs=\"avc1.640028\"", urlString: nil)
         ]
         let info = makePlayerInfo(formats: formats)
         #expect(info.containsSabrFormats == false)

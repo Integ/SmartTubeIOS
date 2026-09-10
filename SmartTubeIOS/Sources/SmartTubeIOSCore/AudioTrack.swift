@@ -21,8 +21,10 @@ public struct AudioTrack: Identifiable, Hashable, Sendable {
     /// variants that have *no* `YT-EXT-AUDIO-CONTENT-ID` (i.e. the original stream).
     public let contentID: String?
 
-    public init(id: String, name: String, languageCode: String, isOriginal: Bool,
-                contentID: String? = nil) {
+    public init(
+        id: String, name: String, languageCode: String, isOriginal: Bool,
+        contentID: String? = nil
+    ) {
         self.id = id
         self.name = name
         self.languageCode = languageCode

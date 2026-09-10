@@ -10,7 +10,7 @@ import Foundation
 public extension Notification.Name {
     /// Posted when a specific video should be removed from the current feed.
     /// userInfo key: "videoId" (String)
-    static let hideVideoFromFeed   = Notification.Name("com.smarttube.hideVideoFromFeed")
+    static let hideVideoFromFeed = Notification.Name("com.smarttube.hideVideoFromFeed")
     /// Posted when all videos from a channel should be removed from the current feed.
     /// userInfo key: "channelId" (String)
     static let hideChannelFromFeed = Notification.Name("com.smarttube.hideChannelFromFeed")

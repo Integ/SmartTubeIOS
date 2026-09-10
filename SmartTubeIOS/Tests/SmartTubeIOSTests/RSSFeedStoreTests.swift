@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - RSSFeedStoreTests
@@ -11,7 +12,9 @@ struct RSSFeedStoreTests {
         RSSFeedStore(suiteName: "test-rss-\(UUID().uuidString)")
     }
 
-    private func makeFeed(title: String = "Test Feed", urlString: String = "https://www.youtube.com/feeds/videos.xml?channel_id=UCtest") -> RSSFeedInfo {
+    private func makeFeed(
+        title: String = "Test Feed", urlString: String = "https://www.youtube.com/feeds/videos.xml?channel_id=UCtest"
+    ) -> RSSFeedInfo {
         RSSFeedInfo(title: title, feedURL: URL(string: urlString)!)
     }
 
@@ -29,7 +32,8 @@ struct RSSFeedStoreTests {
     @Test func addFeed_idempotentByURL() async {
         let store = makeStore()
         let feed1 = makeFeed()
-        let feed2 = RSSFeedInfo(title: "Duplicate", feedURL: URL(string: "https://www.youtube.com/feeds/videos.xml?channel_id=UCtest")!)
+        let feed2 = RSSFeedInfo(
+            title: "Duplicate", feedURL: URL(string: "https://www.youtube.com/feeds/videos.xml?channel_id=UCtest")!)
         await store.addFeed(feed1)
         await store.addFeed(feed2)
         let all = await store.allFeeds()
@@ -81,7 +85,9 @@ struct RSSFeedStoreTests {
 
     @Test func setActive_true_enablesFeed() async {
         let store = makeStore()
-        let feed = RSSFeedInfo(title: "Feed", feedURL: URL(string: "https://www.youtube.com/feeds/videos.xml?channel_id=UCtest")!, isActive: false)
+        let feed = RSSFeedInfo(
+            title: "Feed", feedURL: URL(string: "https://www.youtube.com/feeds/videos.xml?channel_id=UCtest")!,
+            isActive: false)
         await store.addFeed(feed)
         await store.setActive(feed.id, true)
         let all = await store.allFeeds()

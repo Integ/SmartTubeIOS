@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - ShortsRowSectionDataTests
@@ -71,7 +72,7 @@ struct ShortsRowSectionDataTests {
     func hideShortsFiltersOutShorts() {
         let groups = [
             makeGroup(videos: [makeVideo(id: "v1"), makeVideo(id: "s1", isShort: true)]),
-            makeGroup(videos: [makeVideo(id: "s2", isShort: true), makeVideo(id: "v2")])
+            makeGroup(videos: [makeVideo(id: "s2", isShort: true), makeVideo(id: "v2")]),
         ]
         let hideShorts = true
 
@@ -107,7 +108,7 @@ struct ShortsRowSectionDataTests {
     func nonShortsTypesAreHorizontal() {
         let nonShortsTypes: [BrowseSection.SectionType] = [
             .home, .recommended, .subscriptions, .history,
-            .playlists, .channels, .music, .news, .gaming, .live, .sports
+            .playlists, .channels, .music, .news, .gaming, .live, .sports,
         ]
 
         for sectionType in nonShortsTypes {

@@ -31,7 +31,7 @@ import XCTest
 // (not its text value) pass offline. Tests that assert a non-empty title use
 // `XCTSkip` when the network is unavailable.
 
-private let kTestVideoID = "dQw4w9WgXcQ" // Rick Astley — publicly available
+private let kTestVideoID = "dQw4w9WgXcQ"  // Rick Astley — publicly available
 
 final class ShareExtensionUITests: XCTestCase {
 

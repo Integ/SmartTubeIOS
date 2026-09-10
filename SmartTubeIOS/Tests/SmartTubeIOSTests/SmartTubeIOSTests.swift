@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - VideoModelTests
@@ -58,9 +59,11 @@ struct VideoGroupTests {
     }
 
     @Test func videoGroupAppend() {
-        var group = VideoGroup(title: "Home", videos: [
-            Video(id: "1", title: "V1", channelTitle: "C"),
-        ])
+        var group = VideoGroup(
+            title: "Home",
+            videos: [
+                Video(id: "1", title: "V1", channelTitle: "C")
+            ])
         group.videos.append(Video(id: "2", title: "V2", channelTitle: "C"))
         #expect(group.videos.count == 2)
     }
@@ -84,11 +87,11 @@ struct AppSettingsTests {
 
     @Test func settingsEncodeDecode() throws {
         var settings = AppSettings()
-        settings.preferredQuality    = .q1080
-        settings.playbackSpeed       = 1.5
+        settings.preferredQuality = .q1080
+        settings.playbackSpeed = 1.5
         settings.sponsorBlockEnabled = false
 
-        let data    = try JSONEncoder().encode(settings)
+        let data = try JSONEncoder().encode(settings)
         let decoded = try JSONDecoder().decode(AppSettings.self, from: data)
 
         #expect(decoded.preferredQuality == AppSettings.VideoQuality.q1080)
@@ -159,31 +162,34 @@ struct SubscriptionParsingTests {
                                                     "browseEndpoint": [
                                                         "browseId": "UCuAXFkgsw1L7xaCfnd5JJOw"
                                                     ]
-                                                ]
+                                                ],
                                             ]
                                         ]
                                     ],
                                     "thumbnail": [
                                         "thumbnails": [
-                                            ["url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg", "width": 480, "height": 360]
+                                            [
+                                                "url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg", "width": 480,
+                                                "height": 360,
+                                            ]
                                         ]
                                     ],
                                     "thumbnailOverlays": [
                                         [
                                             "thumbnailOverlayTimeStatusRenderer": [
                                                 "text": ["simpleText": "3:33"],
-                                                "style": "DEFAULT"
+                                                "style": "DEFAULT",
                                             ]
                                         ]
                                     ],
                                     "viewCountText": ["simpleText": "1,604,532,756 views"],
-                                    "navigationEndpoint": ["watchEndpoint": ["videoId": "dQw4w9WgXcQ"]]
+                                    "navigationEndpoint": ["watchEndpoint": ["videoId": "dQw4w9WgXcQ"]],
                                 ]
                             ]
                         ]
                     ]
                 ]
-            ]
+            ],
         ]
 
         let api = InnerTubeAPI()
@@ -195,7 +201,7 @@ struct SubscriptionParsingTests {
         #expect(video.title == "Rick Astley - Never Gonna Give You Up")
         #expect(video.channelTitle == "Rick Astley")
         #expect(video.channelId == "UCuAXFkgsw1L7xaCfnd5JJOw")
-        #expect(video.duration == 213)   // 3m 33s
+        #expect(video.duration == 213)  // 3m 33s
     }
 
     @Test func videoRendererStillParsed() async throws {
@@ -215,10 +221,15 @@ struct SubscriptionParsingTests {
                                                             "videoId": "abc123",
                                                             "title": ["runs": [["text": "Test Video"]]],
                                                             "ownerText": ["runs": [["text": "Test Channel"]]],
-                                                            "thumbnail": ["thumbnails": [
-                                                                ["url": "https://i.ytimg.com/vi/abc123/hqdefault.jpg"]
-                                                            ]],
-                                                            "lengthText": ["simpleText": "10:00"]
+                                                            "thumbnail": [
+                                                                "thumbnails": [
+                                                                    [
+                                                                        "url":
+                                                                            "https://i.ytimg.com/vi/abc123/hqdefault.jpg"
+                                                                    ]
+                                                                ]
+                                                            ],
+                                                            "lengthText": ["simpleText": "10:00"],
                                                         ]
                                                     ]
                                                 ]
@@ -273,51 +284,98 @@ struct SubscriptionParsingTests {
                                                                                         "items": [
                                                                                             [
                                                                                                 "tileRenderer": [
-                                                                                                    "contentType": "TILE_CONTENT_TYPE_VIDEO",
-                                                                                                    "contentId": "A8ig2UPjOXQ",
+                                                                                                    "contentType":
+                                                                                                        "TILE_CONTENT_TYPE_VIDEO",
+                                                                                                    "contentId":
+                                                                                                        "A8ig2UPjOXQ",
                                                                                                     "onSelectCommand": [
-                                                                                                        "watchEndpoint": ["videoId": "A8ig2UPjOXQ"]
+                                                                                                        "watchEndpoint":
+                                                                                                            [
+                                                                                                                "videoId":
+                                                                                                                    "A8ig2UPjOXQ"
+                                                                                                            ]
                                                                                                     ],
                                                                                                     "metadata": [
-                                                                                                        "tileMetadataRenderer": [
-                                                                                                            "title": ["simpleText": "Oh no, it's an eBrain"],
-                                                                                                            "lines": [
-                                                                                                                [
-                                                                                                                    "lineRenderer": [
-                                                                                                                        "items": [
-                                                                                                                            [
-                                                                                                                                "lineItemRenderer": [
-                                                                                                                                    "text": ["runs": [["text": "Action Retro"]]]
+                                                                                                        "tileMetadataRenderer":
+                                                                                                            [
+                                                                                                                "title":
+                                                                                                                    [
+                                                                                                                        "simpleText":
+                                                                                                                            "Oh no, it's an eBrain"
+                                                                                                                    ],
+                                                                                                                "lines":
+                                                                                                                    [
+                                                                                                                        [
+                                                                                                                            "lineRenderer":
+                                                                                                                                [
+                                                                                                                                    "items":
+                                                                                                                                        [
+                                                                                                                                            [
+                                                                                                                                                "lineItemRenderer":
+                                                                                                                                                    [
+                                                                                                                                                        "text":
+                                                                                                                                                            [
+                                                                                                                                                                "runs":
+                                                                                                                                                                    [
+                                                                                                                                                                        [
+                                                                                                                                                                            "text":
+                                                                                                                                                                                "Action Retro"
+                                                                                                                                                                        ]
+                                                                                                                                                                    ]
+                                                                                                                                                            ]
+                                                                                                                                                    ]
+                                                                                                                                            ]
+                                                                                                                                        ]
                                                                                                                                 ]
-                                                                                                                            ]
                                                                                                                         ]
-                                                                                                                    ]
-                                                                                                                ]
+                                                                                                                    ],
                                                                                                             ]
-                                                                                                        ]
                                                                                                     ],
                                                                                                     "header": [
-                                                                                                        "tileHeaderRenderer": [
-                                                                                                            "thumbnail": [
-                                                                                                                "thumbnails": [
-                                                                                                                    ["url": "https://i.ytimg.com/vi/A8ig2UPjOXQ/hqdefault.jpg", "width": 480, "height": 360]
-                                                                                                                ]
-                                                                                                            ],
-                                                                                                            "thumbnailOverlays": [
-                                                                                                                [
-                                                                                                                    "thumbnailOverlayTimeStatusRenderer": [
-                                                                                                                        "text": ["simpleText": "24:31"],
-                                                                                                                        "style": "DEFAULT"
-                                                                                                                    ]
-                                                                                                                ]
+                                                                                                        "tileHeaderRenderer":
+                                                                                                            [
+                                                                                                                "thumbnail":
+                                                                                                                    [
+                                                                                                                        "thumbnails":
+                                                                                                                            [
+                                                                                                                                [
+                                                                                                                                    "url":
+                                                                                                                                        "https://i.ytimg.com/vi/A8ig2UPjOXQ/hqdefault.jpg",
+                                                                                                                                    "width":
+                                                                                                                                        480,
+                                                                                                                                    "height":
+                                                                                                                                        360,
+                                                                                                                                ]
+                                                                                                                            ]
+                                                                                                                    ],
+                                                                                                                "thumbnailOverlays":
+                                                                                                                    [
+                                                                                                                        [
+                                                                                                                            "thumbnailOverlayTimeStatusRenderer":
+                                                                                                                                [
+                                                                                                                                    "text":
+                                                                                                                                        [
+                                                                                                                                            "simpleText":
+                                                                                                                                                "24:31"
+                                                                                                                                        ],
+                                                                                                                                    "style":
+                                                                                                                                        "DEFAULT",
+                                                                                                                                ]
+                                                                                                                        ]
+                                                                                                                    ],
                                                                                                             ]
-                                                                                                        ]
                                                                                                     ],
-                                                                                                    "onLongPressCommand": [
-                                                                                                        "showMenuCommand": [
-                                                                                                            "subtitle": ["simpleText": "Action Retro • @ActionRetro"]
-                                                                                                        ]
-                                                                                                    ]
+                                                                                                    "onLongPressCommand":
+                                                                                                        [
+                                                                                                            "showMenuCommand":
+                                                                                                                [
+                                                                                                                    "subtitle":
+                                                                                                                        [
+                                                                                                                            "simpleText":
+                                                                                                                                "Action Retro • @ActionRetro"
+                                                                                                                        ]
+                                                                                                                ]
+                                                                                                        ],
                                                                                                 ]
                                                                                             ]
                                                                                         ]
@@ -412,7 +470,7 @@ struct HistoryParsingTests {
                         [
                             "reelItemRenderer": [
                                 "videoId": "reel1",
-                                "headline": ["simpleText": "My Short"]
+                                "headline": ["simpleText": "My Short"],
                             ]
                         ]
                     ]
@@ -433,7 +491,7 @@ struct HistoryParsingTests {
         let reelItem: [String: Any] = [
             "reelItemRenderer": [
                 "videoId": "short1",
-                "headline": ["simpleText": "A Short"]
+                "headline": ["simpleText": "A Short"],
             ]
         ]
         let tileItem: [String: Any] = [
@@ -448,7 +506,7 @@ struct HistoryParsingTests {
                     "tileMetadataRenderer": [
                         "title": ["simpleText": "A Regular Video"]
                     ]
-                ]
+                ],
             ]
         ]
         let mockResponse: [String: Any] = [
@@ -456,7 +514,7 @@ struct HistoryParsingTests {
                 "sectionListRenderer": [
                     "contents": [
                         ["itemSectionRenderer": ["contents": [tileItem]]],
-                        ["itemSectionRenderer": ["contents": [reelItem]]]
+                        ["itemSectionRenderer": ["contents": [reelItem]]],
                     ]
                 ]
             ]
@@ -468,7 +526,7 @@ struct HistoryParsingTests {
         #expect(ids.contains("regular1"))
         #expect(ids.contains("short1"))
         let regular = group.videos.first { $0.id == "regular1" }
-        let short   = group.videos.first { $0.id == "short1" }
+        let short = group.videos.first { $0.id == "short1" }
         #expect(regular?.isShort == false)
         #expect(short?.isShort == true)
     }
@@ -483,13 +541,13 @@ struct HistoryParsingTests {
             "style": "TILE_STYLE_YTLR_DEFAULT",
             "onSelectCommand": [
                 "clickTrackingParams": "abc",
-                "commandExecutorCommand": ["commands": []]   // no watchEndpoint
+                "commandExecutorCommand": ["commands": []],  // no watchEndpoint
             ],
             "metadata": [
                 "tileMetadataRenderer": [
                     "title": ["simpleText": "Test via contentId"]
                 ]
-            ]
+            ],
         ]
         let mockResponse: [String: Any] = [
             "contents": [
@@ -515,7 +573,6 @@ struct HistoryParsingTests {
     }
 }
 
-
 // MARK: - Home Row Parsing Tests
 
 @Suite("Home Row Parsing")
@@ -527,23 +584,25 @@ struct HomeRowParsingTests {
         let mockResponse: [String: Any] = [
             "contents": [
                 "twoColumnBrowseResultsRenderer": [
-                    "tabs": [[
-                        "tabRenderer": [
-                            "content": [
-                                "richGridRenderer": [
-                                    "contents": [
-                                        [
-                                            "richSectionRenderer": [
-                                                "content": [
-                                                    "reelShelfRenderer": [
-                                                        "title": ["simpleText": "Shorts"],
-                                                        "items": [
-                                                            [
-                                                                "reelItemRenderer": [
-                                                                    "videoId": "short1",
-                                                                    "headline": ["simpleText": "A Short"]
+                    "tabs": [
+                        [
+                            "tabRenderer": [
+                                "content": [
+                                    "richGridRenderer": [
+                                        "contents": [
+                                            [
+                                                "richSectionRenderer": [
+                                                    "content": [
+                                                        "reelShelfRenderer": [
+                                                            "title": ["simpleText": "Shorts"],
+                                                            "items": [
+                                                                [
+                                                                    "reelItemRenderer": [
+                                                                        "videoId": "short1",
+                                                                        "headline": ["simpleText": "A Short"],
+                                                                    ]
                                                                 ]
-                                                            ]
+                                                            ],
                                                         ]
                                                     ]
                                                 ]
@@ -553,7 +612,7 @@ struct HomeRowParsingTests {
                                 ]
                             ]
                         ]
-                    ]]
+                    ]
                 ]
             ]
         ]
@@ -570,25 +629,27 @@ struct HomeRowParsingTests {
         let mockResponse: [String: Any] = [
             "contents": [
                 "twoColumnBrowseResultsRenderer": [
-                    "tabs": [[
-                        "tabRenderer": [
-                            "content": [
-                                "richGridRenderer": [
-                                    "contents": [
-                                        [
-                                            "richShelfRenderer": [
-                                                "title": ["simpleText": "Trending"],
-                                                "contents": [
-                                                    [
-                                                        "richItemRenderer": [
-                                                            "content": [
-                                                                "reelItemRenderer": [
-                                                                    "videoId": "embeddedShort1",
-                                                                    "headline": ["simpleText": "Embedded Short"]
+                    "tabs": [
+                        [
+                            "tabRenderer": [
+                                "content": [
+                                    "richGridRenderer": [
+                                        "contents": [
+                                            [
+                                                "richShelfRenderer": [
+                                                    "title": ["simpleText": "Trending"],
+                                                    "contents": [
+                                                        [
+                                                            "richItemRenderer": [
+                                                                "content": [
+                                                                    "reelItemRenderer": [
+                                                                        "videoId": "embeddedShort1",
+                                                                        "headline": ["simpleText": "Embedded Short"],
+                                                                    ]
                                                                 ]
                                                             ]
                                                         ]
-                                                    ]
+                                                    ],
                                                 ]
                                             ]
                                         ]
@@ -596,7 +657,7 @@ struct HomeRowParsingTests {
                                 ]
                             ]
                         ]
-                    ]]
+                    ]
                 ]
             ]
         ]
@@ -609,7 +670,6 @@ struct HomeRowParsingTests {
 }
 
 // MARK: - Helpers
-
 
 // MARK: - TimeFormattingTests
 
@@ -728,7 +788,7 @@ struct InnerTubeAPIParsingGapsTests {
                                             ],
                                             "onSelectCommand": [
                                                 "watchEndpoint": ["videoId": "short1234567"]
-                                            ]
+                                            ],
                                         ]
                                     ]
                                 ]
@@ -766,7 +826,7 @@ struct InnerTubeAPIParsingGapsTests {
                                             ],
                                             "onSelectCommand": [
                                                 "reelWatchEndpoint": ["videoId": "reelShort1234"]
-                                            ]
+                                            ],
                                         ]
                                     ]
                                 ]
@@ -783,7 +843,8 @@ struct InnerTubeAPIParsingGapsTests {
         #expect(video.isShort, "tileRenderer with reelWatchEndpoint must be tagged isShort = true")
     }
 
-    @Test("tileRenderer with reelWatchEndpoint nested under navigationEndpoint.innertubeCommand is tagged isShort = true")
+    @Test(
+        "tileRenderer with reelWatchEndpoint nested under navigationEndpoint.innertubeCommand is tagged isShort = true")
     func tileRendererNavEndpointInnertubeCommandReelEndpointTaggedShort() async throws {
         // Some TV-client subs tiles carry the reelWatchEndpoint inside
         // navigationEndpoint.innertubeCommand rather than directly on navigationEndpoint.
@@ -807,7 +868,7 @@ struct InnerTubeAPIParsingGapsTests {
                                                 "innertubeCommand": [
                                                     "reelWatchEndpoint": ["videoId": "navInnerShort1"]
                                                 ]
-                                            ]
+                                            ],
                                         ]
                                     ]
                                 ]
@@ -821,7 +882,9 @@ struct InnerTubeAPIParsingGapsTests {
         let group = try await api.parseVideoGroupForTesting(mockResponse, title: "Subscriptions")
         let video = try #require(group.videos.first)
         #expect(video.id == "navInnerShort1")
-        #expect(video.isShort, "tileRenderer with navigationEndpoint.innertubeCommand.reelWatchEndpoint must be tagged isShort = true")
+        #expect(
+            video.isShort,
+            "tileRenderer with navigationEndpoint.innertubeCommand.reelWatchEndpoint must be tagged isShort = true")
     }
 
     @Test("videoRenderer with reelWatchEndpoint is tagged isShort = true")
@@ -829,23 +892,30 @@ struct InnerTubeAPIParsingGapsTests {
         let mockResponse: [String: Any] = [
             "contents": [
                 "twoColumnBrowseResultsRenderer": [
-                    "tabs": [[
-                        "tabRenderer": [
-                            "content": [
-                                "richGridRenderer": [
-                                    "contents": [
-                                        [
-                                            "richItemRenderer": [
-                                                "content": [
-                                                    "videoRenderer": [
-                                                        "videoId": "short1234567",
-                                                        "title": ["runs": [["text": "A Short Video"]]],
-                                                        "ownerText": ["runs": [["text": "Channel"]]],
-                                                        "thumbnail": ["thumbnails": [
-                                                            ["url": "https://i.ytimg.com/vi/short1234567/hqdefault.jpg"]
-                                                        ]],
-                                                        "navigationEndpoint": [
-                                                            "reelWatchEndpoint": ["videoId": "short1234567"]
+                    "tabs": [
+                        [
+                            "tabRenderer": [
+                                "content": [
+                                    "richGridRenderer": [
+                                        "contents": [
+                                            [
+                                                "richItemRenderer": [
+                                                    "content": [
+                                                        "videoRenderer": [
+                                                            "videoId": "short1234567",
+                                                            "title": ["runs": [["text": "A Short Video"]]],
+                                                            "ownerText": ["runs": [["text": "Channel"]]],
+                                                            "thumbnail": [
+                                                                "thumbnails": [
+                                                                    [
+                                                                        "url":
+                                                                            "https://i.ytimg.com/vi/short1234567/hqdefault.jpg"
+                                                                    ]
+                                                                ]
+                                                            ],
+                                                            "navigationEndpoint": [
+                                                                "reelWatchEndpoint": ["videoId": "short1234567"]
+                                                            ],
                                                         ]
                                                     ]
                                                 ]
@@ -855,7 +925,7 @@ struct InnerTubeAPIParsingGapsTests {
                                 ]
                             ]
                         ]
-                    ]]
+                    ]
                 ]
             ]
         ]
@@ -871,33 +941,50 @@ struct InnerTubeAPIParsingGapsTests {
         let mockResponse: [String: Any] = [
             "contents": [
                 "sectionListRenderer": [
-                    "contents": [[
-                        "itemSectionRenderer": [
-                            "contents": [[
-                                "shelfRenderer": [
-                                    "content": [
-                                        "horizontalListRenderer": [
-                                            "items": [[
-                                                "gridVideoRenderer": [
-                                                    "videoId": "subsShort123",
-                                                    "title": ["runs": [["text": "A Subs Short"]]],
-                                                    "shortBylineText": ["runs": [["text": "Fly-N"]]],
-                                                    "thumbnail": ["thumbnails": [["url": "https://i.ytimg.com/vi/subsShort123/hqdefault.jpg"]]],
-                                                    "navigationEndpoint": ["watchEndpoint": ["videoId": "subsShort123"]],
-                                                    "thumbnailOverlays": [[
-                                                        "thumbnailOverlayTimeStatusRenderer": [
-                                                            "text": ["simpleText": "0:22"],
-                                                            "style": "SHORTS"
+                    "contents": [
+                        [
+                            "itemSectionRenderer": [
+                                "contents": [
+                                    [
+                                        "shelfRenderer": [
+                                            "content": [
+                                                "horizontalListRenderer": [
+                                                    "items": [
+                                                        [
+                                                            "gridVideoRenderer": [
+                                                                "videoId": "subsShort123",
+                                                                "title": ["runs": [["text": "A Subs Short"]]],
+                                                                "shortBylineText": ["runs": [["text": "Fly-N"]]],
+                                                                "thumbnail": [
+                                                                    "thumbnails": [
+                                                                        [
+                                                                            "url":
+                                                                                "https://i.ytimg.com/vi/subsShort123/hqdefault.jpg"
+                                                                        ]
+                                                                    ]
+                                                                ],
+                                                                "navigationEndpoint": [
+                                                                    "watchEndpoint": ["videoId": "subsShort123"]
+                                                                ],
+                                                                "thumbnailOverlays": [
+                                                                    [
+                                                                        "thumbnailOverlayTimeStatusRenderer": [
+                                                                            "text": ["simpleText": "0:22"],
+                                                                            "style": "SHORTS",
+                                                                        ]
+                                                                    ]
+                                                                ],
+                                                            ]
                                                         ]
-                                                    ]]
+                                                    ]
                                                 ]
-                                            ]]
+                                            ]
                                         ]
                                     ]
                                 ]
-                            ]]
+                            ]
                         ]
-                    ]]
+                    ]
                 ]
             ]
         ]
@@ -905,7 +992,10 @@ struct InnerTubeAPIParsingGapsTests {
         let group = try await api.parseVideoGroupForTesting(mockResponse, title: "Subscriptions")
         let video = try #require(group.videos.first)
         #expect(video.id == "subsShort123")
-        #expect(video.isShort, "videoRenderer with thumbnailOverlayTimeStatusRenderer.style == SHORTS must be tagged isShort = true even without reelWatchEndpoint")
+        #expect(
+            video.isShort,
+            "videoRenderer with thumbnailOverlayTimeStatusRenderer.style == SHORTS must be tagged isShort = true even without reelWatchEndpoint"
+        )
     }
 
     @Test("videoRenderer with SHORTS overlay but duration > 180 s is NOT tagged isShort")
@@ -915,34 +1005,53 @@ struct InnerTubeAPIParsingGapsTests {
         let mockResponse: [String: Any] = [
             "contents": [
                 "sectionListRenderer": [
-                    "contents": [[
-                        "itemSectionRenderer": [
-                            "contents": [[
-                                "shelfRenderer": [
-                                    "content": [
-                                        "horizontalListRenderer": [
-                                            "items": [[
-                                                "gridVideoRenderer": [
-                                                    "videoId": "longVideoFalseShort",
-                                                    "title": ["runs": [["text": "A 10-minute regular video"]]],
-                                                    "shortBylineText": ["runs": [["text": "Channel"]]],
-                                                    "thumbnail": ["thumbnails": [["url": "https://i.ytimg.com/vi/longVideoFalseShort/hqdefault.jpg"]]],
-                                                    "navigationEndpoint": ["watchEndpoint": ["videoId": "longVideoFalseShort"]],
-                                                    "lengthText": ["simpleText": "10:15"],
-                                                    "thumbnailOverlays": [[
-                                                        "thumbnailOverlayTimeStatusRenderer": [
-                                                            "text": ["simpleText": "10:15"],
-                                                            "style": "SHORTS"
+                    "contents": [
+                        [
+                            "itemSectionRenderer": [
+                                "contents": [
+                                    [
+                                        "shelfRenderer": [
+                                            "content": [
+                                                "horizontalListRenderer": [
+                                                    "items": [
+                                                        [
+                                                            "gridVideoRenderer": [
+                                                                "videoId": "longVideoFalseShort",
+                                                                "title": [
+                                                                    "runs": [["text": "A 10-minute regular video"]]
+                                                                ],
+                                                                "shortBylineText": ["runs": [["text": "Channel"]]],
+                                                                "thumbnail": [
+                                                                    "thumbnails": [
+                                                                        [
+                                                                            "url":
+                                                                                "https://i.ytimg.com/vi/longVideoFalseShort/hqdefault.jpg"
+                                                                        ]
+                                                                    ]
+                                                                ],
+                                                                "navigationEndpoint": [
+                                                                    "watchEndpoint": ["videoId": "longVideoFalseShort"]
+                                                                ],
+                                                                "lengthText": ["simpleText": "10:15"],
+                                                                "thumbnailOverlays": [
+                                                                    [
+                                                                        "thumbnailOverlayTimeStatusRenderer": [
+                                                                            "text": ["simpleText": "10:15"],
+                                                                            "style": "SHORTS",
+                                                                        ]
+                                                                    ]
+                                                                ],
+                                                            ]
                                                         ]
-                                                    ]]
+                                                    ]
                                                 ]
-                                            ]]
+                                            ]
                                         ]
                                     ]
                                 ]
-                            ]]
+                            ]
                         ]
-                    ]]
+                    ]
                 ]
             ]
         ]
@@ -950,7 +1059,9 @@ struct InnerTubeAPIParsingGapsTests {
         let group = try await api.parseVideoGroupForTesting(mockResponse, title: "Feed")
         let video = try #require(group.videos.first)
         #expect(video.id == "longVideoFalseShort")
-        #expect(!video.isShort, "videoRenderer with SHORTS overlay but duration 10:15 (615 s) must NOT be tagged isShort = true")
+        #expect(
+            !video.isShort,
+            "videoRenderer with SHORTS overlay but duration 10:15 (615 s) must NOT be tagged isShort = true")
     }
 
     @Test("videoRenderer with SHORTS overlay at exactly 180 s boundary is tagged isShort")
@@ -959,34 +1070,51 @@ struct InnerTubeAPIParsingGapsTests {
         let mockResponse: [String: Any] = [
             "contents": [
                 "sectionListRenderer": [
-                    "contents": [[
-                        "itemSectionRenderer": [
-                            "contents": [[
-                                "shelfRenderer": [
-                                    "content": [
-                                        "horizontalListRenderer": [
-                                            "items": [[
-                                                "gridVideoRenderer": [
-                                                    "videoId": "boundaryShort180",
-                                                    "title": ["runs": [["text": "Exactly 3-minute short"]]],
-                                                    "shortBylineText": ["runs": [["text": "Creator"]]],
-                                                    "thumbnail": ["thumbnails": [["url": "https://i.ytimg.com/vi/boundaryShort180/hqdefault.jpg"]]],
-                                                    "navigationEndpoint": ["watchEndpoint": ["videoId": "boundaryShort180"]],
-                                                    "lengthText": ["simpleText": "3:00"],
-                                                    "thumbnailOverlays": [[
-                                                        "thumbnailOverlayTimeStatusRenderer": [
-                                                            "text": ["simpleText": "3:00"],
-                                                            "style": "SHORTS"
+                    "contents": [
+                        [
+                            "itemSectionRenderer": [
+                                "contents": [
+                                    [
+                                        "shelfRenderer": [
+                                            "content": [
+                                                "horizontalListRenderer": [
+                                                    "items": [
+                                                        [
+                                                            "gridVideoRenderer": [
+                                                                "videoId": "boundaryShort180",
+                                                                "title": ["runs": [["text": "Exactly 3-minute short"]]],
+                                                                "shortBylineText": ["runs": [["text": "Creator"]]],
+                                                                "thumbnail": [
+                                                                    "thumbnails": [
+                                                                        [
+                                                                            "url":
+                                                                                "https://i.ytimg.com/vi/boundaryShort180/hqdefault.jpg"
+                                                                        ]
+                                                                    ]
+                                                                ],
+                                                                "navigationEndpoint": [
+                                                                    "watchEndpoint": ["videoId": "boundaryShort180"]
+                                                                ],
+                                                                "lengthText": ["simpleText": "3:00"],
+                                                                "thumbnailOverlays": [
+                                                                    [
+                                                                        "thumbnailOverlayTimeStatusRenderer": [
+                                                                            "text": ["simpleText": "3:00"],
+                                                                            "style": "SHORTS",
+                                                                        ]
+                                                                    ]
+                                                                ],
+                                                            ]
                                                         ]
-                                                    ]]
+                                                    ]
                                                 ]
-                                            ]]
+                                            ]
                                         ]
                                     ]
                                 ]
-                            ]]
+                            ]
                         ]
-                    ]]
+                    ]
                 ]
             ]
         ]
@@ -994,7 +1122,9 @@ struct InnerTubeAPIParsingGapsTests {
         let group = try await api.parseVideoGroupForTesting(mockResponse, title: "Feed")
         let video = try #require(group.videos.first)
         #expect(video.id == "boundaryShort180")
-        #expect(video.isShort, "videoRenderer with SHORTS overlay and duration exactly 3:00 (180 s) must be tagged isShort = true")
+        #expect(
+            video.isShort,
+            "videoRenderer with SHORTS overlay and duration exactly 3:00 (180 s) must be tagged isShort = true")
     }
 
     @Test("Empty JSON response produces an empty VideoGroup")
@@ -1016,10 +1146,12 @@ struct InnerTubeAPIParsingGapsTests {
                             "videoId": videoId,
                             "title": ["runs": [["text": "Video \(videoId)"]]],
                             "ownerText": ["runs": [["text": "Channel"]]],
-                            "thumbnail": ["thumbnails": [
-                                ["url": "https://i.ytimg.com/vi/\(videoId)/hqdefault.jpg"]
-                            ]],
-                            "navigationEndpoint": ["watchEndpoint": ["videoId": videoId]]
+                            "thumbnail": [
+                                "thumbnails": [
+                                    ["url": "https://i.ytimg.com/vi/\(videoId)/hqdefault.jpg"]
+                                ]
+                            ],
+                            "navigationEndpoint": ["watchEndpoint": ["videoId": videoId]],
                         ]
                     ]
                 ]
@@ -1028,19 +1160,21 @@ struct InnerTubeAPIParsingGapsTests {
         let mockResponse: [String: Any] = [
             "contents": [
                 "twoColumnBrowseResultsRenderer": [
-                    "tabs": [[
-                        "tabRenderer": [
-                            "content": [
-                                "richGridRenderer": [
-                                    "contents": [
-                                        makeItem("video1_AAAAA"),
-                                        makeItem("video2_BBBBB"),
-                                        makeItem("video3_CCCCC"),
+                    "tabs": [
+                        [
+                            "tabRenderer": [
+                                "content": [
+                                    "richGridRenderer": [
+                                        "contents": [
+                                            makeItem("video1_AAAAA"),
+                                            makeItem("video2_BBBBB"),
+                                            makeItem("video3_CCCCC"),
+                                        ]
                                     ]
                                 ]
                             ]
                         ]
-                    ]]
+                    ]
                 ]
             ]
         ]
@@ -1058,17 +1192,19 @@ struct InnerTubeAPIParsingGapsTests {
         let mockResponse: [String: Any] = [
             "contents": [
                 "twoColumnBrowseResultsRenderer": [
-                    "tabs": [[
-                        "tabRenderer": [
-                            "content": [
-                                "richGridRenderer": [
-                                    "contents": [
-                                        [
-                                            "richItemRenderer": [
-                                                "content": [
-                                                    "reelItemRenderer": [
-                                                        "videoId": "reel1234567",
-                                                        "headline": ["simpleText": "My Short"]
+                    "tabs": [
+                        [
+                            "tabRenderer": [
+                                "content": [
+                                    "richGridRenderer": [
+                                        "contents": [
+                                            [
+                                                "richItemRenderer": [
+                                                    "content": [
+                                                        "reelItemRenderer": [
+                                                            "videoId": "reel1234567",
+                                                            "headline": ["simpleText": "My Short"],
+                                                        ]
                                                     ]
                                                 ]
                                             ]
@@ -1077,7 +1213,7 @@ struct InnerTubeAPIParsingGapsTests {
                                 ]
                             ]
                         ]
-                    ]]
+                    ]
                 ]
             ]
         ]
@@ -1095,42 +1231,49 @@ struct InnerTubeAPIParsingGapsTests {
         let mockResponse: [String: Any] = [
             "contents": [
                 "twoColumnBrowseResultsRenderer": [
-                    "tabs": [[
-                        "tabRenderer": [
-                            "content": [
-                                "richGridRenderer": [
-                                    "contents": [
-                                        [
-                                            "richItemRenderer": [
-                                                "content": [
-                                                    "videoRenderer": [
-                                                        "videoId": "video1_AAAAA",
-                                                        "title": ["runs": [["text": "Test"]]],
-                                                        "ownerText": ["runs": [["text": "Ch"]]],
-                                                        "thumbnail": ["thumbnails": [
-                                                            ["url": "https://i.ytimg.com/vi/video1_AAAAA/hqdefault.jpg"]
-                                                        ]],
-                                                        "navigationEndpoint": [
-                                                            "watchEndpoint": ["videoId": "video1_AAAAA"]
+                    "tabs": [
+                        [
+                            "tabRenderer": [
+                                "content": [
+                                    "richGridRenderer": [
+                                        "contents": [
+                                            [
+                                                "richItemRenderer": [
+                                                    "content": [
+                                                        "videoRenderer": [
+                                                            "videoId": "video1_AAAAA",
+                                                            "title": ["runs": [["text": "Test"]]],
+                                                            "ownerText": ["runs": [["text": "Ch"]]],
+                                                            "thumbnail": [
+                                                                "thumbnails": [
+                                                                    [
+                                                                        "url":
+                                                                            "https://i.ytimg.com/vi/video1_AAAAA/hqdefault.jpg"
+                                                                    ]
+                                                                ]
+                                                            ],
+                                                            "navigationEndpoint": [
+                                                                "watchEndpoint": ["videoId": "video1_AAAAA"]
+                                                            ],
                                                         ]
                                                     ]
                                                 ]
-                                            ]
-                                        ],
-                                        [
-                                            "continuationItemRenderer": [
-                                                "continuationEndpoint": [
-                                                    "continuationCommand": [
-                                                        "token": "CONTINUATION_TOKEN_XYZ"
+                                            ],
+                                            [
+                                                "continuationItemRenderer": [
+                                                    "continuationEndpoint": [
+                                                        "continuationCommand": [
+                                                            "token": "CONTINUATION_TOKEN_XYZ"
+                                                        ]
                                                     ]
                                                 ]
-                                            ]
+                                            ],
                                         ]
                                     ]
                                 ]
                             ]
                         ]
-                    ]]
+                    ]
                 ]
             ]
         ]
@@ -1159,7 +1302,7 @@ private func makeTileResponse(
     var tileRenderer: [String: Any] = [
         "contentType": "TILE_CONTENT_TYPE_VIDEO",
         "onSelectCommand": onSelectCommand,
-        "metadata": ["tileMetadataRenderer": ["title": ["simpleText": "Test Video"]]]
+        "metadata": ["tileMetadataRenderer": ["title": ["simpleText": "Test Video"]]],
     ]
     if useNavigation {
         tileRenderer["navigationEndpoint"] = ["watchEndpoint": ["videoId": videoId]]

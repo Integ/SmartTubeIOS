@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - SettingsQualityPersistenceTests
@@ -13,15 +14,18 @@ struct SettingsQualityPersistenceTests {
 
     // MARK: - Codec round-trip
 
-    @Test("preferredQuality survives JSON encode/decode round-trip for each case",
-          arguments: AppSettings.VideoQuality.allCases)
+    @Test(
+        "preferredQuality survives JSON encode/decode round-trip for each case",
+        arguments: AppSettings.VideoQuality.allCases)
     func qualityRoundTrips(_ quality: AppSettings.VideoQuality) throws {
         var settings = AppSettings()
         settings.preferredQuality = quality
         let data = try JSONEncoder().encode(settings)
         let decoded = try JSONDecoder().decode(AppSettings.self, from: data)
-        #expect(decoded.preferredQuality == quality,
-                "#151 regression: preferredQuality must survive encode/decode — expected \(quality), got \(decoded.preferredQuality)")
+        #expect(
+            decoded.preferredQuality == quality,
+            "#151 regression: preferredQuality must survive encode/decode — expected \(quality), got \(decoded.preferredQuality)"
+        )
     }
 
     @Test("Default preferredQuality is .auto")

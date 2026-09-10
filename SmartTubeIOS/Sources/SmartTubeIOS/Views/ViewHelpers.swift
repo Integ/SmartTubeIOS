@@ -1,5 +1,5 @@
-import SwiftUI
 import SmartTubeIOSCore
+import SwiftUI
 
 // MARK: - ShortsPresentation
 //
@@ -32,7 +32,7 @@ let videoGridColumns = [
     GridItem(.flexible(), spacing: 40),
     GridItem(.flexible(), spacing: 40),
     GridItem(.flexible(), spacing: 40),
-    GridItem(.flexible(), spacing: 40)
+    GridItem(.flexible(), spacing: 40),
 ]
 let videoGridRowSpacing: CGFloat = 40
 #else
@@ -45,7 +45,7 @@ let compactVideoGridColumns = [GridItem(.flexible(), spacing: 12), GridItem(.fle
 let regularVideoGridColumns = [
     GridItem(.flexible(), spacing: 12),
     GridItem(.flexible(), spacing: 12),
-    GridItem(.flexible(), spacing: 12)
+    GridItem(.flexible(), spacing: 12),
 ]
 let videoGridRowSpacing: CGFloat = 12
 #endif
@@ -66,48 +66,48 @@ struct DownloadAlertItem: Identifiable {
 
 enum AppSymbol {
     // MARK: - Navigation tabs
-    static let home     = "house.fill"
-    static let search   = "magnifyingglass"
-    static let library  = "square.stack.fill"
+    static let home = "house.fill"
+    static let search = "magnifyingglass"
+    static let library = "square.stack.fill"
     static let settings = "gearshape.fill"
 
     // MARK: - Navigation / chevrons
-    static let chevronLeft  = "chevron.left"
-    static let chevronUp    = "chevron.up"
-    static let chevronDown  = "chevron.down"
+    static let chevronLeft = "chevron.left"
+    static let chevronUp = "chevron.up"
+    static let chevronDown = "chevron.down"
 
     // MARK: - Playback controls
-    static let previousTrack    = "backward.end.fill"
-    static let nextTrack        = "forward.end.fill"
-    static let previousChapter  = "backward.end.alt.fill"
-    static let nextChapter      = "forward.end.alt.fill"
-    static let thumbsUp      = "hand.thumbsup"
-    static let thumbsDown    = "hand.thumbsdown"
+    static let previousTrack = "backward.end.fill"
+    static let nextTrack = "forward.end.fill"
+    static let previousChapter = "backward.end.alt.fill"
+    static let nextChapter = "forward.end.alt.fill"
+    static let thumbsUp = "hand.thumbsup"
+    static let thumbsDown = "hand.thumbsdown"
 
     // MARK: - Actions
-    static let checkmark       = "checkmark"
-    static let xmark           = "xmark"
-    static let xmarkCircle     = "xmark.circle.fill"
-    static let share           = "square.and.arrow.up"
-    static let copyDoc         = "doc.on.doc"
-    static let download        = "arrow.down.to.line"
-    static let watchLater      = "clock.badge"
-    static let audioOnly       = "waveform.circle"
+    static let checkmark = "checkmark"
+    static let xmark = "xmark"
+    static let xmarkCircle = "xmark.circle.fill"
+    static let share = "square.and.arrow.up"
+    static let copyDoc = "doc.on.doc"
+    static let download = "arrow.down.to.line"
+    static let watchLater = "clock.badge"
+    static let audioOnly = "waveform.circle"
 
     // MARK: - Status / info
-    static let warning         = "exclamationmark.triangle.fill"
-    static let clock           = "clock"
-    static let questionCircle  = "questionmark.circle"
-    static let qrcode          = "qrcode"
+    static let warning = "exclamationmark.triangle.fill"
+    static let clock = "clock"
+    static let questionCircle = "questionmark.circle"
+    static let qrcode = "qrcode"
 
     // MARK: - People / account
-    static let personCircle            = "person.crop.circle"
-    static let personRectangle         = "person.crop.rectangle"
-    static let personCircleQuestion    = "person.crop.circle.badge.questionmark"
-    static let personCircleWarning     = "person.crop.circle.badge.exclamationmark"
+    static let personCircle = "person.crop.circle"
+    static let personRectangle = "person.crop.rectangle"
+    static let personCircleQuestion = "person.crop.circle.badge.questionmark"
+    static let personCircleWarning = "person.crop.circle.badge.exclamationmark"
 
     // MARK: - Content
-    static let stackLayers    = "square.stack"
-    static let tvMediabox     = "tv.and.mediabox"
-    static let tvPlay         = "play.tv"
+    static let stackLayers = "square.stack"
+    static let tvMediabox = "tv.and.mediabox"
+    static let tvPlay = "play.tv"
 }

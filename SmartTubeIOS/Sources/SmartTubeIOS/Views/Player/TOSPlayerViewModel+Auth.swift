@@ -30,4 +30,4 @@ extension TOSPlayerViewModel {
         Task { await VideoPreloadCache.shared.setSAPISID(sapisid) }
     }
 }
-#endif // !os(tvOS)
+#endif  // !os(tvOS)

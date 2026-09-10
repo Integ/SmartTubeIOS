@@ -33,7 +33,8 @@ public enum HTMLVideoLinkExtractor {
 
     private static func extractFromOgURL(_ html: String) -> URL? {
         // <meta property="og:url" content="https://…">  (attribute order may vary)
-        let pattern = #"<meta[^>]+property\s*=\s*["']og:url["'][^>]+content\s*=\s*["']([^"']+)["']"#
+        let pattern =
+            #"<meta[^>]+property\s*=\s*["']og:url["'][^>]+content\s*=\s*["']([^"']+)["']"#
             + #"|<meta[^>]+content\s*=\s*["']([^"']+)["'][^>]+property\s*=\s*["']og:url["']"#
         return firstCapture(in: html, pattern: pattern).flatMap(URL.init(string:))
     }
@@ -41,7 +42,8 @@ public enum HTMLVideoLinkExtractor {
     // MARK: - Strategy 2: canonical link
 
     private static func extractFromCanonical(_ html: String) -> URL? {
-        let pattern = #"<link[^>]+rel\s*=\s*["']canonical["'][^>]+href\s*=\s*["']([^"']+)["']"#
+        let pattern =
+            #"<link[^>]+rel\s*=\s*["']canonical["'][^>]+href\s*=\s*["']([^"']+)["']"#
             + #"|<link[^>]+href\s*=\s*["']([^"']+)["'][^>]+rel\s*=\s*["']canonical["']"#
         return firstCapture(in: html, pattern: pattern).flatMap(URL.init(string:))
     }
@@ -90,7 +92,7 @@ public enum HTMLVideoLinkExtractor {
             return nil
         }
         // Return the first non-nil capture group (group 0 is the full match)
-        for i in 1 ..< match.numberOfRanges {
+        for i in 1..<match.numberOfRanges {
             let r = match.range(at: i)
             if r.location != NSNotFound, let swiftRange = Range(r, in: input) {
                 let captured = String(input[swiftRange])

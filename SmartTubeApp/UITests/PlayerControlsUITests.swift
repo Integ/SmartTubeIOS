@@ -66,9 +66,11 @@ final class PlayerControlsUITests: XCTestCase {
             try captureAndSkip("player.playPauseButton not found — cannot verify tap target size", in: app)
         }
         let frame = playPauseButton.frame
-        XCTAssertGreaterThanOrEqual(frame.width, 44,
+        XCTAssertGreaterThanOrEqual(
+            frame.width, 44,
             "play/pause button width \(frame.width)pt is below the 44pt Apple HIG minimum")
-        XCTAssertGreaterThanOrEqual(frame.height, 44,
+        XCTAssertGreaterThanOrEqual(
+            frame.height, 44,
             "play/pause button height \(frame.height)pt is below the 44pt Apple HIG minimum")
     }
 
@@ -90,7 +92,8 @@ final class PlayerControlsUITests: XCTestCase {
         }
         let cueMaxY = captionCue.frame.maxY
         let scrubMinY = scrubBar.frame.minY
-        XCTAssertLessThan(cueMaxY, scrubMinY,
+        XCTAssertLessThan(
+            cueMaxY, scrubMinY,
             "Caption cue bottom (\(cueMaxY)pt) must be above scrub bar top (\(scrubMinY)pt) — task #129")
     }
 
@@ -104,13 +107,15 @@ final class PlayerControlsUITests: XCTestCase {
         try openPlayerFromHome()
         showControls()
         guard pipButton.waitForExistence(timeout: 5) else {
-            try captureAndSkip("player.pipButton not found — PiP may not be available on this device/iOS version", in: app)
+            try captureAndSkip(
+                "player.pipButton not found — PiP may not be available on this device/iOS version", in: app)
         }
         pipButton.tap()
         // PiP windows are not directly queryable; just ensure no crash.
         Thread.sleep(forTimeInterval: 2)
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must still be running after tapping the PiP button")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must still be running after tapping the PiP button")
     }
     #endif
 }

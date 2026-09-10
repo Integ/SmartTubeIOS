@@ -1,9 +1,9 @@
-import SwiftUI
 import SmartTubeIOSCore
+import SwiftUI
 import os
 
 private let focusLog = Logger(subsystem: "com.smarttube", category: "focus")
-private let feedLog  = Logger(subsystem: "com.smarttube", category: "feed")
+private let feedLog = Logger(subsystem: "com.smarttube", category: "feed")
 
 // MARK: - Notification names
 
@@ -97,8 +97,9 @@ public struct VideoCardView: View {
             // primary source of the SlowLoad NON_FATAL (4497ms per card on scroll).
             // Mac/tvOS still use AVPlayer and need the pre-warm.
             #if !os(iOS)
-            if !video.isShort &&
-               YouTubeWebViewHLSExtractor.activePreWarmLoops < YouTubeWebViewHLSExtractor.maxPreWarmLoops {
+            if !video.isShort
+                && YouTubeWebViewHLSExtractor.activePreWarmLoops < YouTubeWebViewHLSExtractor.maxPreWarmLoops
+            {
                 YouTubeWebViewHLSExtractor.activePreWarmLoops += 1
                 defer { YouTubeWebViewHLSExtractor.activePreWarmLoops -= 1 }
                 let videoId = video.id
@@ -112,7 +113,8 @@ public struct VideoCardView: View {
                         YouTubeWebViewHLSExtractor.isPreWarming = true
                         if let freshURL = await YouTubeWebViewHLSExtractor.shared.serialExtract(videoId: videoId) {
                             let freshPot = YouTubeWebViewHLSExtractor.shared.extractedPoToken
-                            await VideoPreloadCache.shared.store(wkHLSManifestURL: freshURL, for: videoId, isPreWarm: true)
+                            await VideoPreloadCache.shared.store(
+                                wkHLSManifestURL: freshURL, for: videoId, isPreWarm: true)
                             if let pot = freshPot {
                                 await VideoPreloadCache.shared.store(wkHLSPoToken: pot, for: videoId)
                             }
@@ -163,7 +165,9 @@ public struct VideoCardView: View {
                                 try await api.removeFromWatchLater(videoId: video.id)
                                 watchLaterAlert = DownloadAlertItem(
                                     title: String(localized: "Removed from Watch Later", bundle: .module),
-                                    message: String(localized: "\"\(video.title)\" was removed from your Watch Later playlist.", bundle: .module)
+                                    message: String(
+                                        localized: "\"\(video.title)\" was removed from your Watch Later playlist.",
+                                        bundle: .module)
                                 )
                             } catch {
                                 watchLaterAlert = DownloadAlertItem(
@@ -182,7 +186,9 @@ public struct VideoCardView: View {
                                 try await api.addToWatchLater(videoId: video.id)
                                 watchLaterAlert = DownloadAlertItem(
                                     title: String(localized: "Saved to Watch Later", bundle: .module),
-                                    message: String(localized: "\"\(video.title)\" was added to your Watch Later playlist.", bundle: .module)
+                                    message: String(
+                                        localized: "\"\(video.title)\" was added to your Watch Later playlist.",
+                                        bundle: .module)
                                 )
                             } catch {
                                 watchLaterAlert = DownloadAlertItem(
@@ -436,7 +442,8 @@ public struct VideoCardView: View {
     /// Returns the DeArrow thumbnail URL if the feature is enabled and a timestamp is available.
     private var deArrowThumbnailURL: URL? {
         guard store.settings.deArrowEnabled,
-              let ts = video.deArrowThumbnailTimestamp else { return nil }
+            let ts = video.deArrowThumbnailTimestamp
+        else { return nil }
         return URL(string: "https://i.ytimg.com/vi/\(video.id)/\(Int(ts)).jpg")
     }
 
@@ -457,7 +464,8 @@ public struct VideoCardView: View {
             //    1 → hqdefault.jpg  (480×360, always available)
             //    2 → mqdefault.jpg  (320×180, always available — last resort)
             let fallbacks = video.thumbnailFallbackURLs
-            let url: URL? = thumbnailFallbackIndex < 0
+            let url: URL? =
+                thumbnailFallbackIndex < 0
                 ? (deArrowThumbnailURL ?? video.thumbnailURL ?? fallbacks.first)
                 : (thumbnailFallbackIndex < fallbacks.count ? fallbacks[thumbnailFallbackIndex] : nil)
             AsyncImage(url: url) { phase in
@@ -598,13 +606,15 @@ public struct VideoCardView: View {
 
 #if DEBUG
 #Preview {
-    VideoCardView(video: Video(
-        id: "dQw4w9WgXcQ",
-        title: "Rick Astley – Never Gonna Give You Up",
-        channelTitle: "Rick Astley",
-        duration: 213,
-        viewCount: 1_400_000_000
-    ))
+    VideoCardView(
+        video: Video(
+            id: "dQw4w9WgXcQ",
+            title: "Rick Astley – Never Gonna Give You Up",
+            channelTitle: "Rick Astley",
+            duration: 213,
+            viewCount: 1_400_000_000
+        )
+    )
     .frame(width: 320)
     .padding()
 }

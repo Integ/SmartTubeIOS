@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - HideShortsFilterTests
@@ -78,7 +79,7 @@ struct HideShortsFilterTests {
     @Test("Empty input produces empty output regardless of hideShorts")
     func emptyInputAlwaysEmpty() {
         #expect(apply(hideShorts: false, to: []).isEmpty)
-        #expect(apply(hideShorts: true,  to: []).isEmpty)
+        #expect(apply(hideShorts: true, to: []).isEmpty)
     }
 
     // MARK: - AppSettings default
@@ -223,7 +224,7 @@ extension HideShortsFilterTests {
     func historyShortNotFilteredWhenHideShortsEnabled() {
         let videos = [
             makeVideo(id: "regular1", isShort: false),
-            makeVideo(id: "short1",   isShort: true),
+            makeVideo(id: "short1", isShort: true),
         ]
         let result = applyWithHistoryGuard(hideShorts: true, isHistory: true, to: videos)
         #expect(result.count == 2, "History should include Shorts regardless of hideShorts setting")
@@ -233,7 +234,7 @@ extension HideShortsFilterTests {
     func subscriptionsShortFilteredWhenHideShortsEnabled() {
         let videos = [
             makeVideo(id: "regular1", isShort: false),
-            makeVideo(id: "short1",   isShort: true),
+            makeVideo(id: "short1", isShort: true),
         ]
         let result = applyWithHistoryGuard(hideShorts: true, isHistory: false, to: videos)
         #expect(result.count == 1)
@@ -260,10 +261,12 @@ extension HideShortsFilterTests {
     func playlistVideoRendererReelEndpoint_isShortTrue() async throws {
         let json: [String: Any] = [
             "items": [
-                playlistVideoRendererJSON(videoId: "SHORT_PV_1", extras: [
-                    "navigationEndpoint": ["reelWatchEndpoint": ["videoId": "SHORT_PV_1"]],
-                    "lengthText": ["simpleText": "0:30"]
-                ])
+                playlistVideoRendererJSON(
+                    videoId: "SHORT_PV_1",
+                    extras: [
+                        "navigationEndpoint": ["reelWatchEndpoint": ["videoId": "SHORT_PV_1"]],
+                        "lengthText": ["simpleText": "0:30"],
+                    ])
             ]
         ]
         let api = InnerTubeAPI()
@@ -277,10 +280,12 @@ extension HideShortsFilterTests {
     func playlistVideoRendererWatchEndpoint_isShortFalse() async throws {
         let json: [String: Any] = [
             "items": [
-                playlistVideoRendererJSON(videoId: "VIDEO_PV_1", extras: [
-                    "navigationEndpoint": ["watchEndpoint": ["videoId": "VIDEO_PV_1"]],
-                    "lengthText": ["simpleText": "5:00"]
-                ])
+                playlistVideoRendererJSON(
+                    videoId: "VIDEO_PV_1",
+                    extras: [
+                        "navigationEndpoint": ["watchEndpoint": ["videoId": "VIDEO_PV_1"]],
+                        "lengthText": ["simpleText": "5:00"],
+                    ])
             ]
         ]
         let api = InnerTubeAPI()
@@ -294,14 +299,18 @@ extension HideShortsFilterTests {
     func playlistVideoRendererShort_hiddenWhenHideShortsEnabled() async throws {
         let json: [String: Any] = [
             "items": [
-                playlistVideoRendererJSON(videoId: "SHORT_PV_2", extras: [
-                    "navigationEndpoint": ["reelWatchEndpoint": ["videoId": "SHORT_PV_2"]],
-                    "lengthText": ["simpleText": "0:45"]
-                ]),
-                playlistVideoRendererJSON(videoId: "VIDEO_PV_2", extras: [
-                    "navigationEndpoint": ["watchEndpoint": ["videoId": "VIDEO_PV_2"]],
-                    "lengthText": ["simpleText": "10:00"]
-                ])
+                playlistVideoRendererJSON(
+                    videoId: "SHORT_PV_2",
+                    extras: [
+                        "navigationEndpoint": ["reelWatchEndpoint": ["videoId": "SHORT_PV_2"]],
+                        "lengthText": ["simpleText": "0:45"],
+                    ]),
+                playlistVideoRendererJSON(
+                    videoId: "VIDEO_PV_2",
+                    extras: [
+                        "navigationEndpoint": ["watchEndpoint": ["videoId": "VIDEO_PV_2"]],
+                        "lengthText": ["simpleText": "10:00"],
+                    ]),
             ]
         ]
         let api = InnerTubeAPI()
@@ -316,15 +325,18 @@ extension HideShortsFilterTests {
         // Duration guard: 3 min 01 sec > 180 s → should NOT be classified as Short
         let json: [String: Any] = [
             "items": [
-                playlistVideoRendererJSON(videoId: "LONG_PV_1", extras: [
-                    "navigationEndpoint": ["reelWatchEndpoint": ["videoId": "LONG_PV_1"]],
-                    "lengthText": ["simpleText": "3:01"]
-                ])
+                playlistVideoRendererJSON(
+                    videoId: "LONG_PV_1",
+                    extras: [
+                        "navigationEndpoint": ["reelWatchEndpoint": ["videoId": "LONG_PV_1"]],
+                        "lengthText": ["simpleText": "3:01"],
+                    ])
             ]
         ]
         let api = InnerTubeAPI()
         let group = try await api.parseVideoGroupForTesting(json, title: nil)
         #expect(group.videos.count == 1)
-        #expect(group.videos.first?.isShort == false, "Video > 180s with reelWatchEndpoint must not be classified as Short")
+        #expect(
+            group.videos.first?.isShort == false, "Video > 180s with reelWatchEndpoint must not be classified as Short")
     }
 }

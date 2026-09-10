@@ -87,8 +87,9 @@ final class SIDAudioTrackUITests: XCTestCase {
 
     private static var sharedApp: XCUIApplication!
     private static var skipAllTests = false
-    private static let skipReason = "Player did not load or playback did not complete within deadline — " +
-                                    "network unavailable or HLS fallback path broken for \(videoID)"
+    private static let skipReason =
+        "Player did not load or playback did not complete within deadline — "
+        + "network unavailable or HLS fallback path broken for \(videoID)"
 
     // MARK: - Lifecycle
 
@@ -98,7 +99,7 @@ final class SIDAudioTrackUITests: XCTestCase {
         app.launchArguments = [
             "--uitesting",
             "--uitesting-disable-tos-player-on-ios",
-            "--uitesting-deeplink-video=\(videoID)"
+            "--uitesting-deeplink-video=\(videoID)",
         ]
         app.launch()
         sharedApp = app
@@ -134,7 +135,7 @@ final class SIDAudioTrackUITests: XCTestCase {
         var playbackReady = false
         while Date() < deadline {
             center.tap()
-            Thread.sleep(forTimeInterval: 0.4)   // let SwiftUI render the controls overlay
+            Thread.sleep(forTimeInterval: 0.4)  // let SwiftUI render the controls overlay
             let btn = app.buttons["player.playPauseButton"].firstMatch
             if btn.exists && btn.isEnabled {
                 playbackReady = true
@@ -224,10 +225,10 @@ final class SIDAudioTrackUITests: XCTestCase {
         guard let audioRow = openMoreMenuAudioRow() else {
             captureState("no-audio-row", in: app)
             throw XCTSkip(
-                "player.moreMenu.audioTrackRow not found for video \(Self.videoID). " +
-                "Device log should show '[webView/HLS] YT-EXT-AUDIO-CONTENT-ID tracks: 13'. " +
-                "If it shows '0 tracks', YouTube may have changed the manifest format. " +
-                "If the log line is absent entirely, tryWebViewHLS language-wiring is broken."
+                "player.moreMenu.audioTrackRow not found for video \(Self.videoID). "
+                    + "Device log should show '[webView/HLS] YT-EXT-AUDIO-CONTENT-ID tracks: 13'. "
+                    + "If it shows '0 tracks', YouTube may have changed the manifest format. "
+                    + "If the log line is absent entirely, tryWebViewHLS language-wiring is broken."
             )
         }
 
@@ -243,7 +244,9 @@ final class SIDAudioTrackUITests: XCTestCase {
         guard !Self.skipAllTests else { throw XCTSkip(Self.skipReason) }
 
         guard let audioRow = openMoreMenuAudioRow() else {
-            throw XCTSkip("Audio track row not found — HLS manifest had 0 YT-EXT-AUDIO-CONTENT-ID tracks (see testAudioTrackSelectorIsVisibleInMoreMenu)")
+            throw XCTSkip(
+                "Audio track row not found — HLS manifest had 0 YT-EXT-AUDIO-CONTENT-ID tracks (see testAudioTrackSelectorIsVisibleInMoreMenu)"
+            )
         }
         audioRow.tap()
 
@@ -259,14 +262,14 @@ final class SIDAudioTrackUITests: XCTestCase {
         // label and do NOT appear as separate static text elements — so count
         // picker.buttons instead.  The picker always contains exactly two
         // chrome buttons (Cancel, Auto) plus one button per available track.
-        let trackCount = picker.buttons.count - 2   // subtract Cancel + Auto
+        let trackCount = picker.buttons.count - 2  // subtract Cancel + Auto
 
         captureState("picker-language-count", in: app)
         XCTAssertGreaterThan(
             trackCount, 5,
-            "Expected more than 5 language tracks for video \(Self.videoID) (has 13 AI-dubbed langs). " +
-            "Got \(trackCount). If the picker only shows 1 track, parseHLSAudioLanguages " +
-            "found only one YT-EXT-AUDIO-CONTENT-ID entry — check manifest fetch."
+            "Expected more than 5 language tracks for video \(Self.videoID) (has 13 AI-dubbed langs). "
+                + "Got \(trackCount). If the picker only shows 1 track, parseHLSAudioLanguages "
+                + "found only one YT-EXT-AUDIO-CONTENT-ID entry — check manifest fetch."
         )
 
         dismissPicker()
@@ -281,7 +284,9 @@ final class SIDAudioTrackUITests: XCTestCase {
         guard !Self.skipAllTests else { throw XCTSkip(Self.skipReason) }
 
         guard let audioRow = openMoreMenuAudioRow() else {
-            throw XCTSkip("Audio track row not found — HLS manifest had 0 YT-EXT-AUDIO-CONTENT-ID tracks (see testAudioTrackSelectorIsVisibleInMoreMenu)")
+            throw XCTSkip(
+                "Audio track row not found — HLS manifest had 0 YT-EXT-AUDIO-CONTENT-ID tracks (see testAudioTrackSelectorIsVisibleInMoreMenu)"
+            )
         }
         audioRow.tap()
 
@@ -295,9 +300,9 @@ final class SIDAudioTrackUITests: XCTestCase {
         captureState("picker-original-count", in: app)
         XCTAssertEqual(
             originalLabels.count, 1,
-            "Exactly one track must be labelled 'Original' in the picker. " +
-            "0 = XTAGS base64 decode for acont=original not working (check parseHLSAudioLanguages). " +
-            ">1 = isOriginal detection firing too broadly."
+            "Exactly one track must be labelled 'Original' in the picker. "
+                + "0 = XTAGS base64 decode for acont=original not working (check parseHLSAudioLanguages). "
+                + ">1 = isOriginal detection firing too broadly."
         )
 
         dismissPicker()
@@ -317,7 +322,9 @@ final class SIDAudioTrackUITests: XCTestCase {
         guard !Self.skipAllTests else { throw XCTSkip(Self.skipReason) }
 
         guard let audioRow = openMoreMenuAudioRow() else {
-            throw XCTSkip("Audio track row not found — HLS manifest had 0 YT-EXT-AUDIO-CONTENT-ID tracks (see testAudioTrackSelectorIsVisibleInMoreMenu)")
+            throw XCTSkip(
+                "Audio track row not found — HLS manifest had 0 YT-EXT-AUDIO-CONTENT-ID tracks (see testAudioTrackSelectorIsVisibleInMoreMenu)"
+            )
         }
         audioRow.tap()
 
@@ -341,9 +348,9 @@ final class SIDAudioTrackUITests: XCTestCase {
             }
             captureState("english-original-missing", in: app)
             XCTFail(
-                "The track labelled 'Original' must be English for video \(Self.videoID). " +
-                "Phase 4 marks the LAST track in the HLS manifest; YouTube places English (en-US) last. " +
-                "If this fails, either the wrong track is marked original or Phase 4 picked a non-English last track."
+                "The track labelled 'Original' must be English for video \(Self.videoID). "
+                    + "Phase 4 marks the LAST track in the HLS manifest; YouTube places English (en-US) last. "
+                    + "If this fails, either the wrong track is marked original or Phase 4 picked a non-English last track."
             )
             return
         }
@@ -377,11 +384,11 @@ final class SIDAudioTrackUITests: XCTestCase {
 
         XCTAssertTrue(
             pill.exists && pill.isHittable,
-            "player.quickAccess.audioTrack pill must be visible in the controls overlay " +
-            "when \(Self.videoID) has 13 audio tracks. " +
-            "If absent: check device log for 'AudioTrackManager: loaded 13 HLS variant track(s)' " +
-            "and verify @Observable propagation from AudioTrackManager through PlaybackViewModel " +
-            "to PlayerControlsOverlay."
+            "player.quickAccess.audioTrack pill must be visible in the controls overlay "
+                + "when \(Self.videoID) has 13 audio tracks. "
+                + "If absent: check device log for 'AudioTrackManager: loaded 13 HLS variant track(s)' "
+                + "and verify @Observable propagation from AudioTrackManager through PlaybackViewModel "
+                + "to PlayerControlsOverlay."
         )
 
         // Tapping the pill must open the audio track picker.

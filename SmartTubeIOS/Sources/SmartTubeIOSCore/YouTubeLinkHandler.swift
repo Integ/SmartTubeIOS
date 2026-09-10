@@ -29,8 +29,10 @@ public enum YouTubeLinkHandler {
         // Web URLs
         guard scheme == "https" || scheme == "http" else { return nil }
         guard let host = url.host?.lowercased() else { return nil }
-        guard host == "youtube.com" || host == "www.youtube.com" || host == "m.youtube.com"
-                || host == "youtu.be" || host == "music.youtube.com" else {
+        guard
+            host == "youtube.com" || host == "www.youtube.com" || host == "m.youtube.com"
+                || host == "youtu.be" || host == "music.youtube.com"
+        else {
             return nil
         }
 
@@ -38,7 +40,7 @@ public enum YouTubeLinkHandler {
 
         // youtu.be/VIDEO_ID
         if host == "youtu.be" {
-            let id = String(path.dropFirst()) // remove leading /
+            let id = String(path.dropFirst())  // remove leading /
             return validID(id)
         }
 
@@ -80,7 +82,8 @@ public enum YouTubeLinkHandler {
         // vnd.youtube:VIDEO_ID (opaque URL — no authority component)
         // URLComponents parses the path as the "part after the scheme:"
         if let components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
-            let candidate = components.path
+            let candidate =
+                components.path
                 .split(separator: "?").first
                 .map(String.init) ?? components.path
             return validID(candidate)

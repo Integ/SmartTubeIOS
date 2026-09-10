@@ -75,22 +75,25 @@ final class RSSFeedsUITests: XCTestCase {
     /// Verifies tapping the RSS Feeds segment shows either empty state or video list without crashing.
     func testSelectingRSSFeedsTabDoesNotCrash() throws {
         try openRSSFeedsTab()
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must remain in foreground after switching to RSS Feeds tab")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must remain in foreground after switching to RSS Feeds tab")
     }
 
     /// Verifies the inline Add (+) button is visible on the RSS Feeds tab.
     func testAddFeedButtonVisible() throws {
         try openRSSFeedsTab()
-        XCTAssertTrue(addFeedButton.waitForExistence(timeout: 5),
-                      "rss.addFeedButton must be visible in the RSS Feeds inline header")
+        XCTAssertTrue(
+            addFeedButton.waitForExistence(timeout: 5),
+            "rss.addFeedButton must be visible in the RSS Feeds inline header")
     }
 
     /// Verifies the inline Manage (≡) button is visible on the RSS Feeds tab.
     func testManageFeedsButtonVisible() throws {
         try openRSSFeedsTab()
-        XCTAssertTrue(manageFeedsButton.waitForExistence(timeout: 5),
-                      "rss.manageFeedsButton must be visible in the RSS Feeds inline header")
+        XCTAssertTrue(
+            manageFeedsButton.waitForExistence(timeout: 5),
+            "rss.manageFeedsButton must be visible in the RSS Feeds inline header")
     }
 
     /// Verifies tapping "+" opens the Add RSS Feed sheet with title/URL fields.
@@ -102,12 +105,14 @@ final class RSSFeedsUITests: XCTestCase {
         addFeedButton.tap()
 
         let urlField = app.textFields["rss.addFeed.urlField"].firstMatch
-        XCTAssertTrue(urlField.waitForExistence(timeout: 5),
-                      "Add RSS Feed sheet should appear with rss.addFeed.urlField after tapping +")
+        XCTAssertTrue(
+            urlField.waitForExistence(timeout: 5),
+            "Add RSS Feed sheet should appear with rss.addFeed.urlField after tapping +")
 
         let titleField = app.textFields["rss.addFeed.titleField"].firstMatch
-        XCTAssertTrue(titleField.exists,
-                      "Add RSS Feed sheet should contain rss.addFeed.titleField")
+        XCTAssertTrue(
+            titleField.exists,
+            "Add RSS Feed sheet should contain rss.addFeed.titleField")
     }
 
     /// Verifies the Add RSS Feed sheet can be dismissed without submitting.
@@ -130,8 +135,9 @@ final class RSSFeedsUITests: XCTestCase {
         cancelButton.tap()
 
         // Sheet should be gone — url field disappears.
-        XCTAssertFalse(urlField.waitForExistence(timeout: 3),
-                       "Add RSS Feed sheet must be dismissed after tapping Cancel")
+        XCTAssertFalse(
+            urlField.waitForExistence(timeout: 3),
+            "Add RSS Feed sheet must be dismissed after tapping Cancel")
     }
 
     /// Verifies the "Add Feed" confirm button is disabled when fields are empty.
@@ -146,8 +152,9 @@ final class RSSFeedsUITests: XCTestCase {
         guard confirmButton.waitForExistence(timeout: 5) else {
             try captureAndSkip("rss.addFeed.confirmButton not found in Add RSS Feed sheet", in: app)
         }
-        XCTAssertFalse(confirmButton.isEnabled,
-                       "Add Feed button must be disabled when title and URL fields are empty")
+        XCTAssertFalse(
+            confirmButton.isEnabled,
+            "Add Feed button must be disabled when title and URL fields are empty")
     }
 
     /// Verifies tapping the manage button opens the Manage RSS Feeds sheet.
@@ -160,8 +167,9 @@ final class RSSFeedsUITests: XCTestCase {
 
         // The sheet has a "Done" dismiss button.
         let doneButton = app.buttons["Done"].firstMatch
-        XCTAssertTrue(doneButton.waitForExistence(timeout: 5),
-                      "Manage RSS Feeds sheet must appear with a Done button")
+        XCTAssertTrue(
+            doneButton.waitForExistence(timeout: 5),
+            "Manage RSS Feeds sheet must appear with a Done button")
     }
 
     /// Verifies the Manage RSS Feeds sheet can be dismissed.
@@ -178,7 +186,8 @@ final class RSSFeedsUITests: XCTestCase {
         }
         doneButton.tap()
 
-        XCTAssertFalse(doneButton.waitForExistence(timeout: 3),
-                       "Manage RSS Feeds sheet must be dismissed after tapping Done")
+        XCTAssertFalse(
+            doneButton.waitForExistence(timeout: 3),
+            "Manage RSS Feeds sheet must be dismissed after tapping Done")
     }
 }

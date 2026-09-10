@@ -22,8 +22,8 @@ public struct CurrentQueuePlaylistLoader: QueuedPlaylistLoader {
         guard playlistId == CurrentQueueStore.playlistID else { return nil }
         let videos = await CurrentQueueStore.shared.videos
         return videos.enumerated().map { index, v in
-            var copy           = v
-            copy.playlistId    = CurrentQueueStore.playlistID
+            var copy = v
+            copy.playlistId = CurrentQueueStore.playlistID
             copy.playlistIndex = index
             return copy
         }
@@ -85,7 +85,8 @@ public final class PlaylistViewModel {
 
     public func loadMoreIfNeeded(lastVideo: Video) {
         guard let last = videos.last, last.id == lastVideo.id,
-              nextPageToken != nil, !isLoading else { return }
+            nextPageToken != nil, !isLoading
+        else { return }
         fetchTask = Task { await fetch() }
     }
 
@@ -123,17 +124,19 @@ public final class PlaylistViewModel {
     // MARK: - Feed hide handling
 
     private func observeFeedHideNotifications() {
-        hideObserverTasks.append(Task { [weak self] in
-            for await note in NotificationCenter.default.notifications(named: .hideVideoFromFeed) {
-                guard let self, let videoId = note.userInfo?["videoId"] as? String else { continue }
-                self.videos.removeAll { $0.id == videoId }
-            }
-        })
-        hideObserverTasks.append(Task { [weak self] in
-            for await note in NotificationCenter.default.notifications(named: .hideChannelFromFeed) {
-                guard let self, let channelId = note.userInfo?["channelId"] as? String else { continue }
-                self.videos.removeAll { $0.channelId == channelId }
-            }
-        })
+        hideObserverTasks.append(
+            Task { [weak self] in
+                for await note in NotificationCenter.default.notifications(named: .hideVideoFromFeed) {
+                    guard let self, let videoId = note.userInfo?["videoId"] as? String else { continue }
+                    self.videos.removeAll { $0.id == videoId }
+                }
+            })
+        hideObserverTasks.append(
+            Task { [weak self] in
+                for await note in NotificationCenter.default.notifications(named: .hideChannelFromFeed) {
+                    guard let self, let channelId = note.userInfo?["channelId"] as? String else { continue }
+                    self.videos.removeAll { $0.channelId == channelId }
+                }
+            })
     }
 }

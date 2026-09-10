@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - InFlightCoalescingTests
@@ -48,7 +49,7 @@ struct InFlightCoalescingTests {
 
     @Test("PrefetchPriority and queue depths are correct")
     func queueDepthAndWorkerConstants() async {
-        #expect(VideoPreloadCache.maxQueueDepth  == 20)
+        #expect(VideoPreloadCache.maxQueueDepth == 20)
         #expect(VideoPreloadCache.maxWorkersWiFi == 5)
     }
 }

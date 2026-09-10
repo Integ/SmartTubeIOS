@@ -47,7 +47,8 @@ public struct TTLCache<Key: Hashable, Value> {
     /// oldest entry first if `maxEntries` would be exceeded.
     public mutating func set(_ value: Value, for key: Key) {
         if let maxEntries, store.count >= maxEntries, store[key] == nil,
-           let oldest = store.min(by: { $0.value.storedAt < $1.value.storedAt }) {
+            let oldest = store.min(by: { $0.value.storedAt < $1.value.storedAt })
+        {
             store.removeValue(forKey: oldest.key)
         }
         store[key] = Entry(value: value, storedAt: now())

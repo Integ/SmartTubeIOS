@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - findTimestamps unit tests
@@ -20,7 +21,7 @@ struct FindTimestampsTests {
         let text = "Watch the intro at 1:23 for context."
         let results = findTimestamps(in: text)
         #expect(results.count == 1)
-        #expect(results.first?.seconds == 83)   // 1*60 + 23
+        #expect(results.first?.seconds == 83)  // 1*60 + 23
         // The matched substring should be "1:23"
         if let range = results.first?.range {
             #expect(String(text[range]) == "1:23")
@@ -43,9 +44,9 @@ struct FindTimestampsTests {
         let text = "0:00 Intro | 2:30 Main topic | 10:15 Conclusion"
         let results = findTimestamps(in: text)
         #expect(results.count == 3)
-        #expect(results[0].seconds == 0)     // 0:00
-        #expect(results[1].seconds == 150)   // 2*60 + 30
-        #expect(results[2].seconds == 615)   // 10*60 + 15
+        #expect(results[0].seconds == 0)  // 0:00
+        #expect(results[1].seconds == 150)  // 2*60 + 30
+        #expect(results[2].seconds == 615)  // 10*60 + 15
     }
 
     @Test("Plain text with no timestamps returns empty")
@@ -77,6 +78,6 @@ struct FindTimestampsTests {
         let results = findTimestamps(in: text)
         #expect(results.count == 2)
         #expect(results[0].seconds == 45)
-        #expect(results[1].seconds == 3600 + 2*60 + 33)
+        #expect(results[1].seconds == 3600 + 2 * 60 + 33)
     }
 }

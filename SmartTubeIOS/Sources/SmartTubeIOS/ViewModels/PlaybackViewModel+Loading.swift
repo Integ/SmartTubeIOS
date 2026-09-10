@@ -1,10 +1,11 @@
 import AVFoundation
+import SmartTubeIOSCore
 import os
+
 #if canImport(UIKit)
 import UIKit
 import MediaPlayer
 #endif
-import SmartTubeIOSCore
 
 private let playerLog = CrashlyticsLogger(category: "Player")
 
@@ -13,7 +14,9 @@ private let playerLog = CrashlyticsLogger(category: "Player")
 extension PlaybackViewModel {
 
     public func load(video: Video) {
-        playerLog.notice("[load] load() called — id=\(video.id) currentVideo=\(self.currentVideo?.id ?? "nil") isLoading=\(self.isLoading) player.item=\(self.player.currentItem != nil)")
+        playerLog.notice(
+            "[load] load() called — id=\(video.id) currentVideo=\(self.currentVideo?.id ?? "nil") isLoading=\(self.isLoading) player.item=\(self.player.currentItem != nil)"
+        )
         playerLog.notice("[benchmark] load started — videoId=\(video.id) title=\(video.title)")
         videoLoadStartedAt = Date()
         lastSuccessfulStreamType = "unknown"
@@ -55,9 +58,10 @@ extension PlaybackViewModel {
         // cycle). Re-activates AVAudioSession, wires end/stall observers, and resumes.
         // Expected: <0.1s in-app → ~0.5s reported (XCTest polling overhead only).
         if let parked = parkedVideoId,
-           parked == video.id,
-           let parkedItem = player.currentItem,
-           parkedItem.status == .readyToPlay {
+            parked == video.id,
+            let parkedItem = player.currentItem,
+            parkedItem.status == .readyToPlay
+        {
             playerLog.notice("[fix12] same-video re-open — reusing parked AVPlayerItem for \(video.id)")
             parkedVideoId = nil
             // Cancel the now-useless wkHLS serialExtract started by stop().
@@ -119,12 +123,14 @@ extension PlaybackViewModel {
         if settings.historyState == .enabled, duration > 0 {
             let pos = self.currentTime
             let dur = self.duration
-            let flush = tracker.transition(to: video.id, cpn: InnerTubeAPI.generateCPN(),
-                                           flushPosition: pos, flushDuration: dur)
+            let flush = tracker.transition(
+                to: video.id, cpn: InnerTubeAPI.generateCPN(),
+                flushPosition: pos, flushDuration: dur)
             Task { await flush() }
         } else {
-            tracker.transition(to: video.id, cpn: InnerTubeAPI.generateCPN(),
-                               flushPosition: 0, flushDuration: 0)
+            tracker.transition(
+                to: video.id, cpn: InnerTubeAPI.generateCPN(),
+                flushPosition: 0, flushDuration: 0)
         }
 
         // Stop and clear the current item immediately so the previous frame
@@ -210,7 +216,8 @@ extension PlaybackViewModel {
         // This fires immediately on load() so the full video duration is
         // available as warm-up time, rather than waiting until playback ends.
         if video.playlistId == CurrentQueueStore.playlistID,
-           let nextIndex = video.playlistIndex.map({ $0 + 1 }) {
+            let nextIndex = video.playlistIndex.map({ $0 + 1 })
+        {
             prefetchQueueVideo(at: nextIndex)
             // The queue has a next item — enable the next button immediately so
             // the user can advance before related videos finish loading.
@@ -270,7 +277,9 @@ extension PlaybackViewModel {
     /// Called when the PlayerView temporarily disappears (e.g. a sheet slides over it).
     /// Use `resume()` to restart playback, or `load(video:)` to switch videos.
     public func suspend() {
-        playerLog.notice("[suspend] suspend() called — currentVideo=\(self.currentVideo?.id ?? "nil") currentTime=\(Int(self.currentTime))s")
+        playerLog.notice(
+            "[suspend] suspend() called — currentVideo=\(self.currentVideo?.id ?? "nil") currentTime=\(Int(self.currentTime))s"
+        )
         if settings.historyState == .enabled, duration > 0 {
             let pos = self.currentTime
             let dur = self.duration
@@ -363,7 +372,9 @@ extension PlaybackViewModel {
         // spinner stays visible until the first frame is actually ready. It was previously
         // cleared after player.rate was set, which dismissed the spinner before buffering
         // completed on slow networks (GitHub issue #53).
-        playerLog.notice("[loadAsync] start id=\(video.id) title=\(video.title) player.rate=\(self.player.rate) timeControlStatus=\(self.player.timeControlStatus.rawValue)")
+        playerLog.notice(
+            "[loadAsync] start id=\(video.id) title=\(video.title) player.rate=\(self.player.rate) timeControlStatus=\(self.player.timeControlStatus.rawValue)"
+        )
 
         #if canImport(UIKit)
         // Seed the lock-screen Now Playing widget BEFORE the ~10 s network phase so
@@ -443,7 +454,8 @@ extension PlaybackViewModel {
                 .urls(for: .documentDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent("SmartTubeDownloads").path
             if localURL.path.hasPrefix(downloadsDir),
-               FileManager.default.fileExists(atPath: localURL.path) {
+                FileManager.default.fileExists(atPath: localURL.path)
+            {
                 let item = AVPlayerItem(url: localURL)
                 item.audioTimePitchAlgorithm = .spectral
                 // Wire up observers BEFORE replaceCurrentItem (task-80 rule).
@@ -453,7 +465,8 @@ extension PlaybackViewModel {
                         guard let self, !Task.isCancelled else { return }
                         switch status {
                         case .readyToPlay:
-                            playerLog.notice("[benchmark] readyToPlay — local-file — videoId=\(video.id) title=\(video.title)")
+                            playerLog.notice(
+                                "[benchmark] readyToPlay — local-file — videoId=\(video.id) title=\(video.title)")
                             self.loadAudioTracks(from: item)
                             self.isLoading = false
                         case .failed:
@@ -488,19 +501,26 @@ extension PlaybackViewModel {
                         guard let self, !Task.isCancelled else { return }
                         self.stallCount += 1
                         let t = Int(self.currentTime)
-                        playerLog.notice("[stall] AVPlayerItemPlaybackStalled at t=\(t)s stall#\(self.stallCount) video=\(self.currentVideo?.id ?? "unknown")")
+                        playerLog.notice(
+                            "[stall] AVPlayerItemPlaybackStalled at t=\(t)s stall#\(self.stallCount) video=\(self.currentVideo?.id ?? "unknown")"
+                        )
                         let stallError = NSError(
                             domain: "SmartTube.PlaybackStall",
                             code: 0,
-                            userInfo: [NSLocalizedDescriptionKey: "AVPlayerItemPlaybackStalled at t=\(t)s (stall #\(self.stallCount))"]
+                            userInfo: [
+                                NSLocalizedDescriptionKey:
+                                    "AVPlayerItemPlaybackStalled at t=\(t)s (stall #\(self.stallCount))"
+                            ]
                         )
-                        playerLog.recordNonFatal(stallError, userInfo: [
-                            "video_id":       self.currentVideo?.id ?? "unknown",
-                            "stall_at_time":  String(t),
-                            "stall_count":    String(self.stallCount),
-                            "video_duration": String(Int(self.duration)),
-                            "stall_trigger":  "AVPlayerItemPlaybackStalled"
-                        ])
+                        playerLog.recordNonFatal(
+                            stallError,
+                            userInfo: [
+                                "video_id": self.currentVideo?.id ?? "unknown",
+                                "stall_at_time": String(t),
+                                "stall_count": String(self.stallCount),
+                                "video_duration": String(Int(self.duration)),
+                                "stall_trigger": "AVPlayerItemPlaybackStalled",
+                            ])
                         // Stall recovery (#193): wait 2 s for AVPlayer to self-heal;
                         // if still stalled, nudge the pipeline with a near-zero seek
                         // + explicit rate restore. Capped at 3 attempts per item.
@@ -509,9 +529,11 @@ extension PlaybackViewModel {
                             Task { @MainActor [weak self] in
                                 try? await Task.sleep(nanoseconds: 2_000_000_000)
                                 guard let self, self.isPlaying, self.player.rate == 0,
-                                      !self.isQualityChangePending else { return }
+                                    !self.isQualityChangePending
+                                else { return }
                                 let seekT = self.currentTime
-                                playerLog.notice("[stall] recovery#\(recoveryCount): seeking to \(seekT)s to flush pipeline")
+                                playerLog.notice(
+                                    "[stall] recovery#\(recoveryCount): seeking to \(seekT)s to flush pipeline")
                                 self.player.seek(
                                     to: CMTime(seconds: seekT, preferredTimescale: 600),
                                     toleranceBefore: .zero,
@@ -560,14 +582,16 @@ extension PlaybackViewModel {
             let cached = await VideoPreloadCache.shared.consume(videoId: video.id)
             // Log the full cache verdict as a single breadcrumb so wrong-video / prefetch-race
             // scenarios are immediately visible in Firebase reports.
-            let cacheVerdict = "playerInfo=\(cached.playerInfo != nil) nextInfo=\(cached.nextInfo != nil) sponsor=\(cached.sponsorSegments != nil) endCards=\(cached.endCards != nil) tracking=\(cached.trackingURLs != nil) complete=\(cached.isComplete)"
+            let cacheVerdict =
+                "playerInfo=\(cached.playerInfo != nil) nextInfo=\(cached.nextInfo != nil) sponsor=\(cached.sponsorSegments != nil) endCards=\(cached.endCards != nil) tracking=\(cached.trackingURLs != nil) complete=\(cached.isComplete)"
             if cached.playerInfo != nil {
                 playerLog.notice("PREFETCH_HIT: \(video.id) — \(cacheVerdict)")
             } else {
                 playerLog.notice("PREFETCH_MISS: \(video.id) — \(cacheVerdict)")
             }
             let wkHLSCacheHit = await VideoPreloadCache.shared.cachedWKHLSURL(for: video.id) != nil
-            self.cacheStatusSummary = "pi:\(cached.playerInfo != nil ? "HIT" : "MISS") wkHLS:\(wkHLSCacheHit ? "HIT" : "MISS")"
+            self.cacheStatusSummary =
+                "pi:\(cached.playerInfo != nil ? "HIT" : "MISS") wkHLS:\(wkHLSCacheHit ? "HIT" : "MISS")"
 
             // Apply cached DeArrow overrides (community title / thumbnail timestamp).
             // Done immediately after consume() so VideoCardView can show the override
@@ -598,10 +622,13 @@ extension PlaybackViewModel {
             // automatically retry with the authenticated TV client before showing an error.
             let info: PlayerInfo
             if let cachedInfo = cached.playerInfo {
-                playerLog.notice("PREFETCH_HIT: playerInfo for \(video.id) — skipping network (hls=\(cachedInfo.hlsURL != nil) dash=\(cachedInfo.dashURL != nil) formats=\(cachedInfo.formats.count))")
+                playerLog.notice(
+                    "PREFETCH_HIT: playerInfo for \(video.id) — skipping network (hls=\(cachedInfo.hlsURL != nil) dash=\(cachedInfo.dashURL != nil) formats=\(cachedInfo.formats.count))"
+                )
                 info = cachedInfo
             } else if let inFlight = await VideoPreloadCache.shared.inFlightPlayerFetch(videoId: video.id),
-                      let coalescedInfo = await inFlight.value {
+                let coalescedInfo = await inFlight.value
+            {
                 playerLog.notice("PREFETCH_COALESCE: playerInfo for \(video.id) — joined in-flight prefetch task")
                 info = coalescedInfo
             } else {
@@ -630,8 +657,10 @@ extension PlaybackViewModel {
                             // Skip the unnecessary AVPlayer attempt and go straight to the
                             // Android client.
                             if tvInfo.hlsURL == nil,
-                               tvInfo.bestAdaptiveVideoURL == nil || tvInfo.bestAdaptiveAudioURL == nil {
-                                playerLog.notice("⚠️ TV client returned no HLS/adaptive streams — falling through to Android client")
+                                tvInfo.bestAdaptiveVideoURL == nil || tvInfo.bestAdaptiveAudioURL == nil
+                            {
+                                playerLog.notice(
+                                    "⚠️ TV client returned no HLS/adaptive streams — falling through to Android client")
                                 tvInfo = try await api.fetchPlayerInfoAndroid(videoId: video.id)
                             }
                             info = tvInfo
@@ -659,14 +688,20 @@ extension PlaybackViewModel {
             }
             playerInfo = info
             availableFormats = Self.deduplicatedVideoFormats(info.formats)
-            playerLog.notice("[loadAsync] availableFormats after initial dedup: raw=\(info.formats.count) deduped=\(availableFormats.count) maxH=\(availableFormats.map(\.height).max() ?? 0)")
+            playerLog.notice(
+                "[loadAsync] availableFormats after initial dedup: raw=\(info.formats.count) deduped=\(availableFormats.count) maxH=\(availableFormats.map(\.height).max() ?? 0)"
+            )
             availableCaptions = info.captionTracks
             autoApplyCaptionPreference(tracks: info.captionTracks)
             selectedFormat = nil
 
-            playerLog.notice("playerInfo: formats=\(info.formats.count) hlsURL=\(info.hlsURL?.absoluteString ?? "nil") dashURL=\(info.dashURL?.absoluteString ?? "nil")")
+            playerLog.notice(
+                "playerInfo: formats=\(info.formats.count) hlsURL=\(info.hlsURL?.absoluteString ?? "nil") dashURL=\(info.dashURL?.absoluteString ?? "nil")"
+            )
             for (i, fmt) in info.formats.enumerated() {
-                playerLog.notice("  format[\(i)] mimeType=\(fmt.mimeType) quality=\(fmt.label) url=\(fmt.url?.absoluteString.prefix(80) ?? "nil")")
+                playerLog.notice(
+                    "  format[\(i)] mimeType=\(fmt.mimeType) quality=\(fmt.label) url=\(fmt.url?.absoluteString.prefix(80) ?? "nil")"
+                )
             }
 
             let prefURL = info.preferredStreamURL
@@ -678,22 +713,28 @@ extension PlaybackViewModel {
             // When not cached, the fetch is deferred to Phase 2 (runs concurrently with
             // AVPlayer buffering) so it does not block the spinner.
             sponsorSegments = []
-            let channelIsExcluded = video.channelId.map {
-                settings.sponsorBlockExcludedChannels.keys.contains($0)
-            } ?? false
-            playerLog.notice("[sponsorBlock] enabled=\(settings.sponsorBlockEnabled) channelExcluded=\(channelIsExcluded) categories=\(settings.activeSponsorCategories.count)")
+            let channelIsExcluded =
+                video.channelId.map {
+                    settings.sponsorBlockExcludedChannels.keys.contains($0)
+                } ?? false
+            playerLog.notice(
+                "[sponsorBlock] enabled=\(settings.sponsorBlockEnabled) channelExcluded=\(channelIsExcluded) categories=\(settings.activeSponsorCategories.count)"
+            )
             var sponsorCached = false
             if settings.sponsorBlockEnabled, !channelIsExcluded {
                 if let cachedSegments = cached.sponsorSegments {
                     // Cache hit (fresh or stale) — apply immediately.
                     let isStaleSponsor = cached.staleFields.contains(.sponsorSegments)
                     let minDur = settings.sponsorBlockMinSegmentDuration
-                    let filtered = minDur > 0
+                    let filtered =
+                        minDur > 0
                         ? cachedSegments.filter { ($0.end - $0.start) >= minDur }
                         : cachedSegments
                     sponsorSegments = filtered
                     let sbCacheLabel = isStaleSponsor ? "STALE" : "HIT"
-                    playerLog.notice("[sponsorBlock] cache \(sbCacheLabel): \(cachedSegments.count) raw -> \(filtered.count) applied")
+                    playerLog.notice(
+                        "[sponsorBlock] cache \(sbCacheLabel): \(cachedSegments.count) raw -> \(filtered.count) applied"
+                    )
                     // Mark as "not fully cached" only when stale so Phase 2 revalidates.
                     sponsorCached = !isStaleSponsor
                 } else {
@@ -726,8 +767,12 @@ extension PlaybackViewModel {
                     self.hlsVariantURLs = variantURLs
                     let beforeCount = self.availableFormats.count
                     self.availableFormats = self.availableFormats.filter { variantURLs.keys.contains($0.height) }
-                    playerLog.notice("HLS variants (bg): \(variantURLs.keys.sorted().reversed()) — filtered quality picker \(beforeCount) → \(self.availableFormats.count) options")
-                    if let sel = self.selectedFormat, !variantURLs.keys.contains(sel.height) { self.selectedFormat = nil }
+                    playerLog.notice(
+                        "HLS variants (bg): \(variantURLs.keys.sorted().reversed()) — filtered quality picker \(beforeCount) → \(self.availableFormats.count) options"
+                    )
+                    if let sel = self.selectedFormat, !variantURLs.keys.contains(sel.height) {
+                        self.selectedFormat = nil
+                    }
                 }
             }
             // Build player item — preferredStreamURL is guaranteed non-nil here because
@@ -753,7 +798,8 @@ extension PlaybackViewModel {
             // Route through exhaustiveRetry first; it will try all adaptive paths and fall
             // back to muxed 360p as Phase 2 if all adaptive attempts fail.
             if info.hlsURL == nil {
-                playerLog.notice("⚠️ iOS response: no HLS — routing to exhaustiveRetry for adaptive quality before muxed fallback")
+                playerLog.notice(
+                    "⚠️ iOS response: no HLS — routing to exhaustiveRetry for adaptive quality before muxed fallback")
                 await exhaustiveRetry(video: video, originalError: nil, playerInfo: info, cached: cached)
                 return
             }
@@ -834,8 +880,12 @@ extension PlaybackViewModel {
                     case .readyToPlay:
                         let elapsedMs = Int(Date().timeIntervalSince(self.videoLoadStartedAt) * 1000)
                         self.timeToPlayMs = elapsedMs
-                        playerLog.notice("✅ AVPlayerItem readyToPlay — video=\(self.currentVideo?.id ?? "nil") rate=\(self.player.rate) timeControlStatus=\(self.player.timeControlStatus.rawValue) isAudioOnlyMode=\(self.isAudioOnlyMode)")
-                        playerLog.notice("[benchmark] readyToPlay in \(elapsedMs) ms since load() — videoId=\(self.currentVideo?.id ?? "nil") title=\(self.currentVideo?.title ?? "nil")")
+                        playerLog.notice(
+                            "✅ AVPlayerItem readyToPlay — video=\(self.currentVideo?.id ?? "nil") rate=\(self.player.rate) timeControlStatus=\(self.player.timeControlStatus.rawValue) isAudioOnlyMode=\(self.isAudioOnlyMode)"
+                        )
+                        playerLog.notice(
+                            "[benchmark] readyToPlay in \(elapsedMs) ms since load() — videoId=\(self.currentVideo?.id ?? "nil") title=\(self.currentVideo?.title ?? "nil")"
+                        )
                         // Only set the stream type here if a fallback path hasn't already set it
                         // (fallback paths set it in attemptURL/tryWebViewHLS readyToPlay handlers).
                         if self.lastSuccessfulStreamType == "unknown" {
@@ -858,7 +908,9 @@ extension PlaybackViewModel {
                         if itemDur.isFinite && itemDur > 0 {
                             let prevDur = self.duration
                             self.duration = itemDur
-                            playerLog.notice("[duration] updated from AVPlayerItem: \(String(format: "%.1f", itemDur))s (was \(String(format: "%.1f", prevDur))s from metadata)")
+                            playerLog.notice(
+                                "[duration] updated from AVPlayerItem: \(String(format: "%.1f", itemDur))s (was \(String(format: "%.1f", prevDur))s from metadata)"
+                            )
                         } else if self.duration == 0 {
                             // Some HLS streams report .invalid duration at readyToPlay and
                             // deliver it later via KVO once playlist segments are parsed.
@@ -871,7 +923,9 @@ extension PlaybackViewModel {
                                     guard !Task.isCancelled else { return }
                                     let prev = self.duration
                                     self.duration = seconds
-                                    playerLog.notice("[duration] deferred KVO update: \(String(format: "%.1f", seconds))s (was \(String(format: "%.1f", prev))s)")
+                                    playerLog.notice(
+                                        "[duration] deferred KVO update: \(String(format: "%.1f", seconds))s (was \(String(format: "%.1f", prev))s)"
+                                    )
                                     break
                                 }
                             }
@@ -881,7 +935,7 @@ extension PlaybackViewModel {
                             self.seek(to: pos)
                         }
                         // Load alternate audio renditions (dubbed / translated tracks).
-                        self.loadAudioTracks(from: item)                        // Dismiss the spinner: the first frame is ready to display.
+                        self.loadAudioTracks(from: item)  // Dismiss the spinner: the first frame is ready to display.
                         // Previously this was done after player.rate was set, which
                         // dismissed the spinner before buffering completed on slow
                         // networks (GitHub issue #53).
@@ -907,7 +961,8 @@ extension PlaybackViewModel {
                                 } else {
                                     item?.preferredMaximumResolution = .zero
                                     item?.preferredPeakBitRate = 0
-                                    playerLog.notice("[fast-start] ABR ramp → Auto (unconstrained) + buffer unconstrained")
+                                    playerLog.notice(
+                                        "[fast-start] ABR ramp → Auto (unconstrained) + buffer unconstrained")
                                 }
                             }
                         }
@@ -916,7 +971,9 @@ extension PlaybackViewModel {
                         playerLog.error("❌ AVPlayerItem failed: \(err)")
                         if let video = self.currentVideo {
                             self.exhaustiveRetryTask?.cancel()
-                            self.exhaustiveRetryTask = Task { await self.exhaustiveRetry(video: video, originalError: item.error) }
+                            self.exhaustiveRetryTask = Task {
+                                await self.exhaustiveRetry(video: video, originalError: item.error)
+                            }
                         } else {
                             self.error = item.error
                         }
@@ -952,19 +1009,26 @@ extension PlaybackViewModel {
                     guard let self, !Task.isCancelled else { return }
                     self.stallCount += 1
                     let t = Int(self.currentTime)
-                    playerLog.notice("[stall] AVPlayerItemPlaybackStalled at t=\(t)s stall#\(self.stallCount) video=\(self.currentVideo?.id ?? "unknown")")
+                    playerLog.notice(
+                        "[stall] AVPlayerItemPlaybackStalled at t=\(t)s stall#\(self.stallCount) video=\(self.currentVideo?.id ?? "unknown")"
+                    )
                     let stallError = NSError(
                         domain: "SmartTube.PlaybackStall",
                         code: 0,
-                        userInfo: [NSLocalizedDescriptionKey: "AVPlayerItemPlaybackStalled at t=\(t)s (stall #\(self.stallCount))"]
+                        userInfo: [
+                            NSLocalizedDescriptionKey:
+                                "AVPlayerItemPlaybackStalled at t=\(t)s (stall #\(self.stallCount))"
+                        ]
                     )
-                    playerLog.recordNonFatal(stallError, userInfo: [
-                        "video_id":       self.currentVideo?.id ?? "unknown",
-                        "stall_at_time":  String(t),
-                        "stall_count":    String(self.stallCount),
-                        "video_duration": String(Int(self.duration)),
-                        "stall_trigger":  "AVPlayerItemPlaybackStalled"
-                    ])
+                    playerLog.recordNonFatal(
+                        stallError,
+                        userInfo: [
+                            "video_id": self.currentVideo?.id ?? "unknown",
+                            "stall_at_time": String(t),
+                            "stall_count": String(self.stallCount),
+                            "video_duration": String(Int(self.duration)),
+                            "stall_trigger": "AVPlayerItemPlaybackStalled",
+                        ])
                     // Stall recovery (#193): wait 2 s for AVPlayer to self-heal;
                     // if still stalled, nudge the pipeline with a near-zero seek
                     // + explicit rate restore. Capped at 3 attempts per item.
@@ -973,9 +1037,11 @@ extension PlaybackViewModel {
                         Task { @MainActor [weak self] in
                             try? await Task.sleep(nanoseconds: 2_000_000_000)
                             guard let self, self.isPlaying, self.player.rate == 0,
-                                  !self.isQualityChangePending else { return }
+                                !self.isQualityChangePending
+                            else { return }
                             let seekT = self.currentTime
-                            playerLog.notice("[stall] recovery#\(recoveryCount): seeking to \(seekT)s to flush pipeline")
+                            playerLog.notice(
+                                "[stall] recovery#\(recoveryCount): seeking to \(seekT)s to flush pipeline")
                             self.player.seek(
                                 to: CMTime(seconds: seekT, preferredTimescale: 600),
                                 toleranceBefore: .zero,
@@ -1011,10 +1077,14 @@ extension PlaybackViewModel {
                 playerLog.error("[loadAsync] AVAudioSession setActive(true) failed: \(error.localizedDescription)")
             }
             #endif
-            playerLog.notice("[loadAsync] setting rate=\(self.settings.playbackSpeed) — player.timeControlStatus=\(self.player.timeControlStatus.rawValue) isAudioOnlyMode=\(self.isAudioOnlyMode)")
+            playerLog.notice(
+                "[loadAsync] setting rate=\(self.settings.playbackSpeed) — player.timeControlStatus=\(self.player.timeControlStatus.rawValue) isAudioOnlyMode=\(self.isAudioOnlyMode)"
+            )
             player.rate = Float(settings.playbackSpeed)
             isPlaying = true
-            playerLog.notice("[loadAsync] rate set — player.rate=\(self.player.rate) timeControlStatus=\(self.player.timeControlStatus.rawValue)")
+            playerLog.notice(
+                "[loadAsync] rate set — player.rate=\(self.player.rate) timeControlStatus=\(self.player.timeControlStatus.rawValue)"
+            )
             #if canImport(UIKit)
             UIApplication.shared.isIdleTimerDisabled = true
             updateNowPlayingInfo()
@@ -1078,7 +1148,9 @@ extension PlaybackViewModel {
                 shouldRetryWithFallback = false
             }
             if shouldRetryWithFallback {
-                playerLog.notice("⚠️ \(error.localizedDescription) from primary client (signed-in user) — routing to exhaustiveRetry for fallback clients")
+                playerLog.notice(
+                    "⚠️ \(error.localizedDescription) from primary client (signed-in user) — routing to exhaustiveRetry for fallback clients"
+                )
                 exhaustiveRetryTask?.cancel()
                 exhaustiveRetryTask = Task { [weak self] in
                     await self?.exhaustiveRetry(video: video, originalError: error)
@@ -1092,7 +1164,9 @@ extension PlaybackViewModel {
     // MARK: - Cleanup
 
     public func stop() {
-        playerLog.notice("[stop] stop() called — currentVideo=\(self.currentVideo?.id ?? "nil") currentTime=\(Int(self.currentTime))s isLoading=\(self.isLoading)")
+        playerLog.notice(
+            "[stop] stop() called — currentVideo=\(self.currentVideo?.id ?? "nil") currentTime=\(Int(self.currentTime))s isLoading=\(self.isLoading)"
+        )
         // Save watch position before stopping (mirrors VideoStateController)
         if settings.historyState == .enabled, duration > 0 {
             let pos = self.currentTime
@@ -1150,7 +1224,9 @@ extension PlaybackViewModel {
             wkHLSEarlyTaskVideoId = stoppedVideoId
             let capturedId = stoppedVideoId
             wkHLSEarlyTask = Task { @MainActor in
-                guard let url = await YouTubeWebViewHLSExtractor.shared.serialExtract(videoId: capturedId) else { return nil }
+                guard let url = await YouTubeWebViewHLSExtractor.shared.serialExtract(videoId: capturedId) else {
+                    return nil
+                }
                 // Defense-in-depth: if load() for a different video cancelled this task
                 // between serialExtract's return and the store, bail rather than write
                 // a potentially stale URL into the cache under the wrong key.
@@ -1217,9 +1293,10 @@ extension PlaybackViewModel {
 
         // --- SponsorBlock cache miss or stale ---
         if !sponsorCached, settings.sponsorBlockEnabled {
-            let channelIsExcluded = video.channelId.map {
-                settings.sponsorBlockExcludedChannels.keys.contains($0)
-            } ?? false
+            let channelIsExcluded =
+                video.channelId.map {
+                    settings.sponsorBlockExcludedChannels.keys.contains($0)
+                } ?? false
             if !channelIsExcluded {
                 let videoId = video.id
                 let cats = settings.activeSponsorCategories
@@ -1262,66 +1339,73 @@ extension PlaybackViewModel {
             }
         } else {
 
-        // Fresh cache hit: use immediately (no network).
-        // Stale cache hit: stale data was already returned by consume() — revalidate silently in background.
-        // Full miss: live blocking fetch so relatedVideos is populated before the panel opens.
-        let nextInfo: NextInfo?
-        if let cachedNext = cached.nextInfo, !cached.staleFields.contains(.nextInfo) {
-            playerLog.notice("cache HIT: nextInfo chapters=\(cachedNext.chapters.count) (skipping network)")
-            nextInfo = cachedNext
-        } else if let staleNext = cached.nextInfo, cached.staleFields.contains(.nextInfo) {
-            playerLog.notice("SWR: nextInfo stale chapters=\(staleNext.chapters.count) — using cached, revalidating in background")
-            nextInfo = staleNext
-            let videoId = video.id
-            Task(priority: .background) { [api = self.api] in
-                if let fresh = try? await api.fetchNextInfo(videoId: videoId) {
-                    await VideoPreloadCache.shared.store(nextInfo: fresh, for: videoId)
+            // Fresh cache hit: use immediately (no network).
+            // Stale cache hit: stale data was already returned by consume() — revalidate silently in background.
+            // Full miss: live blocking fetch so relatedVideos is populated before the panel opens.
+            let nextInfo: NextInfo?
+            if let cachedNext = cached.nextInfo, !cached.staleFields.contains(.nextInfo) {
+                playerLog.notice("cache HIT: nextInfo chapters=\(cachedNext.chapters.count) (skipping network)")
+                nextInfo = cachedNext
+            } else if let staleNext = cached.nextInfo, cached.staleFields.contains(.nextInfo) {
+                playerLog.notice(
+                    "SWR: nextInfo stale chapters=\(staleNext.chapters.count) — using cached, revalidating in background"
+                )
+                nextInfo = staleNext
+                let videoId = video.id
+                Task(priority: .background) { [api = self.api] in
+                    if let fresh = try? await api.fetchNextInfo(videoId: videoId) {
+                        await VideoPreloadCache.shared.store(nextInfo: fresh, for: videoId)
+                    }
+                }
+            } else {
+                nextInfo = try? await api.fetchNextInfo(videoId: video.id)
+                if let nextInfo { await VideoPreloadCache.shared.store(nextInfo: nextInfo, for: video.id) }
+            }
+
+            guard !Task.isCancelled else { return }
+
+            if let nextInfo, !nextInfo.relatedVideos.isEmpty {
+                relatedVideos = nextInfo.relatedVideos.filter { $0.id != video.id }
+                hasNext = !relatedVideos.isEmpty
+            } else {
+                let fallbackQuery = video.title.isEmpty ? nil : video.title
+                if let query = fallbackQuery {
+                    let searched = try? await api.search(query: query)
+                    relatedVideos =
+                        searched?.videos.filter { $0.id != video.id }.prefix(InnerTubeClients.maxVideoResults).map {
+                            $0
+                        } ?? []
+                    hasNext = !relatedVideos.isEmpty
                 }
             }
-        } else {
-            nextInfo = try? await api.fetchNextInfo(videoId: video.id)
-            if let nextInfo { await VideoPreloadCache.shared.store(nextInfo: nextInfo, for: video.id) }
-        }
-
-        guard !Task.isCancelled else { return }
-
-        if let nextInfo, !nextInfo.relatedVideos.isEmpty {
-            relatedVideos = nextInfo.relatedVideos.filter { $0.id != video.id }
-            hasNext = !relatedVideos.isEmpty
-        } else {
-            let fallbackQuery = video.title.isEmpty ? nil : video.title
-            if let query = fallbackQuery {
-                let searched = try? await api.search(query: query)
-                relatedVideos = searched?.videos.filter { $0.id != video.id }.prefix(InnerTubeClients.maxVideoResults).map { $0 } ?? []
-                hasNext = !relatedVideos.isEmpty
+            // If the related-videos fetch resolved hasNext=false but this is a queue
+            // video that still has a subsequent item, restore hasNext=true so the
+            // next button stays enabled for queue playback.
+            if !hasNext,
+                video.playlistId == CurrentQueueStore.playlistID,
+                let idx = video.playlistIndex
+            {
+                hasNext = await CurrentQueueStore.shared.videoAt(index: idx + 1) != nil
             }
-        }
-        // If the related-videos fetch resolved hasNext=false but this is a queue
-        // video that still has a subsequent item, restore hasNext=true so the
-        // next button stays enabled for queue playback.
-        if !hasNext,
-           video.playlistId == CurrentQueueStore.playlistID,
-           let idx = video.playlistIndex {
-            hasNext = await CurrentQueueStore.shared.videoAt(index: idx + 1) != nil
-        }
-        if let status = nextInfo?.likeStatus { likeDislike.setLikeStatus(status) }
-        if let ch = nextInfo?.chapters, !ch.isEmpty {
-            chapters = ch
-            playerLog.notice("[chapters] applied \(ch.count) chapters for \(video.id)")
-        } else {
-            playerLog.notice("[chapters] none for \(video.id) (nextInfo chapters=\(nextInfo?.chapters.count ?? -1))")
-        }
+            if let status = nextInfo?.likeStatus { likeDislike.setLikeStatus(status) }
+            if let ch = nextInfo?.chapters, !ch.isEmpty {
+                chapters = ch
+                playerLog.notice("[chapters] applied \(ch.count) chapters for \(video.id)")
+            } else {
+                playerLog.notice(
+                    "[chapters] none for \(video.id) (nextInfo chapters=\(nextInfo?.chapters.count ?? -1))")
+            }
 
-        // hasNext is now fully resolved (related videos + queue fallback). Update the
-        // lock-screen now-playing info so nextTrackCommand.isEnabled reflects the real
-        // state. Without this call the next/prev buttons only appear if hasNext was
-        // already true during phase-1 (playlist videos); for home-feed autoplay the
-        // buttons are permanently missing.
-        #if canImport(UIKit)
-        updateNowPlayingInfo()
-        #endif
+            // hasNext is now fully resolved (related videos + queue fallback). Update the
+            // lock-screen now-playing info so nextTrackCommand.isEnabled reflects the real
+            // state. Without this call the next/prev buttons only appear if hasNext was
+            // already true during phase-1 (playlist videos); for home-feed autoplay the
+            // buttons are permanently missing.
+            #if canImport(UIKit)
+            updateNowPlayingInfo()
+            #endif
 
-        } // end of non-inject related-videos branch
+        }  // end of non-inject related-videos branch
 
         guard !Task.isCancelled else { return }
 

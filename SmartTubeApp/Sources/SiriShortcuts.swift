@@ -49,7 +49,7 @@ struct SmartTubeShortcuts: AppShortcutsProvider {
             phrases: [
                 "Open YouTube video in \(.applicationName)",
                 "Watch on \(.applicationName)",
-                "Play in \(.applicationName)"
+                "Play in \(.applicationName)",
             ],
             shortTitle: "Open in SmartTube",
             systemImageName: "play.rectangle"

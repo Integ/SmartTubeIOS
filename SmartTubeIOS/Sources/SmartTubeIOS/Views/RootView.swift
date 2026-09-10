@@ -1,6 +1,6 @@
-import SwiftUI
-import SmartTubeIOSCore
 import OSLog
+import SmartTubeIOSCore
+import SwiftUI
 
 private let rootLog = Logger(subsystem: "com.void.smarttube.app", category: "RootView")
 
@@ -87,24 +87,24 @@ public struct RootView: View {
         #endif
     }
 
-    private var requiresAuth: Bool { false }   // guest browsing is allowed
+    private var requiresAuth: Bool { false }  // guest browsing is allowed
 }
 
 // MARK: - AppSection
 
 enum AppSection: String, CaseIterable, Identifiable {
-    case home      = "Home"
-    case search    = "Search"
-    case library   = "Library"
-    case settings  = "Settings"
+    case home = "Home"
+    case search = "Search"
+    case library = "Library"
+    case settings = "Settings"
 
     var id: String { rawValue }
 
     var icon: String {
         switch self {
-        case .home:     return AppSymbol.home
-        case .search:   return AppSymbol.search
-        case .library:  return AppSymbol.library
+        case .home: return AppSymbol.home
+        case .search: return AppSymbol.search
+        case .library: return AppSymbol.library
         case .settings: return AppSymbol.settings
         }
     }
@@ -112,9 +112,9 @@ enum AppSection: String, CaseIterable, Identifiable {
     @MainActor @ViewBuilder
     func destination(api: InnerTubeAPI) -> some View {
         switch self {
-        case .home:     HomeView(api: api)
-        case .search:   SearchView()
-        case .library:  LibraryView()
+        case .home: HomeView(api: api)
+        case .search: SearchView()
+        case .library: LibraryView()
         case .settings: SettingsView()
         }
     }
@@ -151,7 +151,9 @@ struct MainTabView: View {
         // If only accessed inside the Binding.get closure, changes won't trigger a body re-render
         // and updateUIViewController won't be called, so the cover never dismisses.
         let fullScreenVideo: Video? = playerState.presentation == .fullScreen ? playerState.currentVideo : nil
-        let _ = rootLog.notice("[MainTabView] body re-render — presentation=\(String(describing: playerState.presentation)) fullScreenVideo=\(fullScreenVideo?.id ?? "nil")")
+        let _ = rootLog.notice(
+            "[MainTabView] body re-render — presentation=\(String(describing: playerState.presentation)) fullScreenVideo=\(fullScreenVideo?.id ?? "nil")"
+        )
         let fullScreenBinding = Binding<Video?>(
             get: { fullScreenVideo },
             set: { newValue in
@@ -227,8 +229,8 @@ struct MainTabView: View {
                 VStack(spacing: 0) {
                     MiniPlayerView()
                     Color.clear
-                        .frame(height: tabBarBottomInset)
-                        .allowsHitTesting(false)
+                    .frame(height: tabBarBottomInset)
+                    .allowsHitTesting(false)
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .animation(.easeInOut(duration: 0.2), value: playerState.presentation)
@@ -236,8 +238,8 @@ struct MainTabView: View {
                 VStack(spacing: 0) {
                     TOSMiniPlayerView()
                     Color.clear
-                        .frame(height: tabBarBottomInset)
-                        .allowsHitTesting(false)
+                    .frame(height: tabBarBottomInset)
+                    .allowsHitTesting(false)
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .animation(.easeInOut(duration: 0.2), value: tosState.presentation)
@@ -265,7 +267,9 @@ struct MainTabView: View {
         // from frame 1.
         .landscapePlayerCover(item: tosFullScreenBinding, dismissStore: tosState) { video in
             TOSPlayerView(video: video, api: api) {
-                rootLog.notice("[RootView] TOS onFallback for videoId=\(video.id) — AVPlayer disabled, not routing away. User must close + re-tap to retry.")
+                rootLog.notice(
+                    "[RootView] TOS onFallback for videoId=\(video.id) — AVPlayer disabled, not routing away. User must close + re-tap to retry."
+                )
             }
         }
         .onChange(of: browseVM.deepLinkedVideo) { _, video in
@@ -280,13 +284,15 @@ struct MainTabView: View {
         .overlay(alignment: .bottomLeading) {
             let isUITesting = ProcessInfo.processInfo.arguments.contains("--uitesting")
             let deeplinkArg = ProcessInfo.processInfo.arguments
-                .first(where: { $0.hasPrefix("--uitesting-deeplink-video=") })
-            let deeplinkID: String? = deeplinkArg.map {
-                let id = String($0.dropFirst("--uitesting-deeplink-video=".count))
-                return id.isEmpty ? nil : id
-            } ?? nil
+            .first(where: { $0.hasPrefix("--uitesting-deeplink-video=") })
+            let deeplinkID: String? =
+                deeplinkArg.map {
+                    let id = String($0.dropFirst("--uitesting-deeplink-video=".count))
+                    return id.isEmpty ? nil : id
+                } ?? nil
             if isUITesting, let id = deeplinkID,
-               playerState.presentation == .hidden, tosState.presentation == .hidden {
+                playerState.presentation == .hidden, tosState.presentation == .hidden
+            {
                 Button {
                     browseVM.deepLinkedVideo = Video(id: id, title: "", channelTitle: "")
                 } label: {
@@ -359,9 +365,13 @@ struct MainSidebarView: View {
                 if auth.isSignedIn {
                     Divider()
                     HStack {
-                        AsyncImage(url: auth.accountAvatarURL) { img in img.resizable() } placeholder: { Color.gray }
-                            .frame(width: 28, height: 28)
-                            .clipShape(Circle())
+                        AsyncImage(url: auth.accountAvatarURL) { img in
+                            img.resizable()
+                        } placeholder: {
+                            Color.gray
+                        }
+                        .frame(width: 28, height: 28)
+                        .clipShape(Circle())
                         Text(auth.accountName ?? "Account")
                             .font(.subheadline)
                     }
@@ -376,9 +386,10 @@ struct MainSidebarView: View {
             // Full-window player overlay — avoids macOS sheet coordinate issues that
             // prevent XCUITest click events from reaching controls inside a popover window.
             if let video = browseVM.deepLinkedVideo {
-#if os(macOS)
-                let shouldUseTOS = store.settings.useTOSPlayerOnMac
-                                   && tosPlayerFallbackVideoId != video.id
+                #if os(macOS)
+                let shouldUseTOS =
+                    store.settings.useTOSPlayerOnMac
+                    && tosPlayerFallbackVideoId != video.id
                 if shouldUseTOS {
                     // TOS-compliant IFrame player experiment (macOS only, opt-in).
                     // Falls back to the standard PlayerView on embedding-disabled videos.
@@ -397,13 +408,13 @@ struct MainSidebarView: View {
                         .environment(browseVM)
                         .ignoresSafeArea()
                 }
-#else
+                #else
                 PlayerView(video: video, api: api)
                     .environment(store)
                     .environment(auth)
                     .environment(browseVM)
                     .ignoresSafeArea()
-#endif
+                #endif
             }
         }
         // When a different video is opened, clear the per-video fallback guard so

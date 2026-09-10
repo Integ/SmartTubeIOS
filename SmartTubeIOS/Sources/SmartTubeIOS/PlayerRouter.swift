@@ -45,4 +45,4 @@ public final class PlayerRouter {
         playerState.play(video: video)
     }
 }
-#endif // os(iOS)
+#endif  // os(iOS)

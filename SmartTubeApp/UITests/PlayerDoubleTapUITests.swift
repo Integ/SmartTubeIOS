@@ -30,7 +30,7 @@ final class PlayerDoubleTapUITests: XCTestCase {
             "--uitesting",
             "--uitesting-disable-tos-player-on-ios",
             "--uitesting-deeplink-video=dQw4w9WgXcQ",
-            "--uitesting-disable-sponsorblock"
+            "--uitesting-disable-sponsorblock",
         ]
         app.launch()
     }
@@ -57,8 +57,9 @@ final class PlayerDoubleTapUITests: XCTestCase {
         // waitForControlsToHide after the settle window.
         let errorBanner = app.staticTexts["player.errorBanner"].firstMatch
         if errorBanner.exists {
-            XCTFail("Video playback error appeared after player opened — network/CDN issue, not a gesture bug. "
-                + "Error: '\(errorBanner.label)'")
+            XCTFail(
+                "Video playback error appeared after player opened — network/CDN issue, not a gesture bug. "
+                    + "Error: '\(errorBanner.label)'")
         }
     }
 
@@ -74,8 +75,9 @@ final class PlayerDoubleTapUITests: XCTestCase {
         // known visible state without triggering seek or scale.
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
         let playPause = app.buttons["player.playPauseButton"].firstMatch
-        XCTAssertTrue(playPause.waitForExistence(timeout: 4),
-                      "Controls never appeared — cannot wait for them to hide")
+        XCTAssertTrue(
+            playPause.waitForExistence(timeout: 4),
+            "Controls never appeared — cannot wait for them to hide")
         // Wait for controls to disappear (auto-hide fires after ~4 s of inactivity).
         let hiddenPredicate = NSPredicate(format: "exists == false")
         let exp = XCTNSPredicateExpectation(predicate: hiddenPredicate, object: playPause)
@@ -89,12 +91,16 @@ final class PlayerDoubleTapUITests: XCTestCase {
         // Re-verify controls are still hidden. If isLoading drove a re-show, the
         // double-tap would arrive with the gesture overlay disabled and be swallowed.
         if playPause.exists {
-            XCTFail("Controls reappeared during the settle window — isLoading may still be true, disabling the gesture overlay. Wait longer or ensure the video is buffered before tapping.")
+            XCTFail(
+                "Controls reappeared during the settle window — isLoading may still be true, disabling the gesture overlay. Wait longer or ensure the video is buffered before tapping."
+            )
         }
         // Also verify no error banner is active — an errored player has no gesture overlay.
         let errorBanner = app.staticTexts["player.errorBanner"].firstMatch
         if errorBanner.exists {
-            XCTFail("Error banner is visible after controls hid — gesture overlay will be inactive. Error: '\(errorBanner.label)'")
+            XCTFail(
+                "Error banner is visible after controls hid — gesture overlay will be inactive. Error: '\(errorBanner.label)'"
+            )
         }
     }
 
@@ -117,12 +123,15 @@ final class PlayerDoubleTapUITests: XCTestCase {
         doubleTap(normalizedX: 1.0 / 6.0)
         print("▶ [step] waiting for seek-back toast")
         let toast = app.staticTexts["player.toast"].firstMatch
-        XCTAssertTrue(toast.waitForExistence(timeout: 3),
-                      "A seek-back toast (← Xs) must appear after double-tapping the left third of the player")
-        XCTAssertTrue(toast.label.hasPrefix("\u{2190}"),
-                      "Seek-back toast label must start with ← but was '\(toast.label)'")
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must still be running after left-zone double-tap")
+        XCTAssertTrue(
+            toast.waitForExistence(timeout: 3),
+            "A seek-back toast (← Xs) must appear after double-tapping the left third of the player")
+        XCTAssertTrue(
+            toast.label.hasPrefix("\u{2190}"),
+            "Seek-back toast label must start with ← but was '\(toast.label)'")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must still be running after left-zone double-tap")
     }
 
     /// Double-tapping the right third must show the seek-forward toast (e.g. "30s →").
@@ -136,12 +145,15 @@ final class PlayerDoubleTapUITests: XCTestCase {
         doubleTap(normalizedX: 5.0 / 6.0)
         print("▶ [step] waiting for seek-forward toast")
         let toast = app.staticTexts["player.toast"].firstMatch
-        XCTAssertTrue(toast.waitForExistence(timeout: 5),
-                      "A seek-forward toast (Xs →) must appear after double-tapping the right third of the player")
-        XCTAssertTrue(toast.label.hasSuffix("\u{2192}"),
-                      "Seek-forward toast label must end with → but was '\(toast.label)'")
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must still be running after right-zone double-tap")
+        XCTAssertTrue(
+            toast.waitForExistence(timeout: 5),
+            "A seek-forward toast (Xs →) must appear after double-tapping the right third of the player")
+        XCTAssertTrue(
+            toast.label.hasSuffix("\u{2192}"),
+            "Seek-forward toast label must end with → but was '\(toast.label)'")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must still be running after right-zone double-tap")
     }
 
     /// Double-tapping the centre third must show a Fit or Fill video-gravity toast.
@@ -161,7 +173,9 @@ final class PlayerDoubleTapUITests: XCTestCase {
         print("▶ [step] checking controls did not reappear")
         let ppAfter = app.buttons["player.playPauseButton"].firstMatch
         if ppAfter.waitForExistence(timeout: 1) {
-            XCTFail("Controls appeared after centre double-tap — onTap fired instead of onDoubleTap (isEnabled race?). controlsVisible=true means isEnabled=false, so gesture overlay was disabled when double-tap arrived.")
+            XCTFail(
+                "Controls appeared after centre double-tap — onTap fired instead of onDoubleTap (isEnabled race?). controlsVisible=true means isEnabled=false, so gesture overlay was disabled when double-tap arrived."
+            )
             return
         }
 
@@ -189,7 +203,9 @@ final class PlayerDoubleTapUITests: XCTestCase {
                 "\($0.identifier.isEmpty ? "(no-id)" : $0.identifier): '\($0.label)' exists=\($0.exists)"
             }
             print("▶ [skip] No toast found. Visible texts: \(allTexts). Buttons: \(allButtons)")
-            try captureAndSkip("Centre-zone double-tap toast did not appear in the XCTest simulator environment — known issue (task-16). Visible texts: \(allTexts)", in: app)
+            try captureAndSkip(
+                "Centre-zone double-tap toast did not appear in the XCTest simulator environment — known issue (task-16). Visible texts: \(allTexts)",
+                in: app)
         }
 
         // Decide which element we found.
@@ -200,10 +216,12 @@ final class PlayerDoubleTapUITests: XCTestCase {
             toastLabel = fitLabel.label
         }
 
-        XCTAssertTrue(toastLabel == "Fit" || toastLabel == "Fill",
-                      "Scale toast label must be 'Fit' or 'Fill' but was '\(toastLabel)'")
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must still be running after centre-zone double-tap")
+        XCTAssertTrue(
+            toastLabel == "Fit" || toastLabel == "Fill",
+            "Scale toast label must be 'Fit' or 'Fill' but was '\(toastLabel)'")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must still be running after centre-zone double-tap")
         print("▶ [step] done — toast='\(toastLabel)'")
     }
 
@@ -218,7 +236,8 @@ final class PlayerDoubleTapUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 1)
         doubleTap(normalizedX: 1.0 / 6.0)
 
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must still be running after two consecutive left-zone double-taps")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must still be running after two consecutive left-zone double-taps")
     }
 }

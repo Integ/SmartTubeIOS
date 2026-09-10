@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - MockInnerTubeAPI
@@ -371,10 +372,14 @@ struct HomeViewModelTests {
     func loadMoreShortsAutoFetchWhenBelowThreshold() async {
         let mock = MockInnerTubeAPI()
         // Initial page: 3 shorts with a continuation token
-        let initialShorts = (0..<3).map { Video(id: "srt\($0)_AAAAA", title: "Short \($0)", channelTitle: "Ch", isShort: true) }
+        let initialShorts = (0..<3).map {
+            Video(id: "srt\($0)_AAAAA", title: "Short \($0)", channelTitle: "Ch", isShort: true)
+        }
         mock.shortsResult = VideoGroup(title: "Shorts", videos: initialShorts, nextPageToken: "tok_page2")
         // Next page: 4 more shorts
-        let moreShorts = (10..<14).map { Video(id: "srt\($0)_BBBBB", title: "Short \($0)", channelTitle: "Ch", isShort: true) }
+        let moreShorts = (10..<14).map {
+            Video(id: "srt\($0)_BBBBB", title: "Short \($0)", channelTitle: "Ch", isShort: true)
+        }
         mock.shortsMoreResult = VideoGroup(title: "Shorts", videos: moreShorts, nextPageToken: nil)
         mock.homeRowsResult = []
         mock.subscriptionsResult = VideoGroup(title: "Subs", videos: [])
@@ -394,7 +399,9 @@ struct HomeViewModelTests {
     func loadMoreShortsSkipsWithNoToken() async {
         let mock = MockInnerTubeAPI()
         // Initial page: 2 shorts, no continuation token
-        let initialShorts = (0..<2).map { Video(id: "srt\($0)_DDDDD", title: "Short \($0)", channelTitle: "Ch", isShort: true) }
+        let initialShorts = (0..<2).map {
+            Video(id: "srt\($0)_DDDDD", title: "Short \($0)", channelTitle: "Ch", isShort: true)
+        }
         mock.shortsResult = VideoGroup(title: "Shorts", videos: initialShorts, nextPageToken: nil)
         mock.homeRowsResult = []
         mock.subscriptionsResult = VideoGroup(title: "Subs", videos: [])
@@ -412,7 +419,9 @@ struct HomeViewModelTests {
     @Test("loadMoreShortsIfNeeded deduplicates videos from next page")
     func loadMoreShortsDeduplicates() async {
         let mock = MockInnerTubeAPI()
-        let initialShorts = (0..<3).map { Video(id: "srt\($0)_EEEEE", title: "Short \($0)", channelTitle: "Ch", isShort: true) }
+        let initialShorts = (0..<3).map {
+            Video(id: "srt\($0)_EEEEE", title: "Short \($0)", channelTitle: "Ch", isShort: true)
+        }
         // Next page contains 2 new + 1 duplicate from first page
         let moreShorts = [
             Video(id: "srt0_EEEEE", title: "Dup", channelTitle: "Ch", isShort: true),
@@ -432,7 +441,7 @@ struct HomeViewModelTests {
         // 3 initial + 2 new (duplicate filtered out) = 5
         #expect(vm.shortsVideos.count == 5)
         let ids = Set(vm.shortsVideos.map(\.id))
-        #expect(!ids.contains("srt0_EEEEE") == false) // original kept
+        #expect(!ids.contains("srt0_EEEEE") == false)  // original kept
         #expect(ids.contains("srt10_FFFFF"))
         #expect(ids.contains("srt11_FFFFF"))
     }
@@ -440,7 +449,9 @@ struct HomeViewModelTests {
     @Test("preloadMoreShorts loops fetching pages until homeShortsVideos reaches the high threshold")
     func preloadMoreShortsLoopsUntilThreshold() async {
         let mock = MockInnerTubeAPI()
-        let initialShorts = (0..<3).map { Video(id: "srt\($0)_AAAAA", title: "Short \($0)", channelTitle: "Ch", isShort: true) }
+        let initialShorts = (0..<3).map {
+            Video(id: "srt\($0)_AAAAA", title: "Short \($0)", channelTitle: "Ch", isShort: true)
+        }
         mock.shortsResult = VideoGroup(title: "Shorts", videos: initialShorts, nextPageToken: "tok_0")
         mock.homeRowsResult = []
         mock.subscriptionsResult = VideoGroup(title: "Subs", videos: [])
@@ -452,7 +463,9 @@ struct HomeViewModelTests {
         mock.shortsMoreHandler = { _ in
             callCount += 1
             let page = (0..<5).map { i in
-                Video(id: "more\(callCount)_\(i)_GGGGG", title: "More \(callCount)-\(i)", channelTitle: "Ch", isShort: true)
+                Video(
+                    id: "more\(callCount)_\(i)_GGGGG", title: "More \(callCount)-\(i)", channelTitle: "Ch",
+                    isShort: true)
             }
             return VideoGroup(title: "Shorts", videos: page, nextPageToken: "tok_\(callCount)")
         }
@@ -475,7 +488,9 @@ struct HomeViewModelTests {
     @Test("preloadMoreShorts stops immediately when no continuation tokens remain")
     func preloadMoreShortsStopsWithNoTokens() async {
         let mock = MockInnerTubeAPI()
-        let initialShorts = (0..<2).map { Video(id: "srt\($0)_HHHHH", title: "Short \($0)", channelTitle: "Ch", isShort: true) }
+        let initialShorts = (0..<2).map {
+            Video(id: "srt\($0)_HHHHH", title: "Short \($0)", channelTitle: "Ch", isShort: true)
+        }
         // No continuation token from the initial fetch, and no subs section
         // continuation either — both sources are exhausted from the start.
         mock.shortsResult = VideoGroup(title: "Shorts", videos: initialShorts, nextPageToken: nil)
@@ -712,10 +727,12 @@ struct PlaylistViewModelTests {
     @Test("load() fetches playlist videos and populates videos array")
     func loadPopulatesVideos() async {
         let mock = MockInnerTubeAPI()
-        mock.playlistVideosResult = VideoGroup(title: "PL", videos: [
-            makeVideo("plvid_AAAAA"),
-            makeVideo("plvid_BBBBB"),
-        ])
+        mock.playlistVideosResult = VideoGroup(
+            title: "PL",
+            videos: [
+                makeVideo("plvid_AAAAA"),
+                makeVideo("plvid_BBBBB"),
+            ])
 
         let vm = PlaylistViewModel(api: mock)
         vm.load(playlistId: "PLtest1234567")

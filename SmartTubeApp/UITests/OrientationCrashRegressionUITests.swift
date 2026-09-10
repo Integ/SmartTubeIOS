@@ -41,7 +41,7 @@ final class OrientationCrashRegressionUITests: XCTestCase {
         app.launchArguments = [
             "--uitesting",
             "--uitesting-disable-tos-player-on-ios",
-            "--uitesting-deeplink-video=dQw4w9WgXcQ"
+            "--uitesting-deeplink-video=dQw4w9WgXcQ",
         ]
         app.launch()
 
@@ -74,7 +74,8 @@ final class OrientationCrashRegressionUITests: XCTestCase {
         #endif
 
         // If we reach here the app has not crashed. Confirm the player is still alive.
-        XCTAssertTrue(player.exists,
-                      "Player must still exist after landscape ↔ portrait rotation cycle")
+        XCTAssertTrue(
+            player.exists,
+            "Player must still exist after landscape ↔ portrait rotation cycle")
     }
 }

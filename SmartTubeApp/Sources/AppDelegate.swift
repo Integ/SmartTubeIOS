@@ -26,7 +26,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         // Proactive portrait↔landscape transitions are still managed by
         // OrientationManager via UIWindowScene.requestGeometryUpdate.
         let mask = UIInterfaceOrientationMask.allButUpsideDown
-        appDelegateLog.notice("[AppDelegate] supportedInterfaceOrientationsFor — returning mask=\(mask.rawValue) playerIsActive=\(OrientationManager.shared.playerIsActive)")
+        appDelegateLog.notice(
+            "[AppDelegate] supportedInterfaceOrientationsFor — returning mask=\(mask.rawValue) playerIsActive=\(OrientationManager.shared.playerIsActive)"
+        )
         return mask
     }
 }

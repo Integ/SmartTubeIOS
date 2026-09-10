@@ -55,22 +55,22 @@ final class PlayerMoreMenuAudioTrackUITests: XCTestCase {
         app.launchArguments = [
             "--uitesting",
             "--uitesting-disable-tos-player-on-ios",
-            "--uitesting-deeplink-video=\(Self.multiTrackVideoID)"
+            "--uitesting-deeplink-video=\(Self.multiTrackVideoID)",
         ]
         app.launch()
 
         guard app.staticTexts["player.titleLabel"].firstMatch.waitForExistence(timeout: 20) else {
             try captureAndSkip(
-                "Player did not open for \(Self.multiTrackVideoID) within 20s — " +
-                "network unavailable or YouTube blocked the request",
+                "Player did not open for \(Self.multiTrackVideoID) within 20s — "
+                    + "network unavailable or YouTube blocked the request",
                 in: app
             )
         }
 
         guard waitForPlaybackReady(timeout: 40) else {
             try captureAndSkip(
-                "Playback did not become ready within 40s — " +
-                "HLS manifest fetch or WKWebView extraction timed out for \(Self.multiTrackVideoID)",
+                "Playback did not become ready within 40s — "
+                    + "HLS manifest fetch or WKWebView extraction timed out for \(Self.multiTrackVideoID)",
                 in: app
             )
         }
@@ -78,10 +78,9 @@ final class PlayerMoreMenuAudioTrackUITests: XCTestCase {
         guard let audioRow = openMoreMenuAndFindAudioRow() else {
             captureState("no-audio-row-multi-track", in: app)
             XCTFail(
-                "player.moreMenu.audioTrackRow not found in the overflow menu for " +
-                "\(Self.multiTrackVideoID). " +
-                "Expected moreMenuAudioTrackRow to be present (task-104 regression). " +
-                "Check device log for '[webView/HLS] YT-EXT-AUDIO-CONTENT-ID tracks: N'."
+                "player.moreMenu.audioTrackRow not found in the overflow menu for " + "\(Self.multiTrackVideoID). "
+                    + "Expected moreMenuAudioTrackRow to be present (task-104 regression). "
+                    + "Check device log for '[webView/HLS] YT-EXT-AUDIO-CONTENT-ID tracks: N'."
             )
             return
         }
@@ -98,14 +97,13 @@ final class PlayerMoreMenuAudioTrackUITests: XCTestCase {
         app.launchArguments = [
             "--uitesting",
             "--uitesting-disable-tos-player-on-ios",
-            "--uitesting-deeplink-video=\(Self.singleTrackVideoID)"
+            "--uitesting-deeplink-video=\(Self.singleTrackVideoID)",
         ]
         app.launch()
 
         guard app.staticTexts["player.titleLabel"].firstMatch.waitForExistence(timeout: 20) else {
             try captureAndSkip(
-                "Player did not open for \(Self.singleTrackVideoID) within 20s — " +
-                "network unavailable",
+                "Player did not open for \(Self.singleTrackVideoID) within 20s — " + "network unavailable",
                 in: app
             )
         }
@@ -130,9 +128,9 @@ final class PlayerMoreMenuAudioTrackUITests: XCTestCase {
             // If YouTube later adds dubbed tracks for this video, skip gracefully rather than fail.
             dismissMoreMenu()
             try captureAndSkip(
-                "player.moreMenu.audioTrackRow appeared for \(Self.singleTrackVideoID) — " +
-                "YouTube may have added dubbed tracks to this video. " +
-                "Replace singleTrackVideoID with a video that has exactly one audio track.",
+                "player.moreMenu.audioTrackRow appeared for \(Self.singleTrackVideoID) — "
+                    + "YouTube may have added dubbed tracks to this video. "
+                    + "Replace singleTrackVideoID with a video that has exactly one audio track.",
                 in: app
             )
         }
@@ -146,14 +144,13 @@ final class PlayerMoreMenuAudioTrackUITests: XCTestCase {
         app.launchArguments = [
             "--uitesting",
             "--uitesting-disable-tos-player-on-ios",
-            "--uitesting-deeplink-video=\(Self.multiTrackVideoID)"
+            "--uitesting-deeplink-video=\(Self.multiTrackVideoID)",
         ]
         app.launch()
 
         guard app.staticTexts["player.titleLabel"].firstMatch.waitForExistence(timeout: 20) else {
             try captureAndSkip(
-                "Player did not open for \(Self.multiTrackVideoID) within 20s — " +
-                "network unavailable",
+                "Player did not open for \(Self.multiTrackVideoID) within 20s — " + "network unavailable",
                 in: app
             )
         }
@@ -167,8 +164,8 @@ final class PlayerMoreMenuAudioTrackUITests: XCTestCase {
 
         guard let audioRow = openMoreMenuAndFindAudioRow() else {
             try captureAndSkip(
-                "player.moreMenu.audioTrackRow not found — cannot test picker open. " +
-                "See testAudioTrackRowAppearsInOverflowMenuForMultiTrackVideo for details.",
+                "player.moreMenu.audioTrackRow not found — cannot test picker open. "
+                    + "See testAudioTrackRowAppearsInOverflowMenuForMultiTrackVideo for details.",
                 in: app
             )
         }

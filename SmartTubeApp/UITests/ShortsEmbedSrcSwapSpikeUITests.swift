@@ -57,10 +57,10 @@ final class ShortsEmbedSrcSwapSpikeUITests: XCTestCase {
     /// Parses `vm.statusSummary` — "idx=N ready=[d0,d1,...] ticks=[t0,t1,...] errors=E".
     private func parseStatus(_ s: String) -> (ready: [Double], ticks: [Int], errors: Int)? {
         guard let readyRange = s.range(of: "ready=["),
-              let readyEnd = s.range(of: "]", range: readyRange.upperBound..<s.endIndex),
-              let ticksRange = s.range(of: "ticks=["),
-              let ticksEnd = s.range(of: "]", range: ticksRange.upperBound..<s.endIndex),
-              let errorsRange = s.range(of: "errors=")
+            let readyEnd = s.range(of: "]", range: readyRange.upperBound..<s.endIndex),
+            let ticksRange = s.range(of: "ticks=["),
+            let ticksEnd = s.range(of: "]", range: ticksRange.upperBound..<s.endIndex),
+            let errorsRange = s.range(of: "errors=")
         else { return nil }
 
         let readyStr = s[readyRange.upperBound..<readyEnd.lowerBound]
@@ -102,17 +102,23 @@ final class ShortsEmbedSrcSwapSpikeUITests: XCTestCase {
 
         // ── Video 0: wait for first ready + its tick window ──────────────────
         guard XCTWaiter().wait(for: [ready0], timeout: 30) == .completed else {
-            throw XCTSkip("ready notification never fired for video 0 — embed failed to load (network/YouTube availability)")
+            throw XCTSkip(
+                "ready notification never fired for video 0 — embed failed to load (network/YouTube availability)")
         }
-        XCTAssertEqual(XCTWaiter().wait(for: [window0], timeout: 10), .completed, "tick window for video 0 never closed")
+        XCTAssertEqual(
+            XCTWaiter().wait(for: [window0], timeout: 10), .completed, "tick window for video 0 never closed")
 
         // ── Swaps 1-3: tap Swap, wait for ready + window each time ───────────
         for i in 1...3 {
             let ready = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsspike.ready")
-            let window = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.shortsspike.windowclosed")
+            let window = XCTDarwinNotificationExpectation(
+                notificationName: "com.void.smarttube.shortsspike.windowclosed")
             swapButton.tap()
-            XCTAssertEqual(XCTWaiter().wait(for: [ready], timeout: 15), .completed, "ready notification never fired for video \(i)")
-            XCTAssertEqual(XCTWaiter().wait(for: [window], timeout: 10), .completed, "tick window for video \(i) never closed")
+            XCTAssertEqual(
+                XCTWaiter().wait(for: [ready], timeout: 15), .completed, "ready notification never fired for video \(i)"
+            )
+            XCTAssertEqual(
+                XCTWaiter().wait(for: [window], timeout: 10), .completed, "tick window for video \(i) never closed")
         }
 
         // ── Parse final status and check all 4 criteria ──────────────────────
@@ -129,7 +135,10 @@ final class ShortsEmbedSrcSwapSpikeUITests: XCTestCase {
             XCTAssertGreaterThan(d, 0, "ready duration #\(i) was not >0 — got \(d)")
         }
         for i in 1..<status.ready.count {
-            XCTAssertNotEqual(status.ready[i], status.ready[i - 1], "ready duration #\(i) (\(status.ready[i])) matches the previous video's (\(status.ready[i-1])) — src swap may not have navigated the iframe")
+            XCTAssertNotEqual(
+                status.ready[i], status.ready[i - 1],
+                "ready duration #\(i) (\(status.ready[i])) matches the previous video's (\(status.ready[i-1])) — src swap may not have navigated the iframe"
+            )
         }
 
         // 2. ticksResume — >=8 ticks in each 3s window.
@@ -141,7 +150,9 @@ final class ShortsEmbedSrcSwapSpikeUITests: XCTestCase {
         // 3. tickRateStable — last window within 0.5x-1.5x of the first.
         let first = Double(status.ticks[0])
         let last = Double(status.ticks[3])
-        XCTAssertTrue((first * 0.5...first * 1.5).contains(last), "tick rate drifted — first window=\(status.ticks[0]) last window=\(status.ticks[3])")
+        XCTAssertTrue(
+            (first * 0.5...first * 1.5).contains(last),
+            "tick rate drifted — first window=\(status.ticks[0]) last window=\(status.ticks[3])")
 
         // 4. noErrors
         XCTAssertEqual(status.errors, 0, "errorCount should be 0, got \(status.errors)")

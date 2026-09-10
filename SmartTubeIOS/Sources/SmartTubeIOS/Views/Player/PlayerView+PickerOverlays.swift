@@ -1,6 +1,7 @@
-import SwiftUI
 import AVKit
 import SmartTubeIOSCore
+import SwiftUI
+
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -34,7 +35,7 @@ extension PlayerView {
                 HStack {
                     Button("Cancel") { showQualityPicker = false }
                         #if os(tvOS)
-                        .buttonStyle(PickerHeaderButtonStyle())
+                    .buttonStyle(PickerHeaderButtonStyle())
                         #endif
                         .padding()
                     Spacer()
@@ -47,7 +48,8 @@ extension PlayerView {
                 ScrollView {
                     VStack(spacing: 0) {
                         Button {
-                            pickerLog.notice("[qualityPicker] selected Auto (was: \(vm.selectedFormat?.qualityLabel ?? "Auto"))")
+                            pickerLog.notice(
+                                "[qualityPicker] selected Auto (was: \(vm.selectedFormat?.qualityLabel ?? "Auto"))")
                             vm.selectFormat(nil)
                             showQualityPicker = false
                             qualityToastMessage = "Auto quality"
@@ -72,7 +74,9 @@ extension PlayerView {
                         Divider()
                         ForEach(vm.availableFormats) { fmt in
                             Button {
-                                pickerLog.notice("[qualityPicker] selected \(fmt.qualityLabel) (was: \(vm.selectedFormat?.qualityLabel ?? "Auto"))")
+                                pickerLog.notice(
+                                    "[qualityPicker] selected \(fmt.qualityLabel) (was: \(vm.selectedFormat?.qualityLabel ?? "Auto"))"
+                                )
                                 vm.selectFormat(fmt)
                                 showQualityPicker = false
                                 qualityToastMessage = "\(fmt.qualityLabel) · may take up to 30s"
@@ -143,7 +147,7 @@ extension PlayerView {
                 HStack {
                     Button("Cancel") { showSpeedPicker = false }
                         #if os(tvOS)
-                        .buttonStyle(PickerHeaderButtonStyle())
+                    .buttonStyle(PickerHeaderButtonStyle())
                         #endif
                         .padding()
                     Spacer()
@@ -213,7 +217,7 @@ extension PlayerView {
                 HStack {
                     Button("Cancel") { showSleepTimerPicker = false }
                         #if os(tvOS)
-                        .buttonStyle(PickerHeaderButtonStyle())
+                    .buttonStyle(PickerHeaderButtonStyle())
                         #endif
                         .padding()
                     Spacer()
@@ -299,7 +303,7 @@ extension PlayerView {
                 HStack {
                     Button("Cancel") { showCaptionPicker = false }
                         #if os(tvOS)
-                        .buttonStyle(PickerHeaderButtonStyle())
+                    .buttonStyle(PickerHeaderButtonStyle())
                         #endif
                         .padding()
                     Spacer()
@@ -396,7 +400,7 @@ extension PlayerView {
                 HStack {
                     Button("Cancel") { showAudioTrackPicker = false }
                         #if os(tvOS)
-                        .buttonStyle(PickerHeaderButtonStyle())
+                    .buttonStyle(PickerHeaderButtonStyle())
                         #endif
                         .padding()
                     Spacer()

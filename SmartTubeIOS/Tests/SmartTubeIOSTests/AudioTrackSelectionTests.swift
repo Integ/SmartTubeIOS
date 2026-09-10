@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - AudioTrackSelectionTests
@@ -43,7 +44,8 @@ struct AudioTrackSelectionTests {
         // 4. English track
         let englishPrefixes = ["en-", "en_"]
         if let english = tracks.first(where: { $0.languageCode == "en" })
-            ?? tracks.first(where: { lang in englishPrefixes.contains(where: { lang.languageCode.hasPrefix($0) }) }) {
+            ?? tracks.first(where: { lang in englishPrefixes.contains(where: { lang.languageCode.hasPrefix($0) }) })
+        {
             return english
         }
         // 5. First track
@@ -56,8 +58,8 @@ struct AudioTrackSelectionTests {
     /// Arabic-locale device (issue #24 root cause fix).
     @Test func originalTrackSelectedOverAIDubbedTrackWhenDefaultIsYES() {
         let tracks = [
-            track("ar", isOriginal: false),     // AI-dubbed Arabic — listed first
-            track("en", isOriginal: true),      // Original English — HLS DEFAULT=YES
+            track("ar", isOriginal: false),  // AI-dubbed Arabic — listed first
+            track("en", isOriginal: true),  // Original English — HLS DEFAULT=YES
         ]
         let selected = autoSelect(tracks: tracks, preferred: nil)
         #expect(selected?.languageCode == "en")
@@ -67,8 +69,8 @@ struct AudioTrackSelectionTests {
     /// the safer fallback (most YouTube originals are English).
     @Test func englishFallbackWhenNoDefaultTrack() {
         let tracks = [
-            track("ar", isOriginal: false),     // AI-dubbed Arabic — first in list, no DEFAULT
-            track("en", isOriginal: false),     // English — second in list
+            track("ar", isOriginal: false),  // AI-dubbed Arabic — first in list, no DEFAULT
+            track("en", isOriginal: false),  // English — second in list
         ]
         let selected = autoSelect(tracks: tracks, preferred: nil)
         #expect(selected?.languageCode == "en")
@@ -167,7 +169,7 @@ struct AudioTrackSelectionTests {
     @Test func deviceLanguagePrecedesHLSDefault_whenDefaultIsArabic() {
         let tracks = [
             track("ar", isOriginal: true),  // Arabic is DEFAULT=YES in HLS manifest
-            track("en", isOriginal: false), // English available but not DEFAULT
+            track("en", isOriginal: false),  // English available but not DEFAULT
         ]
         let selected = autoSelect(tracks: tracks, preferred: nil, deviceLanguages: ["en"])
         #expect(selected?.languageCode == "en")
@@ -177,7 +179,7 @@ struct AudioTrackSelectionTests {
     @Test func arabicDevice_getsArabicTrack_viaDeviceLanguage() {
         let tracks = [
             track("en", isOriginal: true),  // English is DEFAULT=YES
-            track("ar", isOriginal: false), // Arabic dub
+            track("ar", isOriginal: false),  // Arabic dub
         ]
         let selected = autoSelect(tracks: tracks, preferred: nil, deviceLanguages: ["ar"])
         #expect(selected?.languageCode == "ar")
@@ -187,7 +189,7 @@ struct AudioTrackSelectionTests {
     @Test func deviceLanguage_fallsBackToDefault_whenNoMatch() {
         let tracks = [
             track("ar", isOriginal: true),  // Arabic DEFAULT=YES
-            track("en", isOriginal: false), // English
+            track("en", isOriginal: false),  // English
         ]
         // Device is Japanese, no Japanese track → falls back to DEFAULT=YES (Arabic)
         let selected = autoSelect(tracks: tracks, preferred: nil, deviceLanguages: ["ja"])
@@ -203,8 +205,8 @@ struct AudioTrackSelectionTests {
         // - English AI-dubbed track had HLS DEFAULT=YES → old code set isOriginal=true on it
         // - Korean original has isMainProgramContent → new code correctly sets isOriginal=true
         let tracks = [
-            track("en", isOriginal: false),   // AI-dubbed English — must NOT be selected
-            track("ko", isOriginal: true),    // Korean creator original
+            track("en", isOriginal: false),  // AI-dubbed English — must NOT be selected
+            track("ko", isOriginal: true),  // Korean creator original
         ]
         let selected = autoSelect(tracks: tracks, preferred: "original")
         #expect(selected?.languageCode == "ko", "Original sentinel must pick the creator's track, not the AI dub")
@@ -214,8 +216,8 @@ struct AudioTrackSelectionTests {
     /// a track with `isOriginal = true` exists.
     @Test func originalSentinel_regression_dubbedTrackMustNotBeReturnedAsOriginal() {
         let tracks = [
-            track("en", isOriginal: false),   // dubbed — isOriginal=false after fix
-            track("ko", isOriginal: true),    // original — isOriginal=true after fix
+            track("en", isOriginal: false),  // dubbed — isOriginal=false after fix
+            track("ko", isOriginal: true),  // original — isOriginal=true after fix
         ]
         let selected = autoSelect(tracks: tracks, preferred: "original")
         #expect(selected?.languageCode == "ko")
@@ -232,8 +234,9 @@ struct AudioTrackSelectionTests {
     func singleTrackManifestReturnsTrack() {
         let tracks = [track("en", isOriginal: true)]
         let selected = autoSelect(tracks: tracks, preferred: nil)
-        #expect(selected?.languageCode == "en",
-                "Fix #126: single-track manifest must select the available track, not return nil")
+        #expect(
+            selected?.languageCode == "en",
+            "Fix #126: single-track manifest must select the available track, not return nil")
     }
 
     @Test("Fix #126: single-track manifest with saved preference — track is selected")
@@ -241,16 +244,18 @@ struct AudioTrackSelectionTests {
         let tracks = [track("ja", isOriginal: true)]
         // Even with a preference for a language not in the list, should fall back to the only track
         let selected = autoSelect(tracks: tracks, preferred: "en")
-        #expect(selected?.languageCode == "ja",
-                "Fix #126: single-track manifest must fall back to available track when preference has no match")
+        #expect(
+            selected?.languageCode == "ja",
+            "Fix #126: single-track manifest must fall back to available track when preference has no match")
     }
 
     @Test("Fix #126: single-track manifest with device language — track is selected")
     func singleTrackManifestWithDeviceLanguageReturnsTrack() {
         let tracks = [track("de", isOriginal: true)]
         let selected = autoSelect(tracks: tracks, preferred: nil, deviceLanguages: ["en"])
-        #expect(selected?.languageCode == "de",
-                "Fix #126: single-track manifest falls back to the available track when device language has no match")
+        #expect(
+            selected?.languageCode == "de",
+            "Fix #126: single-track manifest falls back to the available track when device language has no match")
     }
 
     // MARK: - Fix #124: Audio track picker button stays visible after quality switch
@@ -271,32 +276,36 @@ struct AudioTrackSelectionTests {
     func fix124VariantWithFewerTracksPreservesExisting() {
         let multiTrack = [track("en", isOriginal: true), track("es"), track("fr")]
         let singleTrack = [track("en", isOriginal: true)]
-        #expect(shouldPreserveExistingTracks(existing: multiTrack, incoming: singleTrack),
-                "Fix #124: single-track variant must trigger preservation of 3-track list")
+        #expect(
+            shouldPreserveExistingTracks(existing: multiTrack, incoming: singleTrack),
+            "Fix #124: single-track variant must trigger preservation of 3-track list")
     }
 
     @Test("Fix #124: initial load with more tracks does NOT trigger preservation")
     func fix124InitialLoadDoesNotPreserve() {
         let empty: [AudioTrack] = []
         let multiTrack = [track("en", isOriginal: true), track("es")]
-        #expect(!shouldPreserveExistingTracks(existing: empty, incoming: multiTrack),
-                "Fix #124: initial load (empty existing) must not trigger preservation")
+        #expect(
+            !shouldPreserveExistingTracks(existing: empty, incoming: multiTrack),
+            "Fix #124: initial load (empty existing) must not trigger preservation")
     }
 
     @Test("Fix #124: quality-switch to same track count does NOT trigger preservation")
     func fix124SameCountDoesNotPreserve() {
         let existing = [track("en", isOriginal: true), track("es")]
         let incoming = [track("en", isOriginal: true), track("es")]
-        #expect(!shouldPreserveExistingTracks(existing: existing, incoming: incoming),
-                "Fix #124: same count means full load — must not trigger preservation")
+        #expect(
+            !shouldPreserveExistingTracks(existing: existing, incoming: incoming),
+            "Fix #124: same count means full load — must not trigger preservation")
     }
 
     @Test("Fix #124: quality-switch to MORE tracks does NOT trigger preservation")
     func fix124MoreTracksDoesNotPreserve() {
         let existing = [track("en", isOriginal: true)]
         let incoming = [track("en", isOriginal: true), track("es"), track("de")]
-        #expect(!shouldPreserveExistingTracks(existing: existing, incoming: incoming),
-                "Fix #124: more tracks than existing means full load — must not trigger preservation")
+        #expect(
+            !shouldPreserveExistingTracks(existing: existing, incoming: incoming),
+            "Fix #124: more tracks than existing means full load — must not trigger preservation")
     }
 
     @Test("Fix #124: preserved selection logic — selected track re-applied when in optionMap")
@@ -305,10 +314,11 @@ struct AudioTrackSelectionTests {
         // The variant's optionMap only has "en", so "es" cannot be re-applied.
         // Verify the selection lookup fails gracefully.
         let optionMapKeys = Set(["en"])  // variant only has English
-        let selectedID = "es"           // user had Spanish selected
+        let selectedID = "es"  // user had Spanish selected
         let canReapply = optionMapKeys.contains(selectedID)
-        #expect(!canReapply,
-                "When selected track is not in variant, canReapply must be false — uses group.defaultOption fallback")
+        #expect(
+            !canReapply,
+            "When selected track is not in variant, canReapply must be false — uses group.defaultOption fallback")
     }
 
     // MARK: - Fix #130: only one track must be marked isOriginal
@@ -324,13 +334,14 @@ struct AudioTrackSelectionTests {
         // Simulate correctly constructed tracks after the === fix:
         // Only the HLS DEFAULT=YES track (en) gets isOriginal = true.
         let tracks = [
-            track("en", isOriginal: true),   // DEFAULT=YES — the only original
+            track("en", isOriginal: true),  // DEFAULT=YES — the only original
             track("es", isOriginal: false),  // dubbed Spanish
             track("fr", isOriginal: false),  // dubbed French
         ]
         let originalCount = tracks.filter(\.isOriginal).count
-        #expect(originalCount == 1,
-                "Fix #130: exactly one track must be marked isOriginal (was: all tracks marked original due to == bug)")
+        #expect(
+            originalCount == 1,
+            "Fix #130: exactly one track must be marked isOriginal (was: all tracks marked original due to == bug)")
     }
 
     /// Task #130: when all tracks were incorrectly marked isOriginal (the bug),
@@ -339,13 +350,14 @@ struct AudioTrackSelectionTests {
     @Test func fix130_autoSelectStillPicksOriginalAfterFix() {
         let tracks = [
             track("es", isOriginal: false),  // Spanish AI dub — first in list
-            track("en", isOriginal: true),   // English original — DEFAULT=YES
+            track("en", isOriginal: true),  // English original — DEFAULT=YES
             track("fr", isOriginal: false),  // French AI dub
         ]
         // Without a saved preference, the original track must be selected (not the first)
         let selected = autoSelect(tracks: tracks, preferred: nil)
-        #expect(selected?.languageCode == "en",
-                "Fix #130: auto-select must return the isOriginal=true track, not the first track")
+        #expect(
+            selected?.languageCode == "en",
+            "Fix #130: auto-select must return the isOriginal=true track, not the first track")
         #expect(selected?.isOriginal == true)
     }
 
@@ -356,8 +368,9 @@ struct AudioTrackSelectionTests {
             track("en", isOriginal: false),
             track("es", isOriginal: false),
         ]
-        #expect(tracks.allSatisfy { !$0.isOriginal },
-                "Fix #130: when no DEFAULT=YES exists, no track must show Original label")
+        #expect(
+            tracks.allSatisfy { !$0.isOriginal },
+            "Fix #130: when no DEFAULT=YES exists, no track must show Original label")
     }
 
     // MARK: - Phase 1 / Phase 2 detection logic (mirrors AudioTrackManager)
@@ -386,13 +399,15 @@ struct AudioTrackSelectionTests {
         // 6 dubbed tracks, all have isMainProgramContent — mirrors the screenshot bug.
         let total = 6
         let results = (0..<total).map { i in
-            isOriginalMirror(mainContentCount: total, totalCount: total,
-                             hasMainContent: true, isDefault: i == 0)
+            isOriginalMirror(
+                mainContentCount: total, totalCount: total,
+                hasMainContent: true, isDefault: i == 0)
         }
         let originalCount = results.filter { $0 }.count
-        #expect(originalCount == 1,
-                "When all tracks have isMainProgramContent, exactly one must be Original (via DEFAULT=YES)")
-        #expect(results[0] == true,  "The DEFAULT=YES track must be Original")
+        #expect(
+            originalCount == 1,
+            "When all tracks have isMainProgramContent, exactly one must be Original (via DEFAULT=YES)")
+        #expect(results[0] == true, "The DEFAULT=YES track must be Original")
         #expect(results[1] == false, "Non-default tracks must not be Original")
     }
 
@@ -402,12 +417,14 @@ struct AudioTrackSelectionTests {
         // Track 1 is original (has isMainProgramContent), tracks 2-5 are dubbed.
         let total = 5
         let results = (0..<total).map { i in
-            isOriginalMirror(mainContentCount: 1, totalCount: total,
-                             hasMainContent: i == 0, isDefault: i == 0)
+            isOriginalMirror(
+                mainContentCount: 1, totalCount: total,
+                hasMainContent: i == 0, isDefault: i == 0)
         }
         let originalCount = results.filter { $0 }.count
-        #expect(originalCount == 1,
-                "Exactly one track has isMainProgramContent — Phase 1 should fire cleanly")
+        #expect(
+            originalCount == 1,
+            "Exactly one track has isMainProgramContent — Phase 1 should fire cleanly")
         #expect(results[0] == true)
         #expect(results[1] == false)
     }
@@ -416,12 +433,12 @@ struct AudioTrackSelectionTests {
     @Test func fix130_noTracksHaveMainContent_usesDefault() {
         let total = 3
         let results = (0..<total).map { i in
-            isOriginalMirror(mainContentCount: 0, totalCount: total,
-                             hasMainContent: false, isDefault: i == 2)
+            isOriginalMirror(
+                mainContentCount: 0, totalCount: total,
+                hasMainContent: false, isDefault: i == 2)
         }
         let originalCount = results.filter { $0 }.count
         #expect(originalCount == 1)
         #expect(results[2] == true, "The DEFAULT=YES track must be Original when Phase 2 fires")
     }
 }
-

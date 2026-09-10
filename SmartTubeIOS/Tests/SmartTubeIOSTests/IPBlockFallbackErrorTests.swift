@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - IPBlockFallbackErrorTests
@@ -40,9 +41,11 @@ struct IPBlockFallbackErrorTests {
 
     /// A stand-in for AVFoundationErrorDomain -11828 "Cannot Open".
     private var avFoundationCannotOpen: NSError {
-        NSError(domain: "AVFoundationErrorDomain", code: -11828, userInfo: [
-            NSLocalizedDescriptionKey: "Cannot Open",
-        ])
+        NSError(
+            domain: "AVFoundationErrorDomain", code: -11828,
+            userInfo: [
+                NSLocalizedDescriptionKey: "Cannot Open"
+            ])
     }
 
     // MARK: - ipBlocked from Android fallback → surface ipBlocked
@@ -63,8 +66,9 @@ struct IPBlockFallbackErrorTests {
         let fallback = APIError.ipBlocked("Your IP was flagged")
         let result = surfacedError(fallbackError: fallback, originalError: avFoundationCannotOpen)
         let description = (result as? APIError)?.errorDescription ?? ""
-        #expect(description.contains("VPN") || description.contains("temporarily blocking"),
-                "Expected VPN-related message, got: \(description)")
+        #expect(
+            description.contains("VPN") || description.contains("temporarily blocking"),
+            "Expected VPN-related message, got: \(description)")
     }
 
     @Test("ipBlocked from Android fallback is NOT the originalError object")
@@ -73,8 +77,9 @@ struct IPBlockFallbackErrorTests {
         let original = avFoundationCannotOpen
         let result = surfacedError(fallbackError: fallback, originalError: original)
         // The result must be the ipBlocked error, not the AVFoundation error.
-        #expect((result as? APIError) != nil,
-                "Result should be an APIError, not \(result)")
+        #expect(
+            (result as? APIError) != nil,
+            "Result should be an APIError, not \(result)")
     }
 
     // MARK: - Non-ipBlocked Android failure → preserve originalError

@@ -105,7 +105,7 @@ final class TVVideoPlaybackBenchmarkUITests: XCTestCase {
         }
         let coldElapsed = Date().timeIntervalSince(coldStart)
         var timings: [(id: String, elapsed: Double, hot: Bool)] = [
-            (videoIDs[0], coldElapsed, false),
+            (videoIDs[0], coldElapsed, false)
         ]
         print("[benchmark-tv] \(videoIDs[0])  cold  \(String(format: "%.2f", coldElapsed))s")
 
@@ -156,13 +156,16 @@ final class TVVideoPlaybackBenchmarkUITests: XCTestCase {
 
                 // Wait for player title to confirm playback started.
                 guard playerTitle.waitForExistence(timeout: max(35.0 - elapsed, 5.0)),
-                      !playerTitle.label.isEmpty else {
+                    !playerTitle.label.isEmpty
+                else {
                     XCTFail("No player title after hot video \(index) — navigation may have failed")
                     return
                 }
 
                 if readyResult != .completed {
-                    print("[benchmark-tv] \(videoID)  hot   \(String(format: "%.2f", elapsed))s (readyToPlay not received — stalled?)")
+                    print(
+                        "[benchmark-tv] \(videoID)  hot   \(String(format: "%.2f", elapsed))s (readyToPlay not received — stalled?)"
+                    )
                 } else {
                     print("[benchmark-tv] \(videoID)  hot   \(String(format: "%.2f", elapsed))s")
                 }
@@ -174,7 +177,7 @@ final class TVVideoPlaybackBenchmarkUITests: XCTestCase {
         let separator = String(repeating: "-", count: 44)
         var lines = [separator, "videoID        type  elapsed", separator]
         for t in timings {
-            let idPad  = t.id.padding(toLength: 14, withPad: " ", startingAt: 0)
+            let idPad = t.id.padding(toLength: 14, withPad: " ", startingAt: 0)
             let typPad = (t.hot ? "hot" : "cold").padding(toLength: 4, withPad: " ", startingAt: 0)
             lines.append("\(idPad)  \(typPad)  \(String(format: "%.2f", t.elapsed))s")
         }
@@ -187,8 +190,9 @@ final class TVVideoPlaybackBenchmarkUITests: XCTestCase {
         attachment.lifetime = .keepAlways
         add(attachment)
 
-        XCTAssertEqual(timings.count, videoIDs.count,
-                       "Expected \(videoIDs.count) timing entries, got \(timings.count)")
+        XCTAssertEqual(
+            timings.count, videoIDs.count,
+            "Expected \(videoIDs.count) timing entries, got \(timings.count)")
     }
 }
 #endif

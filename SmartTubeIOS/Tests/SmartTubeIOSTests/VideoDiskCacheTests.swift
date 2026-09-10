@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - VideoDiskCacheTests
@@ -110,15 +111,17 @@ struct VideoDiskCacheTests {
     func evictSkipsWhenUnderLimit() throws {
         let cache = makeTempCache()
         // Write a tiny value — estimated bytes will be minimal, far below 20 MB.
-        cache.store([SponsorSegment(start: 0, end: 1, category: .sponsor)],
-                    videoId: "skip-test", dataType: "sponsorSegments")
+        cache.store(
+            [SponsorSegment(start: 0, end: 1, category: .sponsor)],
+            videoId: "skip-test", dataType: "sponsorSegments")
         // The cache directory must still exist (no eviction ran).
         // If eviction ran it would delete nothing (only one file), but the test
         // verifies the fast-path: the file is present after the write.
         Thread.sleep(forTimeInterval: 0.15)
         let url = cache.fileURL(videoId: "skip-test", dataType: "sponsorSegments")
-        #expect(FileManager.default.fileExists(atPath: url.path),
-                "File should exist — evictIfNeeded should have skipped when well under limit")
+        #expect(
+            FileManager.default.fileExists(atPath: url.path),
+            "File should exist — evictIfNeeded should have skipped when well under limit")
     }
 
     @Test("Appending beyond maxCount is silently ignored")

@@ -90,7 +90,7 @@ final class ShortsVisualPlaybackUITests: XCTestCase {
 
     private func swipePlayerUp() {
         let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
-        let end   = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
         start.press(forDuration: 0.05, thenDragTo: end)
         Thread.sleep(forTimeInterval: 0.6)
     }
@@ -146,15 +146,17 @@ final class ShortsVisualPlaybackUITests: XCTestCase {
         let sampleSide = 12
         var pixelData = [UInt8](repeating: 0, count: sampleSide * sampleSide * 4)
         let colorSpace = CGColorSpaceCreateDeviceRGB()
-        guard let context = CGContext(
-            data: &pixelData,
-            width: sampleSide,
-            height: sampleSide,
-            bitsPerComponent: 8,
-            bytesPerRow: sampleSide * 4,
-            space: colorSpace,
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        ) else { return 0 }
+        guard
+            let context = CGContext(
+                data: &pixelData,
+                width: sampleSide,
+                height: sampleSide,
+                bitsPerComponent: 8,
+                bytesPerRow: sampleSide * 4,
+                space: colorSpace,
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+            )
+        else { return 0 }
         context.draw(cropped, in: CGRect(x: 0, y: 0, width: sampleSide, height: sampleSide))
 
         var total: CGFloat = 0
@@ -224,7 +226,8 @@ final class ShortsVisualPlaybackUITests: XCTestCase {
 
         var brightnessResults: [(short: Int, brightness: CGFloat)] = []
 
-        XCTAssertTrue(waitForLoadingCoverToClear(), "shorts.loadingCover never cleared for short 0 — vm.isReady stuck false")
+        XCTAssertTrue(
+            waitForLoadingCoverToClear(), "shorts.loadingCover never cleared for short 0 — vm.isReady stuck false")
         // Give the embed a moment past isReady to actually paint a frame before sampling.
         Thread.sleep(forTimeInterval: 1.0)
         let b0 = captureAndMeasureBrightness(name: "short-0-after-ready")
@@ -233,7 +236,9 @@ final class ShortsVisualPlaybackUITests: XCTestCase {
 
         for shortNum in 1...3 {
             swipePlayerUp()
-            XCTAssertTrue(waitForLoadingCoverToClear(), "shorts.loadingCover never cleared for short \(shortNum) — vm.isReady stuck false")
+            XCTAssertTrue(
+                waitForLoadingCoverToClear(),
+                "shorts.loadingCover never cleared for short \(shortNum) — vm.isReady stuck false")
             Thread.sleep(forTimeInterval: 1.0)
             let b = captureAndMeasureBrightness(name: "short-\(shortNum)-after-ready")
             brightnessResults.append((shortNum, b))
@@ -272,7 +277,8 @@ final class ShortsVisualPlaybackUITests: XCTestCase {
 
         var results: [(swipe: Int, brightness: CGFloat)] = []
 
-        XCTAssertTrue(waitForLoadingCoverToClear(), "shorts.loadingCover never cleared for short 0 — vm.isReady stuck false")
+        XCTAssertTrue(
+            waitForLoadingCoverToClear(), "shorts.loadingCover never cleared for short 0 — vm.isReady stuck false")
         Thread.sleep(forTimeInterval: 1.0)
         let b0 = captureAndMeasureBrightness(name: "home-short-0")
         results.append((0, b0))
@@ -292,4 +298,4 @@ final class ShortsVisualPlaybackUITests: XCTestCase {
         }
     }
 }
-#endif // os(iOS)
+#endif  // os(iOS)

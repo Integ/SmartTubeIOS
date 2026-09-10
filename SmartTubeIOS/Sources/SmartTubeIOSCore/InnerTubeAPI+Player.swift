@@ -1,5 +1,6 @@
 import Foundation
 import os
+
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
@@ -27,7 +28,8 @@ extension InnerTubeAPI {
         // The token is stored by storeExternalPoToken() after the hidden WKWebView
         // extracts it from the YouTube player's /player API request body.
         if hasPot, let pot = poToken {
-            tubeLog.notice("[InnerTube] ✅ poToken applied to \(videoId, privacy: .public) via iOS client (len=\(pot.count))")
+            tubeLog.notice(
+                "[InnerTube] ✅ poToken applied to \(videoId, privacy: .public) via iOS client (len=\(pot.count))")
             info = info.applyingPoToken(pot)
         }
         return info
@@ -67,7 +69,9 @@ extension InnerTubeAPI {
         // Fall back to the API's own visitorData when webVD is not available.
         var clientFields = (webSafariClientContext["client"] as? [String: Any]) ?? [:]
         let apiVD = visitorData ?? ""
-        tubeLog.notice("[InnerTube] fetchPlayerInfoWebWithPoToken: apiVD.len=\(apiVD.count) webVD.len=\(webVD?.count ?? 0) match=\(apiVD == (webVD ?? ""))")
+        tubeLog.notice(
+            "[InnerTube] fetchPlayerInfoWebWithPoToken: apiVD.len=\(apiVD.count) webVD.len=\(webVD?.count ?? 0) match=\(apiVD == (webVD ?? ""))"
+        )
         if let vd = webVD, !vd.isEmpty {
             clientFields["visitorData"] = vd
         } else if let vd = visitorData {
@@ -92,7 +96,9 @@ extension InnerTubeAPI {
         let data = try await postWebSafari(body: body, visitorIdOverride: webVD)
         var info = try parsePlayerInfo(from: data, videoId: videoId)
         if hasPot, let pot = poToken {
-            tubeLog.notice("[InnerTube] ✅ poToken applied to \(videoId, privacy: .public) via WebSafari+pot client (len=\(pot.count))")
+            tubeLog.notice(
+                "[InnerTube] ✅ poToken applied to \(videoId, privacy: .public) via WebSafari+pot client (len=\(pot.count))"
+            )
             info = info.applyingPoToken(pot)
         }
         return info
@@ -287,7 +293,8 @@ extension InnerTubeAPI {
         let data = try await postPlayerAuthenticated(body: body)
         var info = try parsePlayerInfo(from: data, videoId: videoId)
         if let pot = poToken, poTokenVideoId == videoId {
-            tubeLog.notice("[InnerTube] ✅ poToken applied to \(videoId, privacy: .public) via iOS-auth client (len=\(pot.count))")
+            tubeLog.notice(
+                "[InnerTube] ✅ poToken applied to \(videoId, privacy: .public) via iOS-auth client (len=\(pot.count))")
             info = info.applyingPoToken(pot)
         }
         return info
@@ -331,8 +338,9 @@ extension InnerTubeAPI {
         // without rqh=1, it could provide a playback path we can use via AVURLAsset or
         // AVAssetResourceLoader without BotGuard/pot= tokens.
         if let sabrStr = (firstData["streamingData"] as? [String: Any])?["serverAbrStreamingUrl"] as? String,
-           let sabrURL = URL(string: sabrStr),
-           let bearerToken = authToken {
+            let sabrURL = URL(string: sabrStr),
+            let bearerToken = authToken
+        {
             tubeLog.notice("D-16 SABR URL (first 200): \(sabrStr.prefix(200), privacy: .public)")
             let capturedToken = bearerToken
             Task.detached {
@@ -341,10 +349,13 @@ extension InnerTubeAPI {
                 req.setValue(InnerTubeClients.TV.userAgent, forHTTPHeaderField: "User-Agent")
                 req.timeoutInterval = 8
                 if let (data, resp) = try? await URLSession(configuration: .ephemeral).data(for: req),
-                   let http = resp as? HTTPURLResponse {
+                    let http = resp as? HTTPURLResponse
+                {
                     let ct = http.value(forHTTPHeaderField: "Content-Type") ?? "?"
                     let preview = String(data: data.prefix(300), encoding: .utf8) ?? "(binary \(data.count) bytes)"
-                    tubeLog.notice("D-16 SABR GET Bearer: HTTP \(http.statusCode, privacy: .public) ct=\(ct, privacy: .public) body_preview=\(preview.prefix(200), privacy: .public)")
+                    tubeLog.notice(
+                        "D-16 SABR GET Bearer: HTTP \(http.statusCode, privacy: .public) ct=\(ct, privacy: .public) body_preview=\(preview.prefix(200), privacy: .public)"
+                    )
                 } else {
                     tubeLog.notice("D-16 SABR GET Bearer: fail/timeout")
                 }
@@ -356,8 +367,9 @@ extension InnerTubeAPI {
         // streamingData. Extract and cache it here, then immediately retry so the quality
         // switch succeeds without waiting 60+ s for background browse calls to populate it.
         if !hadVisitorData,
-           let rc = firstData["responseContext"] as? [String: Any],
-           let newVD = rc["visitorData"] as? String, !newVD.isEmpty {
+            let rc = firstData["responseContext"] as? [String: Any],
+            let newVD = rc["visitorData"] as? String, !newVD.isEmpty
+        {
             tubeLog.notice("TVAuth: seeded visitorData from player response — retrying")
             visitorData = newVD
             var retryFields = (tvClientContext["client"] as? [String: Any]) ?? [:]
@@ -404,13 +416,15 @@ extension InnerTubeAPI {
     public func reportPlaybackStarted(videoId: String, cpn: String, trackingURLs: PlaybackTrackingURLs?) async {
         let url = trackingURLs?.playbackURL ?? Self.fallbackPlaybackURL(videoId: videoId)
         let extraParams: [String: String] = [
-            "ver":   "2",
-            "cpn":   cpn,
+            "ver": "2",
+            "cpn": cpn,
             "docid": videoId,
-            "cmt":   "0",
+            "cmt": "0",
         ]
         await pingTrackingURL(url, extraParams: extraParams)
-        tubeLog.notice("reportPlaybackStarted: videoId=\(videoId, privacy: .public) cpn=\(cpn.prefix(4), privacy: .public)… usedFallback=\(trackingURLs == nil, privacy: .public)")
+        tubeLog.notice(
+            "reportPlaybackStarted: videoId=\(videoId, privacy: .public) cpn=\(cpn.prefix(4), privacy: .public)… usedFallback=\(trackingURLs == nil, privacy: .public)"
+        )
     }
 
     /// Fires `videostatsWatchtimeUrl` to record a watched interval in the user's YouTube watch history.
@@ -430,15 +444,16 @@ extension InnerTubeAPI {
     ) async {
         let url = trackingURLs?.watchtimeURL ?? Self.fallbackWatchtimeURL(videoId: videoId)
         let extraParams: [String: String] = [
-            "ver":   "2",
-            "cpn":   cpn,
+            "ver": "2",
+            "cpn": cpn,
             "docid": videoId,
-            "cmt":   String(format: "%.3f", segmentEnd),
-            "st":    String(format: "%.3f", segmentStart),
-            "et":    String(format: "%.3f", segmentEnd),
+            "cmt": String(format: "%.3f", segmentEnd),
+            "st": String(format: "%.3f", segmentStart),
+            "et": String(format: "%.3f", segmentEnd),
         ]
         await pingTrackingURL(url, extraParams: extraParams)
-        tubeLog.notice("reportWatchtime: videoId=\(videoId, privacy: .public) st=\(Int(segmentStart))s et=\(Int(segmentEnd))s")
+        tubeLog.notice(
+            "reportWatchtime: videoId=\(videoId, privacy: .public) st=\(Int(segmentStart))s et=\(Int(segmentEnd))s")
     }
 
     /// Fetches account-bound playback tracking URLs by making an authenticated WEB-client
@@ -469,19 +484,23 @@ extension InnerTubeAPI {
             let body = await buildTrackingURLsBody(videoId: videoId)
             let data = try await postWebSafari(body: body)
             guard
-                let tracking  = data["playbackTracking"] as? [String: Any],
-                let pbStr      = (tracking["videostatsPlaybackUrl"]  as? [String: Any])?["baseUrl"] as? String,
-                let wtStr      = (tracking["videostatsWatchtimeUrl"] as? [String: Any])?["baseUrl"] as? String,
-                let pbURL      = URL(string: pbStr),
-                let wtURL      = URL(string: wtStr)
+                let tracking = data["playbackTracking"] as? [String: Any],
+                let pbStr = (tracking["videostatsPlaybackUrl"] as? [String: Any])?["baseUrl"] as? String,
+                let wtStr = (tracking["videostatsWatchtimeUrl"] as? [String: Any])?["baseUrl"] as? String,
+                let pbURL = URL(string: pbStr),
+                let wtURL = URL(string: wtStr)
             else {
-                tubeLog.notice("fetchAuthenticatedTrackingURLs: no tracking data in WEB player response for \(videoId, privacy: .public)")
+                tubeLog.notice(
+                    "fetchAuthenticatedTrackingURLs: no tracking data in WEB player response for \(videoId, privacy: .public)"
+                )
                 return nil
             }
-            tubeLog.notice("fetchAuthenticatedTrackingURLs: account-bound URLs obtained for \(videoId, privacy: .public)")
+            tubeLog.notice(
+                "fetchAuthenticatedTrackingURLs: account-bound URLs obtained for \(videoId, privacy: .public)")
             return PlaybackTrackingURLs(playbackURL: pbURL, watchtimeURL: wtURL)
         } catch {
-            tubeLog.error("fetchAuthenticatedTrackingURLs failed for \(videoId, privacy: .public): \(error, privacy: .public)")
+            tubeLog.error(
+                "fetchAuthenticatedTrackingURLs failed for \(videoId, privacy: .public): \(error, privacy: .public)")
             return nil
         }
     }
@@ -490,7 +509,8 @@ extension InnerTubeAPI {
     /// instead of reading `self.authToken`. Use this when the caller holds the token but cannot
     /// guarantee that `setAuthToken` has already propagated to the actor (e.g. prefetch tasks
     /// that start before `PlaybackViewModel.updateAuthToken` has had a chance to run).
-    public func fetchAuthenticatedTrackingURLs(videoId: String, usingToken token: String) async -> PlaybackTrackingURLs? {
+    public func fetchAuthenticatedTrackingURLs(videoId: String, usingToken token: String) async -> PlaybackTrackingURLs?
+    {
         do {
             let body = await buildTrackingURLsBody(videoId: videoId)
             // Mirror the with-token path: postWebSafari reads authToken / sapisid from the
@@ -502,19 +522,23 @@ extension InnerTubeAPI {
             if authToken == nil { authToken = token }
             let data = try await postWebSafari(body: body)
             guard
-                let tracking  = data["playbackTracking"] as? [String: Any],
-                let pbStr      = (tracking["videostatsPlaybackUrl"]  as? [String: Any])?["baseUrl"] as? String,
-                let wtStr      = (tracking["videostatsWatchtimeUrl"] as? [String: Any])?["baseUrl"] as? String,
-                let pbURL      = URL(string: pbStr),
-                let wtURL      = URL(string: wtStr)
+                let tracking = data["playbackTracking"] as? [String: Any],
+                let pbStr = (tracking["videostatsPlaybackUrl"] as? [String: Any])?["baseUrl"] as? String,
+                let wtStr = (tracking["videostatsWatchtimeUrl"] as? [String: Any])?["baseUrl"] as? String,
+                let pbURL = URL(string: pbStr),
+                let wtURL = URL(string: wtStr)
             else {
-                tubeLog.notice("fetchAuthenticatedTrackingURLs: no tracking data in WEB player response for \(videoId, privacy: .public)")
+                tubeLog.notice(
+                    "fetchAuthenticatedTrackingURLs: no tracking data in WEB player response for \(videoId, privacy: .public)"
+                )
                 return nil
             }
-            tubeLog.notice("fetchAuthenticatedTrackingURLs: account-bound URLs obtained for \(videoId, privacy: .public)")
+            tubeLog.notice(
+                "fetchAuthenticatedTrackingURLs: account-bound URLs obtained for \(videoId, privacy: .public)")
             return PlaybackTrackingURLs(playbackURL: pbURL, watchtimeURL: wtURL)
         } catch {
-            tubeLog.error("fetchAuthenticatedTrackingURLs failed for \(videoId, privacy: .public): \(error, privacy: .public)")
+            tubeLog.error(
+                "fetchAuthenticatedTrackingURLs failed for \(videoId, privacy: .public): \(error, privacy: .public)")
             return nil
         }
     }
@@ -560,13 +584,16 @@ extension InnerTubeAPI {
 
         // Stream formats
         let streamingData = json["streamingData"] as? [String: Any]
-        let playabilityDict  = json["playabilityStatus"] as? [String: Any]
+        let playabilityDict = json["playabilityStatus"] as? [String: Any]
         let playabilityStatus = playabilityDict?["status"] as? String ?? "unknown"
-        let playabilityReason = playabilityDict?["reason"] as? String
+        let playabilityReason =
+            playabilityDict?["reason"] as? String
             ?? (playabilityDict?["errorScreen"] as? [String: Any])
-                .flatMap { ($0["playerErrorMessageRenderer"] as? [String: Any])?["subreason"] as? [String: Any] }
-                .flatMap { extractText($0) }
-        tubeLog.notice("parsePlayerInfo id=\(videoId, privacy: .public) playability=\(playabilityStatus, privacy: .public) reason=\(playabilityReason ?? "nil", privacy: .public) hasStreamingData=\(streamingData != nil, privacy: .public)")
+            .flatMap { ($0["playerErrorMessageRenderer"] as? [String: Any])?["subreason"] as? [String: Any] }
+            .flatMap { extractText($0) }
+        tubeLog.notice(
+            "parsePlayerInfo id=\(videoId, privacy: .public) playability=\(playabilityStatus, privacy: .public) reason=\(playabilityReason ?? "nil", privacy: .public) hasStreamingData=\(streamingData != nil, privacy: .public)"
+        )
         // Fail early for definitely-unplayable videos so callers don't waste work on
         // related/SponsorBlock fetches. Mirrors Android playabilityStatus check.
         if streamingData == nil, playabilityStatus != "OK" {
@@ -614,7 +641,9 @@ extension InnerTubeAPI {
                 }
                 let fps = f["fps"] as? Int ?? 30
                 let bitrate = f["bitrate"] as? Int
-                return VideoFormat(label: quality, width: width, height: height, fps: fps, mimeType: mimeType, url: url, bitrate: bitrate)
+                return VideoFormat(
+                    label: quality, width: width, height: height, fps: fps, mimeType: mimeType, url: url,
+                    bitrate: bitrate)
             }
         }
 
@@ -650,21 +679,27 @@ extension InnerTubeAPI {
         // Diagnostics: log adaptive format heights and first URL param snapshot.
         let adaptiveFormatsRaw = streamingData?["adaptiveFormats"] as? [[String: Any]] ?? []
         let adaptiveHeights = adaptiveFormatsRaw.compactMap { $0["height"] as? Int }
-        let firstAdaptiveC = adaptiveFormatsRaw.first(where: {
-            ($0["mimeType"] as? String)?.hasPrefix("video/") == true && $0["url"] != nil
-        }).flatMap { ($0["url"] as? String)?.components(separatedBy: "&").first(where: { $0.hasPrefix("c=") }) } ?? "none"
+        let firstAdaptiveC =
+            adaptiveFormatsRaw.first(where: {
+                ($0["mimeType"] as? String)?.hasPrefix("video/") == true && $0["url"] != nil
+            }).flatMap { ($0["url"] as? String)?.components(separatedBy: "&").first(where: { $0.hasPrefix("c=") }) }
+            ?? "none"
         let streamingKeys = streamingData.map { Array($0.keys.sorted().prefix(12)) } ?? []
-        tubeLog.notice("parsePlayerInfo id=\(videoId, privacy: .public) hls=\(hlsURL != nil, privacy: .public) dash=\(dashURL != nil, privacy: .public) totalFormats=\(formats.count, privacy: .public) adaptiveHeights=\(adaptiveHeights.prefix(8), privacy: .public) firstAdaptiveC=\(firstAdaptiveC, privacy: .public) streamingKeys=\(streamingKeys, privacy: .public)")
+        tubeLog.notice(
+            "parsePlayerInfo id=\(videoId, privacy: .public) hls=\(hlsURL != nil, privacy: .public) dash=\(dashURL != nil, privacy: .public) totalFormats=\(formats.count, privacy: .public) adaptiveHeights=\(adaptiveHeights.prefix(8), privacy: .public) firstAdaptiveC=\(firstAdaptiveC, privacy: .public) streamingKeys=\(streamingKeys, privacy: .public)"
+        )
 
         // Captions — parse from captions.playerCaptionsTracklistRenderer.captionTracks
         let captionTracks: [CaptionTrack] = {
-            guard let trackList = (json["captions"] as? [String: Any])
-                .flatMap({ $0["playerCaptionsTracklistRenderer"] as? [String: Any] })
-                .flatMap({ $0["captionTracks"] as? [[String: Any]] })
+            guard
+                let trackList = (json["captions"] as? [String: Any])
+                    .flatMap({ $0["playerCaptionsTracklistRenderer"] as? [String: Any] })
+                    .flatMap({ $0["captionTracks"] as? [[String: Any]] })
             else { return [] }
             return trackList.compactMap { track -> CaptionTrack? in
                 guard let baseUrlStr = track["baseUrl"] as? String,
-                      let rawURL = URL(string: baseUrlStr) else { return nil }
+                    let rawURL = URL(string: baseUrlStr)
+                else { return nil }
                 // Force WebVTT format by appending fmt=vtt to the base URL
                 var comps = URLComponents(url: rawURL, resolvingAgainstBaseURL: false)
                 var items = comps?.queryItems ?? []
@@ -673,14 +708,16 @@ extension InnerTubeAPI {
                 comps?.queryItems = items
                 guard let baseURL = comps?.url else { return nil }
                 let languageCode = track["languageCode"] as? String ?? ""
-                let name = (track["name"] as? [String: Any]).flatMap { extractText($0) }
+                let name =
+                    (track["name"] as? [String: Any]).flatMap { extractText($0) }
                     ?? (track["nameTranslated"] as? [String: Any]).flatMap { extractText($0) }
                     ?? languageCode
                 let vssId = track["vssId"] as? String ?? ""
                 let kind = track["kind"] as? String ?? ""
                 let isAuto = vssId.hasPrefix("a.") || kind == "asr"
                 let trackId = vssId.isEmpty ? languageCode : vssId
-                return CaptionTrack(id: trackId, baseURL: baseURL, name: name, languageCode: languageCode, isAutoGenerated: isAuto)
+                return CaptionTrack(
+                    id: trackId, baseURL: baseURL, name: name, languageCode: languageCode, isAutoGenerated: isAuto)
             }
         }()
         tubeLog.notice("parsePlayerInfo: captionTracks=\(captionTracks.count, privacy: .public)")
@@ -691,10 +728,10 @@ extension InnerTubeAPI {
         //        playbackTracking.videostatsWatchtimeUrl.baseUrl (String)
         let trackingURLs: PlaybackTrackingURLs? = {
             guard let tracking = json["playbackTracking"] as? [String: Any],
-                  let playbackStr = (tracking["videostatsPlaybackUrl"] as? [String: Any])?["baseUrl"] as? String,
-                  let watchtimeStr = (tracking["videostatsWatchtimeUrl"] as? [String: Any])?["baseUrl"] as? String,
-                  let playbackURL = URL(string: playbackStr),
-                  let watchtimeURL = URL(string: watchtimeStr)
+                let playbackStr = (tracking["videostatsPlaybackUrl"] as? [String: Any])?["baseUrl"] as? String,
+                let watchtimeStr = (tracking["videostatsWatchtimeUrl"] as? [String: Any])?["baseUrl"] as? String,
+                let playbackURL = URL(string: playbackStr),
+                let watchtimeURL = URL(string: watchtimeStr)
             else {
                 tubeLog.notice("parsePlayerInfo: no playbackTracking URLs in response")
                 return nil
@@ -728,14 +765,16 @@ extension InnerTubeAPI {
         }
         let endCards = parseEndCards(from: json)
         tubeLog.notice("parsePlayerInfo: endCards=\(endCards.count, privacy: .public)")
-        return PlayerInfo(video: video, formats: formats, hlsURL: hlsURL, dashURL: dashURL, captionTracks: captionTracks, trackingURLs: trackingURLs, endCards: endCards)
+        return PlayerInfo(
+            video: video, formats: formats, hlsURL: hlsURL, dashURL: dashURL, captionTracks: captionTracks,
+            trackingURLs: trackingURLs, endCards: endCards)
     }
 
     // MARK: – End cards parser
 
     private func parseEndCards(from json: [String: Any]) -> [EndCard] {
         guard let endscreen = (json["endscreen"] as? [String: Any])?["endscreenRenderer"] as? [String: Any],
-              let elements = endscreen["elements"] as? [[String: Any]]
+            let elements = endscreen["elements"] as? [[String: Any]]
         else {
             tubeLog.notice("parseEndCards: no endscreen key in response (normal for iOS client)")
             return []
@@ -760,7 +799,7 @@ extension InnerTubeAPI {
             // Some API versions return startMs/endMs as quoted strings; fall back to that.
             func parseInt(_ key: String) -> Int {
                 if let n = renderer[key] as? NSNumber { return n.intValue }
-                if let s = renderer[key] as? String   { return Int(s) ?? 0 }
+                if let s = renderer[key] as? String { return Int(s) ?? 0 }
                 return 0
             }
 
@@ -770,15 +809,17 @@ extension InnerTubeAPI {
                 return def
             }
 
-            let left        = parseDouble("left",        default: 0)
-            let top         = parseDouble("top",         default: 0)
-            let width       = parseDouble("width",       default: 20)
+            let left = parseDouble("left", default: 0)
+            let top = parseDouble("top", default: 0)
+            let width = parseDouble("width", default: 20)
             let aspectRatio = parseDouble("aspectRatio", default: 1.7778)
-            let startMs     = parseInt("startMs")
-            let endMs       = parseInt("endMs")
-            let id          = renderer["id"] as? String ?? UUID().uuidString
+            let startMs = parseInt("startMs")
+            let endMs = parseInt("endMs")
+            let id = renderer["id"] as? String ?? UUID().uuidString
 
-            tubeLog.notice("endCard id=\(id, privacy: .public) style=\(styleRaw, privacy: .public) videoId=\(videoId ?? "nil", privacy: .public) startMs=\(startMs, privacy: .public) endMs=\(endMs, privacy: .public)")
+            tubeLog.notice(
+                "endCard id=\(id, privacy: .public) style=\(styleRaw, privacy: .public) videoId=\(videoId ?? "nil", privacy: .public) startMs=\(startMs, privacy: .public) endMs=\(endMs, privacy: .public)"
+            )
 
             return EndCard(
                 id: id,
@@ -836,26 +877,36 @@ extension InnerTubeAPI {
         do {
             let (data, response) = try await session.data(for: request)
             if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
-                tubeLog.warning("pingTrackingURL: HTTP \(http.statusCode) for \(url.absoluteString.prefix(120), privacy: .public)")
+                tubeLog.warning(
+                    "pingTrackingURL: HTTP \(http.statusCode) for \(url.absoluteString.prefix(120), privacy: .public)")
             } else {
-                let bodyPreview = String(data: data.prefix(200), encoding: .utf8)?
+                let bodyPreview =
+                    String(data: data.prefix(200), encoding: .utf8)?
                     .replacingOccurrences(of: "\n", with: " ")
                     ?? "(non-utf8 \(data.count) bytes)"
-                tubeLog.notice("pingTrackingURL: ok — body=\(bodyPreview, privacy: .public) for \(url.absoluteString.prefix(120), privacy: .public)")
+                tubeLog.notice(
+                    "pingTrackingURL: ok — body=\(bodyPreview, privacy: .public) for \(url.absoluteString.prefix(120), privacy: .public)"
+                )
             }
         } catch is CancellationError {
             // Task was cancelled (user navigated away) — expected, do not retry.
         } catch {
-            tubeLog.warning("pingTrackingURL: transient error (\(error.localizedDescription, privacy: .public)) — retrying once")
+            tubeLog.warning(
+                "pingTrackingURL: transient error (\(error.localizedDescription, privacy: .public)) — retrying once")
             do {
                 let (data, response) = try await session.data(for: request)
                 if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
-                    tubeLog.error("pingTrackingURL: retry HTTP \(http.statusCode) for \(url.absoluteString.prefix(120), privacy: .public)")
+                    tubeLog.error(
+                        "pingTrackingURL: retry HTTP \(http.statusCode) for \(url.absoluteString.prefix(120), privacy: .public)"
+                    )
                 } else {
-                    let bodyPreview = String(data: data.prefix(200), encoding: .utf8)?
+                    let bodyPreview =
+                        String(data: data.prefix(200), encoding: .utf8)?
                         .replacingOccurrences(of: "\n", with: " ")
                         ?? "(non-utf8 \(data.count) bytes)"
-                    tubeLog.notice("pingTrackingURL: retry ok — body=\(bodyPreview, privacy: .public) for \(url.absoluteString.prefix(120), privacy: .public)")
+                    tubeLog.notice(
+                        "pingTrackingURL: retry ok — body=\(bodyPreview, privacy: .public) for \(url.absoluteString.prefix(120), privacy: .public)"
+                    )
                 }
             } catch {
                 tubeLog.error("pingTrackingURL: retry also failed — \(error.localizedDescription, privacy: .public)")
@@ -872,10 +923,10 @@ extension InnerTubeAPI {
     private static func fallbackPlaybackURL(videoId: String) -> URL {
         var comps = URLComponents(string: "https://www.youtube.com/api/stats/playback")!
         comps.queryItems = [
-            URLQueryItem(name: "ns",    value: "yt"),
-            URLQueryItem(name: "el",    value: "detailpage"),
+            URLQueryItem(name: "ns", value: "yt"),
+            URLQueryItem(name: "el", value: "detailpage"),
             URLQueryItem(name: "docid", value: videoId),
-            URLQueryItem(name: "c",     value: "TVHTML5"),
+            URLQueryItem(name: "c", value: "TVHTML5"),
         ]
         return comps.url!
     }
@@ -885,10 +936,10 @@ extension InnerTubeAPI {
     private static func fallbackWatchtimeURL(videoId: String) -> URL {
         var comps = URLComponents(string: "https://www.youtube.com/api/stats/watchtime")!
         comps.queryItems = [
-            URLQueryItem(name: "ns",    value: "yt"),
-            URLQueryItem(name: "el",    value: "detailpage"),
+            URLQueryItem(name: "ns", value: "yt"),
+            URLQueryItem(name: "el", value: "detailpage"),
             URLQueryItem(name: "docid", value: videoId),
-            URLQueryItem(name: "c",     value: "TVHTML5"),
+            URLQueryItem(name: "c", value: "TVHTML5"),
         ]
         return comps.url!
     }

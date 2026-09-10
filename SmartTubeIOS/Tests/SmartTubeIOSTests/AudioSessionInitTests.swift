@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - AudioSessionInitTests
@@ -30,8 +31,9 @@ struct AudioSessionInitTests {
         // InnerTubeAPI is in SmartTubeIOSCore which has no UIKit/AVFoundation import
         // for AVAudioSession. Creating one must not produce any side effects.
         let api = InnerTubeAPI()
-        #expect(await api.authToken == nil,
-                "InnerTubeAPI init must not require any audio session state")
+        #expect(
+            await api.authToken == nil,
+            "InnerTubeAPI init must not require any audio session state")
     }
 
     @Test("VideoPreloadCache is created without audio session side effects")
@@ -60,7 +62,8 @@ struct AudioSessionInitTests {
         )
         await VideoPreloadCache.shared.store(playerInfo: info, for: videoId)
         let cached = await VideoPreloadCache.shared.consume(videoId: videoId)
-        #expect(cached.playerInfo != nil,
-                "Prefetched playerInfo must survive the pre-launch caching phase without audio activation")
+        #expect(
+            cached.playerInfo != nil,
+            "Prefetched playerInfo must survive the pre-launch caching phase without audio activation")
     }
 }

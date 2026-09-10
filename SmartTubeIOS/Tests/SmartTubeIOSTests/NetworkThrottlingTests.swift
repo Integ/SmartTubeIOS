@@ -1,6 +1,7 @@
 import Foundation
 import Network
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - NetworkThrottlingTests
@@ -37,8 +38,9 @@ struct NetworkThrottlingTests {
         // Before any NWPathMonitor update, networkCap should return maxWorkersWiFi.
         // (In practice the monitor fires quickly, but this is the defined default.)
         let cap = await VideoPreloadCache.shared.networkCap
-        #expect(cap == VideoPreloadCache.maxWorkersWiFi || cap == VideoPreloadCache.maxWorkersCellular || cap == 0,
-                "Expected a valid cap value: 0, 2, or 5")
+        #expect(
+            cap == VideoPreloadCache.maxWorkersWiFi || cap == VideoPreloadCache.maxWorkersCellular || cap == 0,
+            "Expected a valid cap value: 0, 2, or 5")
     }
 
     // MARK: - Allowed data types
@@ -64,8 +66,9 @@ struct NetworkThrottlingTests {
             #expect(allowed.contains("deArrowBranding"))
         }
         // If cellular (3 items), endCards + deArrow are excluded — that's also valid.
-        #expect(allowed.count == 0 || allowed.count == 3 || allowed.count == 5,
-                "Expected 0 (offline), 3 (cellular), or 5 (WiFi) allowed types")
+        #expect(
+            allowed.count == 0 || allowed.count == 3 || allowed.count == 5,
+            "Expected 0 (offline), 3 (cellular), or 5 (WiFi) allowed types")
     }
 
     // MARK: - Queue depth + cellular cap relationship

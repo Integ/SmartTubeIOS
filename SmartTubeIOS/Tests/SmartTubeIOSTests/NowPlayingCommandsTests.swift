@@ -1,7 +1,9 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOS
 @testable import SmartTubeIOSCore
+
 #if canImport(UIKit)
 import MediaPlayer
 

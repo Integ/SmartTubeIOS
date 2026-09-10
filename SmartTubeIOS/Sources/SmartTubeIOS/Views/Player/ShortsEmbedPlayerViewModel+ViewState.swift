@@ -64,7 +64,9 @@ extension ShortsEmbedPlayerViewModel {
     }
 
     func togglePlayPause() {
-        shortsLog.notice("[togglePlayPause] called — videoEnded=\(self.videoEnded, privacy: .public) playerState=\(self.playerState.rawValue, privacy: .public) isPlaying=\(self.isPlaying, privacy: .public) t=\(Date().timeIntervalSinceReferenceDate, format: .fixed(precision: 3), privacy: .public)")
+        shortsLog.notice(
+            "[togglePlayPause] called — videoEnded=\(self.videoEnded, privacy: .public) playerState=\(self.playerState.rawValue, privacy: .public) isPlaying=\(self.isPlaying, privacy: .public) t=\(Date().timeIntervalSinceReferenceDate, format: .fixed(precision: 3), privacy: .public)"
+        )
         if videoEnded {
             videoEnded = false
             seekTo(0)
@@ -105,4 +107,4 @@ extension ShortsEmbedPlayerViewModel {
         saveProgress()
     }
 }
-#endif // !os(tvOS)
+#endif  // !os(tvOS)

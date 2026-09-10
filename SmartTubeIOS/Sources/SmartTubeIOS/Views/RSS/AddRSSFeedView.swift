@@ -1,5 +1,5 @@
-import SwiftUI
 import SmartTubeIOSCore
+import SwiftUI
 
 // MARK: - AddRSSFeedView
 
@@ -21,10 +21,10 @@ struct AddRSSFeedView: View {
                     TextField("RSS Feed URL", text: $feedURL)
                         .textContentType(.URL)
                         .autocorrectionDisabled()
-#if os(iOS)
-                        .keyboardType(.URL)
-                        .textInputAutocapitalization(.never)
-#endif
+                        #if os(iOS)
+                    .keyboardType(.URL)
+                    .textInputAutocapitalization(.never)
+                        #endif
                         .accessibilityIdentifier("rss.addFeed.urlField")
                 }
 
@@ -55,15 +55,17 @@ struct AddRSSFeedView: View {
                 }
 
                 Section {
-                    Text("YouTube RSS feed URLs look like:\n**youtube.com/feeds/videos.xml?channel_id=…**\n\nYou can also find a channel's RSS feed via their channel page URL.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    Text(
+                        "YouTube RSS feed URLs look like:\n**youtube.com/feeds/videos.xml?channel_id=…**\n\nYou can also find a channel's RSS feed via their channel page URL."
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 }
             }
             .navigationTitle("Add RSS Feed")
-#if !os(macOS) && !os(tvOS)
+            #if !os(macOS) && !os(tvOS)
             .navigationBarTitleDisplayMode(.inline)
-#endif
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
@@ -77,7 +79,8 @@ struct AddRSSFeedView: View {
         let trimmedTitle = feedTitle.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard let url = URL(string: trimmedURL),
-              url.scheme == "https" || url.scheme == "http" else {
+            url.scheme == "https" || url.scheme == "http"
+        else {
             errorMessage = "Please enter a valid https URL."
             return
         }

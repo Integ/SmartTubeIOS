@@ -1,6 +1,6 @@
 import AVFoundation
-import os
 import SmartTubeIOSCore
+import os
 
 private let playerLog = CrashlyticsLogger(category: "Player")
 
@@ -178,8 +178,11 @@ final class PlaybackQualityManager {
             if let q = AppSettings.VideoQuality.from(height: fmt.height) {
                 quality = q
             } else {
-                playerLog.error("selectFormat: non-standard height \(fmt.height)p — no matching VideoQuality; falling back to .auto")
-                assertionFailure("selectFormat received format with non-standard height \(fmt.height) not in VideoQuality enum")
+                playerLog.error(
+                    "selectFormat: non-standard height \(fmt.height)p — no matching VideoQuality; falling back to .auto"
+                )
+                assertionFailure(
+                    "selectFormat received format with non-standard height \(fmt.height) not in VideoQuality enum")
                 quality = .auto
             }
         } else {
@@ -206,9 +209,11 @@ final class PlaybackQualityManager {
                 hlsVariantURLs = [:]
                 webHLSProxyLoader = nil
                 isMuxedFallback = false
-                playerLog.notice("[quality] muxed fallback — clearing stale wkHLS URLs, triggering recovery for fresh extraction")
-                let err = NSError(domain: NSURLErrorDomain, code: -1102,
-                                 userInfo: [NSLocalizedDescriptionKey: "Quality switch: current stream is muxed fallback"])
+                playerLog.notice(
+                    "[quality] muxed fallback — clearing stale wkHLS URLs, triggering recovery for fresh extraction")
+                let err = NSError(
+                    domain: NSURLErrorDomain, code: -1102,
+                    userInfo: [NSLocalizedDescriptionKey: "Quality switch: current stream is muxed fallback"])
                 await delegate.qualityItemDidFail(error: err, quality: quality, hasAppliedH264Cap: hasAppliedH264Cap)
                 return
             }
@@ -228,7 +233,9 @@ final class PlaybackQualityManager {
     /// Rebuilds the HLS player item from the stored `playerInfo`.
     func reloadHLSItem(seekTo time: TimeInterval, quality: AppSettings.VideoQuality) async {
         guard let hlsURL = delegate?.playerInfo?.hlsURL else {
-            playerLog.error("[quality] reloadHLSItem: playerInfo.hlsURL is nil — video is DASH/MP4 only, HLS quality switch not possible")
+            playerLog.error(
+                "[quality] reloadHLSItem: playerInfo.hlsURL is nil — video is DASH/MP4 only, HLS quality switch not possible"
+            )
             return
         }
         guard !Task.isCancelled else { return }
@@ -239,7 +246,7 @@ final class PlaybackQualityManager {
             "AVURLAssetHTTPHeaderFieldsKey": [
                 "User-Agent": hlsPlaybackUserAgent,
                 "Origin": "https://www.youtube.com",
-                "Referer": "https://www.youtube.com/"
+                "Referer": "https://www.youtube.com/",
             ]
         ]
         // Always use the master HLS URL so EXT-X-MEDIA alternate audio renditions are
@@ -258,14 +265,17 @@ final class PlaybackQualityManager {
             item?.preferredForwardBufferDuration = 0
         }
         let requestedCap = quality.maxHeight
-        let effectiveCap = hlsPlaybackMaximumHeight.map { min(requestedCap ?? $0, $0) }
+        let effectiveCap =
+            hlsPlaybackMaximumHeight.map { min(requestedCap ?? $0, $0) }
             ?? requestedCap
         if let cap = effectiveCap {
             let h = CGFloat(cap)
             let peakBR = peakBitRate(for: cap)
             item.preferredMaximumResolution = CGSize(width: h * 4, height: h)
             item.preferredPeakBitRate = peakBR
-            playerLog.notice("Quality → \(cap)p via HLS master + ABR hints (maxRes=\(Int(h * 4))x\(cap) peakBR=\(Int(peakBR / 1_000_000))Mbps)")
+            playerLog.notice(
+                "Quality → \(cap)p via HLS master + ABR hints (maxRes=\(Int(h * 4))x\(cap) peakBR=\(Int(peakBR / 1_000_000))Mbps)"
+            )
         } else {
             // Auto: remove all constraints so AVPlayer's ABR runs unconstrained.
             item.preferredMaximumResolution = .zero
@@ -278,7 +288,8 @@ final class PlaybackQualityManager {
                 switch status {
                 case .readyToPlay:
                     let size = item.presentationSize
-                    playerLog.notice("✅ Quality-switch readyToPlay — presentationSize=\(Int(size.width))x\(Int(size.height))")
+                    playerLog.notice(
+                        "✅ Quality-switch readyToPlay — presentationSize=\(Int(size.width))x\(Int(size.height))")
                     self.player.rate = Float(self.delegate?.settings.playbackSpeed ?? 1)
                     self.delegate?.qualityItemDidBecomeReady(item, seekTo: time)
                 case .failed:
@@ -315,8 +326,9 @@ final class PlaybackQualityManager {
 
     func makeHLSAsset(url: URL, options: [String: Any]) -> AVURLAsset {
         guard let requiredVideoCodec = hlsRequiredVideoCodec,
-              let maximumVideoHeight = hlsPlaybackMaximumHeight,
-              let proxyURL = url.proxyURL else {
+            let maximumVideoHeight = hlsPlaybackMaximumHeight,
+            let proxyURL = url.proxyURL
+        else {
             nativeHLSProxyLoader = nil
             return AVURLAsset(url: url, options: options)
         }
@@ -356,7 +368,8 @@ final class PlaybackQualityManager {
                 .filter { $0.mimeType.hasPrefix("video/mp4") && !$0.mimeType.contains(", ") && $0.url != nil }
                 .map { "\($0.height)p" }
                 .joined(separator: ",")
-            playerLog.notice("[quality] reloadDASHItem: requested=\(fmt.height)p playerInfo mp4 heights=[\(infoMp4Heights)]")
+            playerLog.notice(
+                "[quality] reloadDASHItem: requested=\(fmt.height)p playerInfo mp4 heights=[\(infoMp4Heights)]")
 
             let h264Pref = delegate?.settings.preferH264 ?? false
             let bestFromInfo = PlaybackQualityManager.selectBestVideoFormat(
@@ -364,7 +377,9 @@ final class PlaybackQualityManager {
                 preferH264: h264Pref
             )
             let resolvedHeight = bestFromInfo?.height ?? -1
-            playerLog.notice("[quality] reloadDASHItem: preferH264=\(h264Pref) selectBestVideoFormat(maxH=\(fmt.height)) → resolvedHeight=\(resolvedHeight)p codec=\(bestFromInfo?.mimeType ?? "nil")")
+            playerLog.notice(
+                "[quality] reloadDASHItem: preferH264=\(h264Pref) selectBestVideoFormat(maxH=\(fmt.height)) → resolvedHeight=\(resolvedHeight)p codec=\(bestFromInfo?.mimeType ?? "nil")"
+            )
 
             // Guard: selectBestVideoFormat falls back to the highest available format when
             // no format at or below preferredMaxHeight exists. Only use the result if it
@@ -375,27 +390,32 @@ final class PlaybackQualityManager {
                 playerLog.notice("[quality] reloadDASHItem: ✅ resolved \(matchedFmt.height)p from playerInfo.formats")
             } else if fmt.mimeType.hasPrefix("video/mp4") {
                 // playerInfo lacks this quality at or below — fall back to availableFormats URL.
-                playerLog.notice("[quality] reloadDASHItem: ⚠️ \(fmt.height)p not in playerInfo ≤\(fmt.height)p (best=\(resolvedHeight)p), using availableFormats URL")
+                playerLog.notice(
+                    "[quality] reloadDASHItem: ⚠️ \(fmt.height)p not in playerInfo ≤\(fmt.height)p (best=\(resolvedHeight)p), using availableFormats URL"
+                )
                 videoURL = fmt.url
             } else {
                 playerLog.error("[quality] reloadDASHItem: non-MP4 format (\(fmt.mimeType)) not in playerInfo.formats")
                 videoURL = nil
             }
         } else {
-            videoURL = PlaybackQualityManager.selectBestVideoFormat(
-                from: info.formats, preferredMaxHeight: nil,
-                preferH264: delegate?.settings.preferH264 ?? false
-            )?.url
+            videoURL =
+                PlaybackQualityManager.selectBestVideoFormat(
+                    from: info.formats, preferredMaxHeight: nil,
+                    preferH264: delegate?.settings.preferH264 ?? false
+                )?.url
         }
 
         guard let videoURL else {
             // No adaptive video in playerInfo — likely playing on muxed 360p fallback.
             // Trigger a fresh exhaustive retry (iOS auth client should return adaptive
             // streams without rqh=1 for logged-in users) rather than silently giving up.
-            playerLog.error("[quality] reloadDASHItem: no video URL for quality=\(label) — triggering 403 recovery retry")
+            playerLog.error(
+                "[quality] reloadDASHItem: no video URL for quality=\(label) — triggering 403 recovery retry")
             selectedFormat = nil
-            let retryErr = NSError(domain: NSURLErrorDomain, code: NSURLErrorNoPermissionsToReadFile,
-                                   userInfo: [NSLocalizedDescriptionKey: "No adaptive video URL — re-fetching player info"])
+            let retryErr = NSError(
+                domain: NSURLErrorDomain, code: NSURLErrorNoPermissionsToReadFile,
+                userInfo: [NSLocalizedDescriptionKey: "No adaptive video URL — re-fetching player info"])
             await delegate?.qualityItemDidFail(error: retryErr, quality: .auto, hasAppliedH264Cap: hasAppliedH264Cap)
             return
         }
@@ -404,8 +424,9 @@ final class PlaybackQualityManager {
             // Trigger a fresh exhaustive retry so iOS auth client can provide rqh=1-free streams.
             playerLog.error("[quality] reloadDASHItem: no adaptive audio URL — triggering 403 recovery retry")
             selectedFormat = nil
-            let retryErr = NSError(domain: NSURLErrorDomain, code: NSURLErrorNoPermissionsToReadFile,
-                                   userInfo: [NSLocalizedDescriptionKey: "No adaptive audio URL — re-fetching player info"])
+            let retryErr = NSError(
+                domain: NSURLErrorDomain, code: NSURLErrorNoPermissionsToReadFile,
+                userInfo: [NSLocalizedDescriptionKey: "No adaptive audio URL — re-fetching player info"])
             await delegate?.qualityItemDidFail(error: retryErr, quality: .auto, hasAppliedH264Cap: hasAppliedH264Cap)
             return
         }
@@ -422,7 +443,9 @@ final class PlaybackQualityManager {
         }
 
         let codecLabel = format?.codecShortLabel ?? ""
-        playerLog.notice("[quality] DASH switch → \(label)\(codecLabel.isEmpty ? "" : " (\(codecLabel))") videoURL=\(videoURL.lastPathComponent.prefix(60))")
+        playerLog.notice(
+            "[quality] DASH switch → \(label)\(codecLabel.isEmpty ? "" : " (\(codecLabel))") videoURL=\(videoURL.lastPathComponent.prefix(60))"
+        )
         await delegate?.qualitySelectDASHFormat(videoURL: videoURL, audioURL: audioURL, seekTo: time)
     }
 
@@ -464,7 +487,8 @@ final class PlaybackQualityManager {
         request.setValue("https://www.youtube.com/", forHTTPHeaderField: "Referer")
         request.timeoutInterval = 8
         guard let (data, _) = try? await self.session.data(for: request),
-              let text = String(data: data, encoding: .utf8) else {
+            let text = String(data: data, encoding: .utf8)
+        else {
             playerLog.notice("HLS manifest fetch failed — showing all quality options")
             return [:]
         }
@@ -553,9 +577,9 @@ final class PlaybackQualityManager {
         2160: 45_000_000,
         1440: 20_000_000,
         1080: 15_000_000,
-         720:  8_000_000,
-         480:  4_000_000,
-         360:  1_500_000,
+        720: 8_000_000,
+        480: 4_000_000,
+        360: 1_500_000,
     ]
 
     func peakBitRate(for height: Int) -> Double {
@@ -572,7 +596,7 @@ final class PlaybackQualityManager {
             "AVURLAssetHTTPHeaderFieldsKey": [
                 "User-Agent": hlsPlaybackUserAgent,
                 "Origin": "https://www.youtube.com",
-                "Referer": "https://www.youtube.com/"
+                "Referer": "https://www.youtube.com/",
             ]
         ]
         let asset = makeHLSAsset(url: hlsURL, options: uaOpts)
@@ -635,13 +659,17 @@ final class PlaybackQualityManager {
             playerLog.error("[wkHLS quality] failed to build proxy URL for \(h)p")
             return
         }
-        let ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15"
+        let ua =
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15"
         let nSolver = webHLSProxyLoader?.nSolver
         let existingCookies = webHLSProxyLoader?.webViewCookies ?? []
         let existingLang = webHLSProxyLoader?.selectedLanguageContentID
-        playerLog.notice("[wkHLS quality] switching to \(h)p via proxy (nSolver=\(nSolver != nil) cookies=\(existingCookies.count) lang=\(existingLang ?? "original"))")
-        let newLoader = YTHLSProxyLoader(ua: ua, nSolver: nSolver, webViewCookies: existingCookies,
-                                         selectedLanguageContentID: existingLang)
+        playerLog.notice(
+            "[wkHLS quality] switching to \(h)p via proxy (nSolver=\(nSolver != nil) cookies=\(existingCookies.count) lang=\(existingLang ?? "original"))"
+        )
+        let newLoader = YTHLSProxyLoader(
+            ua: ua, nSolver: nSolver, webViewCookies: existingCookies,
+            selectedLanguageContentID: existingLang)
         webHLSProxyLoader = newLoader
         let asset = AVURLAsset(url: proxyURL)
         asset.resourceLoader.setDelegate(newLoader, queue: DispatchQueue.global(qos: .userInitiated))
@@ -659,7 +687,8 @@ final class PlaybackQualityManager {
                 switch status {
                 case .readyToPlay:
                     let size = item.presentationSize
-                    playerLog.notice("✅ [wkHLS quality] readyToPlay — presentationSize=\(Int(size.width))x\(Int(size.height))")
+                    playerLog.notice(
+                        "✅ [wkHLS quality] readyToPlay — presentationSize=\(Int(size.width))x\(Int(size.height))")
                     self.player.rate = Float(self.delegate?.settings.playbackSpeed ?? 1)
                     self.delegate?.qualityItemDidBecomeReady(item, seekTo: time)
                 case .failed:

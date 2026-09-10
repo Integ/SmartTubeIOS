@@ -1,5 +1,5 @@
-import SwiftUI
 import SmartTubeIOSCore
+import SwiftUI
 
 // MARK: - PlayerView tvOS extensions
 //
@@ -30,7 +30,7 @@ struct ConditionalMoveCommand: ViewModifier {
         if enabled {
             content.onMoveCommand(perform: action)
         } else {
-            content   // modifier completely absent — D-pad reaches native focus engine
+            content  // modifier completely absent — D-pad reaches native focus engine
         }
     }
 }
@@ -45,7 +45,7 @@ extension PlayerView {
     /// (PlayerView+Lifecycle). The case value drives the row's focus highlight.
     enum MoreMenuRow: Hashable {
         case speed, quality, like, dislike, sleepTimer, audioOnly, queueShuffle, captions,
-             audioTrack, description, comments, statsForNerds, cancel
+            audioTrack, description, comments, statsForNerds, cancel
     }
 
     // MARK: - TVPlayerControl
@@ -55,15 +55,21 @@ extension PlayerView {
     /// `tvNextControl(from:direction:)` rather than SwiftUI's native focus
     /// engine, giving full control over the d-pad routing logic.
     enum TVPlayerControl: Equatable {
-        case back, channel, more                             // top row
-        case seekBack, playPause, seekForward                // centre row
+        case back, channel, more  // top row
+        case seekBack, playPause, seekForward  // centre row
         case prevVideo, prevChapter, nextChapter, nextVideo  // bottom row
 
         var isTopRow: Bool {
-            switch self { case .back, .channel, .more: true; default: false }
+            switch self {
+            case .back, .channel, .more: true
+            default: false
+            }
         }
         var isCenterRow: Bool {
-            switch self { case .seekBack, .playPause, .seekForward: true; default: false }
+            switch self {
+            case .seekBack, .playPause, .seekForward: true
+            default: false
+            }
         }
     }
 
@@ -73,7 +79,8 @@ extension PlayerView {
     /// When true, the player yields focus to the overlay so its buttons
     /// are reachable by the Siri Remote.
     var isAnyOverlayVisible: Bool {
-        showMoreMenu || showQualityPicker || showSpeedPicker || showSleepTimerPicker || showCaptionPicker || showAudioTrackPicker
+        showMoreMenu || showQualityPicker || showSpeedPicker || showSleepTimerPicker || showCaptionPicker
+            || showAudioTrackPicker
             || showDescriptionSheet || showCommentsSheet
     }
 
@@ -92,47 +99,47 @@ extension PlayerView {
         case .left:
             switch current {
             // top row
-            case .more:        return .channel
-            case .channel:     return .back
+            case .more: return .channel
+            case .channel: return .back
             // center row
-            case .playPause:   return .seekBack
+            case .playPause: return .seekBack
             case .seekForward: return .playPause
             // bottom row
             case .prevChapter: return .prevVideo
             case .nextChapter: return .prevChapter
-            case .nextVideo:   return vm.chapters.isEmpty ? .prevVideo : .nextChapter
+            case .nextVideo: return vm.chapters.isEmpty ? .prevVideo : .nextChapter
             default: return current
             }
         case .right:
             switch current {
             // top row
-            case .back:        return .channel
-            case .channel:     return .more
+            case .back: return .channel
+            case .channel: return .more
             // center row
-            case .seekBack:    return .playPause
-            case .playPause:   return .seekForward
+            case .seekBack: return .playPause
+            case .playPause: return .seekForward
             // bottom row
-            case .prevVideo:   return vm.chapters.isEmpty ? .nextVideo : .prevChapter
+            case .prevVideo: return vm.chapters.isEmpty ? .nextVideo : .prevChapter
             case .prevChapter: return .nextChapter
             case .nextChapter: return .nextVideo
             default: return current
             }
         case .up:
-            if current.isCenterRow { return .more }   // center → top row
+            if current.isCenterRow { return .more }  // center → top row
             if !current.isCenterRow && !current.isTopRow {
                 // bottom row → center row (map by position)
                 switch current {
                 case .prevVideo, .prevChapter: return .seekBack
-                default:                       return .seekForward
+                default: return .seekForward
                 }
             }
             return current  // already at top
         case .down:
             if current.isTopRow { return .playPause }  // top row → center row
-            if current.isCenterRow {                   // center row → bottom row
+            if current.isCenterRow {  // center row → bottom row
                 switch current {
                 case .seekBack: return vm.chapters.isEmpty ? .prevVideo : .prevChapter
-                default:        return vm.chapters.isEmpty ? .nextVideo : .nextChapter
+                default: return vm.chapters.isEmpty ? .nextVideo : .nextChapter
                 }
             }
             return current  // already at bottom
@@ -145,20 +152,23 @@ extension PlayerView {
         let playerLog = CrashlyticsLogger(category: "Player")
         playerLog.notice("[tv] tvActivateControl(\(String(describing: control)))")
         switch control {
-        case .back:        vm.stop(); withAnimation(.none) { dismiss() }
+        case .back:
+            vm.stop()
+            withAnimation(.none) { dismiss() }
         case .channel:
             let channelId = vm.playerInfo?.video.channelId ?? video.channelId
             if let cid = channelId, !cid.isEmpty { channelDestination = ChannelDestination(channelId: cid) }
         case .more:
             playerLog.notice("[tv] .more activated — setting showMoreMenu=true")
-            showMoreMenu = true; highlightedControl = nil
-        case .seekBack:    vm.seekRelative(seconds: -Double(store.settings.seekBackSeconds))
-        case .playPause:   vm.togglePlayPause()
+            showMoreMenu = true
+            highlightedControl = nil
+        case .seekBack: vm.seekRelative(seconds: -Double(store.settings.seekBackSeconds))
+        case .playPause: vm.togglePlayPause()
         case .seekForward: vm.seekRelative(seconds: Double(store.settings.seekForwardSeconds))
-        case .prevVideo:   if vm.hasPrevious { vm.playPrevious() }
+        case .prevVideo: if vm.hasPrevious { vm.playPrevious() }
         case .prevChapter: if vm.hasPreviousChapter { vm.skipToPreviousChapter() }
         case .nextChapter: if vm.hasNextChapter { vm.skipToNextChapter() }
-        case .nextVideo:   if vm.hasNext { vm.playNext() }
+        case .nextVideo: if vm.hasNext { vm.playNext() }
         }
     }
 

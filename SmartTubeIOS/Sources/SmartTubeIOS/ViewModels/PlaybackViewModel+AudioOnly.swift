@@ -1,6 +1,6 @@
 import AVFoundation
-import os
 import SmartTubeIOSCore
+import os
 
 private let audioOnlyLog = CrashlyticsLogger(category: "AudioOnly")
 
@@ -20,7 +20,8 @@ extension PlaybackViewModel {
         let savedTime = currentTime
         isAudioOnlyMode.toggle()
         settings.audioOnlyMode = isAudioOnlyMode
-        toastMessage = isAudioOnlyMode
+        toastMessage =
+            isAudioOnlyMode
             ? String(localized: "Audio-Only Mode", bundle: .module)
             : String(localized: "Video Mode", bundle: .module)
 
@@ -66,7 +67,8 @@ extension PlaybackViewModel {
 
         // Attempt 1: iOS client URL (already in memory, zero extra network cost).
         if let url = info.bestAdaptiveAudioURL {
-            let success = await tryLoadAudioURL(url, userAgent: InnerTubeClients.iOS.userAgent, seekTo: seekTime, liveToggle: liveToggle)
+            let success = await tryLoadAudioURL(
+                url, userAgent: InnerTubeClients.iOS.userAgent, seekTo: seekTime, liveToggle: liveToggle)
             if success { return }
             audioOnlyLog.notice("Audio-only: iOS client URL failed, retrying with android_vr")
         }
@@ -77,7 +79,9 @@ extension PlaybackViewModel {
 
     /// Builds an `AVURLAsset` for the given audio URL, checks playability, and replaces
     /// the current player item. Returns `true` on success.
-    private func tryLoadAudioURL(_ url: URL, userAgent: String, seekTo seekTime: TimeInterval = 0, liveToggle: Bool = false) async -> Bool {
+    private func tryLoadAudioURL(
+        _ url: URL, userAgent: String, seekTo seekTime: TimeInterval = 0, liveToggle: Bool = false
+    ) async -> Bool {
         let opts: [String: Any] = [
             "AVURLAssetHTTPHeaderFieldsKey": ["User-Agent": userAgent]
         ]
@@ -99,7 +103,9 @@ extension PlaybackViewModel {
                 guard let self, !Task.isCancelled else { return }
                 switch status {
                 case .readyToPlay:
-                    audioOnlyLog.notice("[benchmark] readyToPlay — audio-only — videoId=\(self.currentVideo?.id ?? "nil") title=\(self.currentVideo?.title ?? "nil")")
+                    audioOnlyLog.notice(
+                        "[benchmark] readyToPlay — audio-only — videoId=\(self.currentVideo?.id ?? "nil") title=\(self.currentVideo?.title ?? "nil")"
+                    )
                     audioOnlyLog.notice("✅ Audio-only AVPlayerItem readyToPlay")
                     if seekTime > 0 { self.seek(to: seekTime) }
                     self.player.rate = Float(self.settings.playbackSpeed)
@@ -147,11 +153,14 @@ extension PlaybackViewModel {
 
     /// Fetches player info with the android_vr client and retries loading the audio URL.
     /// Falls back to the existing HLS item (already in player) on any failure.
-    private func retryAudioOnlyWithAndroidVR(videoId: String, seekTo seekTime: TimeInterval = 0, liveToggle: Bool = false) async {
+    private func retryAudioOnlyWithAndroidVR(
+        videoId: String, seekTo seekTime: TimeInterval = 0, liveToggle: Bool = false
+    ) async {
         do {
             let vrInfo = try await api.fetchPlayerInfoAndroidVR(videoId: videoId)
             if let url = vrInfo.bestAdaptiveAudioURL {
-                let success = await tryLoadAudioURL(url, userAgent: InnerTubeClients.AndroidVR.userAgent, seekTo: seekTime, liveToggle: liveToggle)
+                let success = await tryLoadAudioURL(
+                    url, userAgent: InnerTubeClients.AndroidVR.userAgent, seekTo: seekTime, liveToggle: liveToggle)
                 if success { return }
             }
         } catch {

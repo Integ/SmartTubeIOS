@@ -47,7 +47,7 @@ final class QuickAccessRowUITests: XCTestCase {
             "--uitesting",
             "--uitesting-disable-tos-player-on-ios",
             "--uitesting-show-controls",
-            "--uitesting-disable-sponsorblock"
+            "--uitesting-disable-sponsorblock",
         ]
         app.launch()
     }
@@ -96,7 +96,8 @@ final class QuickAccessRowUITests: XCTestCase {
         showControls()
         let speedBtn = app.buttons["player.quickAccess.speed"]
         guard speedBtn.waitForExistence(timeout: 10) else {
-            try captureAndSkip("player.quickAccess.speed not found — may need landscape mode or controls were auto-hidden", in: app)
+            try captureAndSkip(
+                "player.quickAccess.speed not found — may need landscape mode or controls were auto-hidden", in: app)
         }
         // Use a coordinate tap so the UIKit touch event goes directly to the button
         // frame, bypassing any accessibility chain wrapping from the .contain modifier.
@@ -107,9 +108,11 @@ final class QuickAccessRowUITests: XCTestCase {
             .matching(NSPredicate(format: "identifier == 'player.speedPicker'"))
             .firstMatch
         let cancelBtn = app.buttons["Cancel"].firstMatch
-        let pickerAppeared = pickerByID.waitForExistence(timeout: 5)
+        let pickerAppeared =
+            pickerByID.waitForExistence(timeout: 5)
             || cancelBtn.waitForExistence(timeout: 2)
-        XCTAssertTrue(pickerAppeared,
+        XCTAssertTrue(
+            pickerAppeared,
             "Tapping quick-access speed button should open the speed picker overlay")
     }
 

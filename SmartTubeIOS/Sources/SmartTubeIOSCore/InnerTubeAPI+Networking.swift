@@ -1,6 +1,7 @@
-import Foundation
 import CryptoKit
+import Foundation
 import os
+
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
@@ -16,13 +17,15 @@ func extractYouTubeVisitorData(from html: String) -> String? {
     ]
     for pattern in patterns {
         guard let regex = try? NSRegularExpression(pattern: pattern),
-              let match = regex.firstMatch(
+            let match = regex.firstMatch(
                 in: html, range: NSRange(html.startIndex..., in: html)
-              ),
-              let range = Range(match.range(at: 1), in: html) else { continue }
+            ),
+            let range = Range(match.range(at: 1), in: html)
+        else { continue }
         let encodedValue = String(html[range])
         let quotedJSON = Data("\"\(encodedValue)\"".utf8)
-        let value = (try? JSONDecoder().decode(String.self, from: quotedJSON))
+        let value =
+            (try? JSONDecoder().decode(String.self, from: quotedJSON))
             ?? encodedValue.replacingOccurrences(of: #"\u003d"#, with: "=")
         if !value.isEmpty { return value }
     }
@@ -59,14 +62,16 @@ extension InnerTubeAPI {
             HTTPCookieStorage.shared.setCookie(consentCookie)
         }
 
-        var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData,
-                                 timeoutInterval: 15)
+        var request = URLRequest(
+            url: url, cachePolicy: .reloadIgnoringLocalCacheData,
+            timeoutInterval: 15)
         request.setValue(InnerTubeClients.WebSafari.userAgent, forHTTPHeaderField: "User-Agent")
         request.setValue("en-US,en;q=0.9", forHTTPHeaderField: "Accept-Language")
         guard let (data, response) = try? await session.data(for: request),
-              let http = response as? HTTPURLResponse,
-              (200..<300).contains(http.statusCode),
-              let html = String(data: data, encoding: .utf8) else { return }
+            let http = response as? HTTPURLResponse,
+            (200..<300).contains(http.statusCode),
+            let html = String(data: data, encoding: .utf8)
+        else { return }
 
         if let value = extractYouTubeVisitorData(from: html) {
             visitorData = value
@@ -86,8 +91,9 @@ extension InnerTubeAPI {
     /// Returns `nil` silently on network failure so callers can proceed without it.
     func fetchSignatureTimestampIfNeeded() async -> Int? {
         if let sts = signatureTimestamp,
-           let fetchedAt = signatureTimestampFetchedAt,
-           Date().timeIntervalSince(fetchedAt) < 3600 {
+            let fetchedAt = signatureTimestampFetchedAt,
+            Date().timeIntervalSince(fetchedAt) < 3600
+        {
             return sts
         }
         guard let url = URL(string: "https://www.youtube.com/") else { return nil }
@@ -97,9 +103,10 @@ extension InnerTubeAPI {
             guard let html = String(data: data, encoding: .utf8) else { return nil }
             let pattern = #""STS"\s*:\s*(\d+)"#
             guard let regex = try? NSRegularExpression(pattern: pattern),
-                  let match = regex.firstMatch(in: html, range: NSRange(html.startIndex..., in: html)),
-                  let range = Range(match.range(at: 1), in: html),
-                  let sts = Int(html[range]) else {
+                let match = regex.firstMatch(in: html, range: NSRange(html.startIndex..., in: html)),
+                let range = Range(match.range(at: 1), in: html),
+                let sts = Int(html[range])
+            else {
                 tubeLog.error("⚠️ signatureTimestamp: pattern not found in homepage response")
                 return nil
             }
@@ -115,7 +122,10 @@ extension InnerTubeAPI {
 
     // MARK: - Body builders
 
-    func makeBody(client: [String: Any], continuationToken: String? = nil, includeVisitorData: Bool = false, includePoToken: Bool = false) -> [String: Any] {
+    func makeBody(
+        client: [String: Any], continuationToken: String? = nil, includeVisitorData: Bool = false,
+        includePoToken: Bool = false
+    ) -> [String: Any] {
         var body: [String: Any] = ["context": client]
         if let token = continuationToken {
             body["continuation"] = token
@@ -159,7 +169,8 @@ extension InnerTubeAPI {
             let (data, response) = try await session.data(for: request)
             let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
             guard (200..<300).contains(statusCode),
-                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+            else {
                 tubeLog.notice("att/get: statusCode=\(statusCode, privacy: .public) — no JSON")
                 return nil
             }
@@ -182,7 +193,10 @@ extension InnerTubeAPI {
 
     /// Player requests use the iOS client UA, googleapis.com base, and no auth header.
     func postPlayer(body: [String: Any]) async throws -> [String: Any] {
-        guard var comps = URLComponents(url: playerBaseURL.appendingPathComponent("player"), resolvingAgainstBaseURL: false) else {
+        guard
+            var comps = URLComponents(
+                url: playerBaseURL.appendingPathComponent("player"), resolvingAgainstBaseURL: false)
+        else {
             throw APIError.invalidURL("player")
         }
         comps.queryItems = [URLQueryItem(name: "key", value: apiKey)]
@@ -224,8 +238,11 @@ extension InnerTubeAPI {
         guard let token = authToken else {
             return try await postPlayer(body: body)
         }
-        guard let comps = URLComponents(url: playerBaseURL.appendingPathComponent("player"),
-                                        resolvingAgainstBaseURL: false) else {
+        guard
+            let comps = URLComponents(
+                url: playerBaseURL.appendingPathComponent("player"),
+                resolvingAgainstBaseURL: false)
+        else {
             throw APIError.invalidURL("player")
         }
         // Mirror postTV: Bearer auth on googleapis.com does not require ?key=.
@@ -252,10 +269,13 @@ extension InnerTubeAPI {
             throw APIError.decodingError("Root JSON is not a dictionary")
         }
         if let error = json["error"] as? [String: Any] {
-            tubeLog.error("❌ API error in /player (iOS, auth): \(String(describing: error["message"] ?? error), privacy: .public)")
+            tubeLog.error(
+                "❌ API error in /player (iOS, auth): \(String(describing: error["message"] ?? error), privacy: .public)"
+            )
         } else {
             let topKeys = Array(json.keys.prefix(6))
-            tubeLog.notice("✅ /player (iOS, auth) HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)")
+            tubeLog.notice(
+                "✅ /player (iOS, auth) HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)")
         }
         return json
     }
@@ -274,9 +294,12 @@ extension InnerTubeAPI {
     /// cookies; we approximate this by passing visitorData via the header.
     func postAndroidVR(body: [String: Any]) async throws -> [String: Any] {
         // yt-dlp android_vr uses the TV/Android API key (same value). nosec: published in yt-dlp.
-        let vrApiKey = "AIzaSyDCU8mBbAkSfXX4txZFpEpPEBoAOUMCxkU" // gitleaks:allow
-        guard var comps = URLComponents(url: baseURL.appendingPathComponent("player"),
-                                        resolvingAgainstBaseURL: false) else {
+        let vrApiKey = "AIzaSyDCU8mBbAkSfXX4txZFpEpPEBoAOUMCxkU"  // gitleaks:allow
+        guard
+            var comps = URLComponents(
+                url: baseURL.appendingPathComponent("player"),
+                resolvingAgainstBaseURL: false)
+        else {
             throw APIError.invalidURL("player")
         }
         comps.queryItems = [
@@ -322,10 +345,13 @@ extension InnerTubeAPI {
             throw APIError.decodingError("Root JSON is not a dictionary")
         }
         if let error = json["error"] as? [String: Any] {
-            tubeLog.error("❌ API error in /player [AndroidVR]: \(String(describing: error["message"] ?? error), privacy: .public)")
+            tubeLog.error(
+                "❌ API error in /player [AndroidVR]: \(String(describing: error["message"] ?? error), privacy: .public)"
+            )
         } else {
             let topKeys = Array(json.keys.prefix(6))
-            tubeLog.notice("✅ /player [AndroidVR] HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)")
+            tubeLog.notice(
+                "✅ /player [AndroidVR] HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)")
         }
         return json
     }
@@ -333,8 +359,11 @@ extension InnerTubeAPI {
     /// visionOS player transport mirrored from current yt-dlp: www.youtube.com,
     /// public web API key, client 101 headers, and no OAuth/PO token.
     func postVisionOS(body: [String: Any]) async throws -> [String: Any] {
-        guard var comps = URLComponents(url: baseURL.appendingPathComponent("player"),
-                                        resolvingAgainstBaseURL: false) else {
+        guard
+            var comps = URLComponents(
+                url: baseURL.appendingPathComponent("player"),
+                resolvingAgainstBaseURL: false)
+        else {
             throw APIError.invalidURL("player")
         }
         comps.queryItems = [
@@ -367,7 +396,10 @@ extension InnerTubeAPI {
     /// Android client player request — used for download URL resolution.
     /// Android client headers use googleapis.com like iOS, but with Android UA/client IDs.
     func postAndroid(endpoint: String, body: [String: Any]) async throws -> [String: Any] {
-        guard var comps = URLComponents(url: playerBaseURL.appendingPathComponent(endpoint), resolvingAgainstBaseURL: false) else {
+        guard
+            var comps = URLComponents(
+                url: playerBaseURL.appendingPathComponent(endpoint), resolvingAgainstBaseURL: false)
+        else {
             throw APIError.invalidURL(endpoint)
         }
         comps.queryItems = [URLQueryItem(name: "key", value: apiKey)]
@@ -392,16 +424,21 @@ extension InnerTubeAPI {
             throw APIError.decodingError("Root JSON is not a dictionary")
         }
         if let error = json["error"] as? [String: Any] {
-            tubeLog.error("❌ API error in /\(endpoint, privacy: .public) [Android]: \(String(describing: error["message"] ?? error), privacy: .public)")
+            tubeLog.error(
+                "❌ API error in /\(endpoint, privacy: .public) [Android]: \(String(describing: error["message"] ?? error), privacy: .public)"
+            )
         } else {
             let topKeys = Array(json.keys.prefix(6))
-            tubeLog.notice("✅ /\(endpoint, privacy: .public) [Android] HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)")
+            tubeLog.notice(
+                "✅ /\(endpoint, privacy: .public) [Android] HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)"
+            )
         }
         return json
     }
 
     func post(endpoint: String, body: [String: Any], useAuth: Bool = false) async throws -> [String: Any] {
-        guard var comps = URLComponents(url: baseURL.appendingPathComponent(endpoint), resolvingAgainstBaseURL: false) else {
+        guard var comps = URLComponents(url: baseURL.appendingPathComponent(endpoint), resolvingAgainstBaseURL: false)
+        else {
             throw APIError.invalidURL(endpoint)
         }
         let resolvedToken = useAuth ? authToken : nil
@@ -433,9 +470,13 @@ extension InnerTubeAPI {
         }
         let topKeys = Array(json.keys.prefix(6))
         if let error = json["error"] as? [String: Any] {
-            tubeLog.error("❌ API error in /\(endpoint, privacy: .public): \(String(describing: error["message"] ?? error), privacy: .public)")
+            tubeLog.error(
+                "❌ API error in /\(endpoint, privacy: .public): \(String(describing: error["message"] ?? error), privacy: .public)"
+            )
         } else {
-            tubeLog.notice("✅ /\(endpoint, privacy: .public) HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)")
+            tubeLog.notice(
+                "✅ /\(endpoint, privacy: .public) HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)"
+            )
         }
         return json
     }
@@ -453,8 +494,11 @@ extension InnerTubeAPI {
     ///   • www.youtube.com + SAPISIDHASH → 200 with rqh=0 adaptive streams ✓
     ///   • www.youtube.com + no auth → 200 + LOGIN_REQUIRED (no streamingData)
     func postWebCreator(body: [String: Any]) async throws -> [String: Any] {
-        guard var comps = URLComponents(url: baseURL.appendingPathComponent("player"),
-                                        resolvingAgainstBaseURL: false) else {
+        guard
+            var comps = URLComponents(
+                url: baseURL.appendingPathComponent("player"),
+                resolvingAgainstBaseURL: false)
+        else {
             throw APIError.invalidURL("player")
         }
         comps.queryItems = [URLQueryItem(name: "key", value: apiKey)]
@@ -464,7 +508,9 @@ extension InnerTubeAPI {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("https://www.youtube.com", forHTTPHeaderField: "Origin")
         // Chrome desktop UA — WEB_CREATOR is identified as a studio/web client.
-        request.setValue("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36,gzip(gfe)", forHTTPHeaderField: "User-Agent")
+        request.setValue(
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36,gzip(gfe)",
+            forHTTPHeaderField: "User-Agent")
         request.setValue(InnerTubeClients.WebCreator.nameID, forHTTPHeaderField: "X-YouTube-Client-Name")
         request.setValue(InnerTubeClients.WebCreator.version, forHTTPHeaderField: "X-YouTube-Client-Version")
         // SAPISIDHASH auth: `Authorization: SAPISIDHASH {timestamp}_{sha1("{ts} {SAPISID} {origin}")}`
@@ -481,18 +527,24 @@ extension InnerTubeAPI {
             request.setValue("0", forHTTPHeaderField: "X-Goog-AuthUser")
         }
         let authStatus: String
-        if sapisid != nil { authStatus = "SAPISIDHASH" }
-        else if authToken != nil { authStatus = "Bearer+AuthUser" }
-        else { authStatus = "unauthenticated" }
+        if sapisid != nil {
+            authStatus = "SAPISIDHASH"
+        } else if authToken != nil {
+            authStatus = "Bearer+AuthUser"
+        } else {
+            authStatus = "unauthenticated"
+        }
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         let videoId = body["videoId"] as? String ?? ""
-        tubeLog.notice("POST /player [WebCreator] videoId=\(videoId, privacy: .public) auth=\(authStatus, privacy: .public)")
+        tubeLog.notice(
+            "POST /player [WebCreator] videoId=\(videoId, privacy: .public) auth=\(authStatus, privacy: .public)")
         let (data, response) = try await session.data(for: request)
         let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
             var errSummary = ""
             if let j = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let err = j["error"] as? [String: Any] {
+                let err = j["error"] as? [String: Any]
+            {
                 let code = err["code"] ?? ""
                 let msg = (err["message"] as? String ?? "").prefix(120)
                 let status = err["status"] ?? ""
@@ -500,7 +552,8 @@ extension InnerTubeAPI {
             } else {
                 errSummary = String(data: data.prefix(120), encoding: .utf8) ?? "(non-utf8)"
             }
-            tubeLog.error("❌ HTTP \(statusCode, privacy: .public) for /player [WebCreator] err=\(errSummary, privacy: .public)")
+            tubeLog.error(
+                "❌ HTTP \(statusCode, privacy: .public) for /player [WebCreator] err=\(errSummary, privacy: .public)")
             throw APIError.httpError(statusCode)
         }
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
@@ -508,10 +561,13 @@ extension InnerTubeAPI {
             throw APIError.decodingError("Root JSON is not a dictionary")
         }
         if let error = json["error"] as? [String: Any] {
-            tubeLog.error("❌ API error in /player [WebCreator]: \(String(describing: error["message"] ?? error), privacy: .public)")
+            tubeLog.error(
+                "❌ API error in /player [WebCreator]: \(String(describing: error["message"] ?? error), privacy: .public)"
+            )
         } else {
             let topKeys = Array(json.keys.prefix(6))
-            tubeLog.notice("✅ /player [WebCreator] HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)")
+            tubeLog.notice(
+                "✅ /player [WebCreator] HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)")
         }
         return json
     }
@@ -520,8 +576,11 @@ extension InnerTubeAPI {
     /// Replaced the deprecated TVHTML5_SIMPLY_EMBEDDED_PLAYER (nameID=85) which YouTube
     /// blocked in 2026. Uses client headers matching nameID=56 / version from InnerTubeClients.
     func postTVEmbedded(body: [String: Any]) async throws -> [String: Any] {
-        guard var comps = URLComponents(url: baseURL.appendingPathComponent("player"),
-                                        resolvingAgainstBaseURL: false) else {
+        guard
+            var comps = URLComponents(
+                url: baseURL.appendingPathComponent("player"),
+                resolvingAgainstBaseURL: false)
+        else {
             throw APIError.invalidURL("player")
         }
         comps.queryItems = [URLQueryItem(name: "key", value: apiKey)]
@@ -533,10 +592,12 @@ extension InnerTubeAPI {
         // WEB_EMBEDDED_PLAYER is a web client — use a browser UA so YouTube treats the
         // request as a legitimate iframe embed and returns hlsManifestUrl in streamingData.
         request.setValue(InnerTubeClients.Web.userAgent, forHTTPHeaderField: "User-Agent")
-        request.setValue(InnerTubeClients.TVEmbedded.nameID,
-                         forHTTPHeaderField: "X-YouTube-Client-Name")
-        request.setValue(InnerTubeClients.TVEmbedded.version,
-                         forHTTPHeaderField: "X-YouTube-Client-Version")
+        request.setValue(
+            InnerTubeClients.TVEmbedded.nameID,
+            forHTTPHeaderField: "X-YouTube-Client-Name")
+        request.setValue(
+            InnerTubeClients.TVEmbedded.version,
+            forHTTPHeaderField: "X-YouTube-Client-Version")
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         let videoId = body["videoId"] as? String ?? ""
         tubeLog.notice("POST /player [TVEmbedded] videoId=\(videoId, privacy: .public)")
@@ -551,10 +612,13 @@ extension InnerTubeAPI {
             throw APIError.decodingError("Root JSON is not a dictionary")
         }
         if let error = json["error"] as? [String: Any] {
-            tubeLog.error("❌ API error in /player [TVEmbedded]: \(String(describing: error["message"] ?? error), privacy: .public)")
+            tubeLog.error(
+                "❌ API error in /player [TVEmbedded]: \(String(describing: error["message"] ?? error), privacy: .public)"
+            )
         } else {
             let topKeys = Array(json.keys.prefix(6))
-            tubeLog.notice("✅ /player [TVEmbedded] HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)")
+            tubeLog.notice(
+                "✅ /player [TVEmbedded] HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)")
         }
         return json
     }
@@ -564,8 +628,11 @@ extension InnerTubeAPI {
     /// (`required=False`) and has no embed restriction — returns `hlsManifestUrl` for a
     /// wider set of videos than WEB_EMBEDDED_PLAYER.
     func postMWEB(body: [String: Any]) async throws -> [String: Any] {
-        guard var comps = URLComponents(url: baseURL.appendingPathComponent("player"),
-                                        resolvingAgainstBaseURL: false) else {
+        guard
+            var comps = URLComponents(
+                url: baseURL.appendingPathComponent("player"),
+                resolvingAgainstBaseURL: false)
+        else {
             throw APIError.invalidURL("player")
         }
         comps.queryItems = [URLQueryItem(name: "key", value: apiKey)]
@@ -593,7 +660,8 @@ extension InnerTubeAPI {
             throw APIError.decodingError("Root JSON is not a dictionary")
         }
         if let error = json["error"] as? [String: Any] {
-            tubeLog.error("❌ API error in /player [MWEB]: \(String(describing: error["message"] ?? error), privacy: .public)")
+            tubeLog.error(
+                "❌ API error in /player [MWEB]: \(String(describing: error["message"] ?? error), privacy: .public)")
         } else {
             let topKeys = Array(json.keys.prefix(6))
             tubeLog.notice("✅ /player [MWEB] HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)")
@@ -606,8 +674,11 @@ extension InnerTubeAPI {
     /// videos. Uses the same www.youtube.com endpoint as postMWEB; no Bearer auth
     /// (cookie-based auth in yt-dlp, but HLS manifest works without auth for VOD).
     func postWebSafari(body: [String: Any], visitorIdOverride: String? = nil) async throws -> [String: Any] {
-        guard var comps = URLComponents(url: baseURL.appendingPathComponent("player"),
-                                        resolvingAgainstBaseURL: false) else {
+        guard
+            var comps = URLComponents(
+                url: baseURL.appendingPathComponent("player"),
+                resolvingAgainstBaseURL: false)
+        else {
             throw APIError.invalidURL("player")
         }
         comps.queryItems = [URLQueryItem(name: "key", value: apiKey)]
@@ -643,7 +714,8 @@ extension InnerTubeAPI {
         }
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         let videoId = body["videoId"] as? String ?? ""
-        tubeLog.notice("POST /player [WebSafari] videoId=\(videoId, privacy: .public) auth=\(authStatus, privacy: .public)")
+        tubeLog.notice(
+            "POST /player [WebSafari] videoId=\(videoId, privacy: .public) auth=\(authStatus, privacy: .public)")
         let (data, response) = try await session.data(for: request)
         let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
@@ -655,10 +727,13 @@ extension InnerTubeAPI {
             throw APIError.decodingError("Root JSON is not a dictionary")
         }
         if let error = json["error"] as? [String: Any] {
-            tubeLog.error("❌ API error in /player [WebSafari]: \(String(describing: error["message"] ?? error), privacy: .public)")
+            tubeLog.error(
+                "❌ API error in /player [WebSafari]: \(String(describing: error["message"] ?? error), privacy: .public)"
+            )
         } else {
             let topKeys = Array(json.keys.prefix(6))
-            tubeLog.notice("✅ /player [WebSafari] HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)")
+            tubeLog.notice(
+                "✅ /player [WebSafari] HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)")
         }
         return json
     }
@@ -669,8 +744,11 @@ extension InnerTubeAPI {
     /// Throws `APIError.notAuthenticated` when no `authToken` is present.
     func postWebAuthenticated(body: [String: Any]) async throws -> [String: Any] {
         guard let token = authToken else { throw APIError.notAuthenticated }
-        guard var comps = URLComponents(url: baseURL.appendingPathComponent("player"),
-                                        resolvingAgainstBaseURL: false) else {
+        guard
+            var comps = URLComponents(
+                url: baseURL.appendingPathComponent("player"),
+                resolvingAgainstBaseURL: false)
+        else {
             throw APIError.invalidURL("player")
         }
         comps.queryItems = [URLQueryItem(name: "key", value: apiKey)]
@@ -696,7 +774,8 @@ extension InnerTubeAPI {
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
             var errSummary = ""
             if let j = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let err = j["error"] as? [String: Any] {
+                let err = j["error"] as? [String: Any]
+            {
                 let code = err["code"] ?? ""
                 let msg = (err["message"] as? String ?? "").prefix(120)
                 let status = err["status"] ?? ""
@@ -704,7 +783,8 @@ extension InnerTubeAPI {
             } else {
                 errSummary = String(data: data.prefix(120), encoding: .utf8) ?? "(non-utf8)"
             }
-            tubeLog.error("❌ HTTP \(statusCode, privacy: .public) for /player [WebAuth] err=\(errSummary, privacy: .public)")
+            tubeLog.error(
+                "❌ HTTP \(statusCode, privacy: .public) for /player [WebAuth] err=\(errSummary, privacy: .public)")
             throw APIError.httpError(statusCode)
         }
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
@@ -712,10 +792,12 @@ extension InnerTubeAPI {
             throw APIError.decodingError("Root JSON is not a dictionary")
         }
         if let error = json["error"] as? [String: Any] {
-            tubeLog.error("❌ API error in /player [WebAuth]: \(String(describing: error["message"] ?? error), privacy: .public)")
+            tubeLog.error(
+                "❌ API error in /player [WebAuth]: \(String(describing: error["message"] ?? error), privacy: .public)")
         } else {
             let topKeys = Array(json.keys.prefix(6))
-            tubeLog.notice("✅ /player [WebAuth] HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)")
+            tubeLog.notice(
+                "✅ /player [WebAuth] HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)")
         }
         return json
     }
@@ -724,8 +806,11 @@ extension InnerTubeAPI {
     /// client format but return 400 on youtubei.googleapis.com without a valid auth token.
     /// Posting to www.youtube.com with TV client headers resolves this.
     func postTVCategory(endpoint: String, body: [String: Any]) async throws -> [String: Any] {
-        guard var comps = URLComponents(url: baseURL.appendingPathComponent(endpoint),
-                                        resolvingAgainstBaseURL: false) else {
+        guard
+            var comps = URLComponents(
+                url: baseURL.appendingPathComponent(endpoint),
+                resolvingAgainstBaseURL: false)
+        else {
             throw APIError.invalidURL(endpoint)
         }
         comps.queryItems = [URLQueryItem(name: "key", value: apiKey)]
@@ -749,10 +834,14 @@ extension InnerTubeAPI {
             throw APIError.decodingError("Root JSON is not a dictionary")
         }
         if let error = json["error"] as? [String: Any] {
-            tubeLog.error("❌ API error in /\(endpoint, privacy: .public) [TV-category]: \(String(describing: error["message"] ?? error), privacy: .public)")
+            tubeLog.error(
+                "❌ API error in /\(endpoint, privacy: .public) [TV-category]: \(String(describing: error["message"] ?? error), privacy: .public)"
+            )
         } else {
             let topKeys = Array(json.keys.prefix(6))
-            tubeLog.notice("✅ /\(endpoint, privacy: .public) [TV-category] HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)")
+            tubeLog.notice(
+                "✅ /\(endpoint, privacy: .public) [TV-category] HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)"
+            )
         }
         return json
     }
@@ -771,8 +860,11 @@ extension InnerTubeAPI {
         useAuth: Bool = true,
         explicitBearerToken: String? = nil
     ) async throws -> [String: Any] {
-        guard var comps = URLComponents(url: playerBaseURL.appendingPathComponent(endpoint),
-                                        resolvingAgainstBaseURL: false) else {
+        guard
+            var comps = URLComponents(
+                url: playerBaseURL.appendingPathComponent(endpoint),
+                resolvingAgainstBaseURL: false)
+        else {
             throw APIError.invalidURL(endpoint)
         }
         // Android: no ?key= when Bearer present; WEB key for unauthenticated.
@@ -805,10 +897,14 @@ extension InnerTubeAPI {
             throw APIError.decodingError("Root JSON is not a dictionary")
         }
         if let error = json["error"] as? [String: Any] {
-            tubeLog.error("❌ API error in /\(endpoint, privacy: .public) [TV]: \(String(describing: error["message"] ?? error), privacy: .public)")
+            tubeLog.error(
+                "❌ API error in /\(endpoint, privacy: .public) [TV]: \(String(describing: error["message"] ?? error), privacy: .public)"
+            )
         } else {
             let topKeys = Array(json.keys.prefix(6))
-            tubeLog.notice("✅ /\(endpoint, privacy: .public) [TV] HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)")
+            tubeLog.notice(
+                "✅ /\(endpoint, privacy: .public) [TV] HTTP \(statusCode, privacy: .public) keys: \(topKeys, privacy: .public)"
+            )
         }
         return json
     }

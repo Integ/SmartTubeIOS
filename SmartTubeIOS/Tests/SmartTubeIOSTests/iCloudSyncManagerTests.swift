@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - iCloudSyncManagerTests
@@ -37,7 +38,7 @@ struct iCloudSyncManagerTests {
 
     @Test("AppSettings with iCloudSyncEnabled=false round-trips")
     func appSettings_iCloudSyncEnabled_falseRoundTrip() throws {
-        let settings = AppSettings()   // default
+        let settings = AppSettings()  // default
         let data = try JSONEncoder().encode(settings)
         let decoded = try JSONDecoder().decode(AppSettings.self, from: data)
         #expect(decoded.iCloudSyncEnabled == false)

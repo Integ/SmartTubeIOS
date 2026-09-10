@@ -22,7 +22,7 @@ final class AudioAndLandscapePlayerUITests: XCTestCase {
         sharedApp.launchArguments = [
             "--uitesting",
             "--uitesting-disable-tos-player-on-ios",
-            "--uitesting-deeplink-video=dQw4w9WgXcQ"
+            "--uitesting-deeplink-video=dQw4w9WgXcQ",
         ]
         sharedApp.launch()
     }
@@ -77,7 +77,8 @@ final class AudioAndLandscapePlayerUITests: XCTestCase {
     private func waitForPlayer(timeout: TimeInterval = 20) throws {
         let playerTitle = app.staticTexts["player.titleLabel"].firstMatch
         guard playerTitle.waitForExistence(timeout: timeout) else {
-            try captureAndSkip("Player did not open within \(timeout) s — network unavailable or video inaccessible", in: app)
+            try captureAndSkip(
+                "Player did not open within \(timeout) s — network unavailable or video inaccessible", in: app)
         }
     }
 
@@ -99,8 +100,9 @@ final class AudioAndLandscapePlayerUITests: XCTestCase {
         try waitForPlayer()
         showControls()
         let audioOnlyBtn = app.buttons["player.audioOnlyButton"].firstMatch
-        XCTAssertTrue(audioOnlyBtn.waitForExistence(timeout: 5),
-                      "player.audioOnlyButton must be present in the player bottom-bar controls")
+        XCTAssertTrue(
+            audioOnlyBtn.waitForExistence(timeout: 5),
+            "player.audioOnlyButton must be present in the player bottom-bar controls")
     }
 
     /// Tapping Audio-Only must not crash the app.
@@ -114,8 +116,9 @@ final class AudioAndLandscapePlayerUITests: XCTestCase {
         audioOnlyBtn.tap()
         // Verify the app didn't crash — no player.view identifier exists; use app.state.
         Thread.sleep(forTimeInterval: 1)
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must remain running after tapping Audio-Only")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must remain running after tapping Audio-Only")
     }
 
     /// Tapping Audio-Only ON must show the thumbnail overlay on the current video.
@@ -131,8 +134,9 @@ final class AudioAndLandscapePlayerUITests: XCTestCase {
         let overlay = app.descendants(matching: .any).matching(overlayPred).firstMatch
         XCTAssertFalse(overlay.exists, "Overlay must not be visible before enabling audio-only")
         audioOnlyBtn.tap()
-        XCTAssertTrue(overlay.waitForExistence(timeout: 15),
-                      "player.audioOnlyOverlay must appear after enabling audio-only on current video")
+        XCTAssertTrue(
+            overlay.waitForExistence(timeout: 15),
+            "player.audioOnlyOverlay must appear after enabling audio-only on current video")
     }
 
     /// Tapping Audio-Only OFF must hide the thumbnail overlay on the current video.
@@ -162,8 +166,9 @@ final class AudioAndLandscapePlayerUITests: XCTestCase {
         let overlayGone = NSPredicate(format: "exists == false")
         expectation(for: overlayGone, evaluatedWith: overlay)
         waitForExpectations(timeout: 15)
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must remain running after turning audio-only OFF")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must remain running after turning audio-only OFF")
     }
 
     /// Tapping the Audio-Only button must show a toast confirming the mode change.
@@ -180,8 +185,9 @@ final class AudioAndLandscapePlayerUITests: XCTestCase {
         guard toast.waitForExistence(timeout: 4) else {
             try captureAndSkip("Toast disappeared before assertion — may be a slow simulator timing issue", in: app)
         }
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must remain running after audio-only toast")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must remain running after audio-only toast")
     }
 
     // MARK: - Tests (from LandscapeLockButtonUITests)
@@ -191,10 +197,12 @@ final class AudioAndLandscapePlayerUITests: XCTestCase {
         try waitForPlayer()
         showControls()
         let lockButton = app.buttons["player.landscapeLockButton"].firstMatch
-        XCTAssertTrue(lockButton.waitForExistence(timeout: 5),
-                      "Landscape lock button must appear in the player controls overlay")
-        XCTAssertTrue(lockButton.isHittable,
-                      "Landscape lock button must be tappable")
+        XCTAssertTrue(
+            lockButton.waitForExistence(timeout: 5),
+            "Landscape lock button must appear in the player controls overlay")
+        XCTAssertTrue(
+            lockButton.isHittable,
+            "Landscape lock button must be tappable")
     }
 
     /// Tapping the lock button must not crash or dismiss the player.
@@ -202,21 +210,25 @@ final class AudioAndLandscapePlayerUITests: XCTestCase {
         try waitForPlayer()
         showControls()
         let lockButton = app.buttons["player.landscapeLockButton"].firstMatch
-        XCTAssertTrue(lockButton.waitForExistence(timeout: 5),
-                      "Landscape lock button must be present before tapping")
+        XCTAssertTrue(
+            lockButton.waitForExistence(timeout: 5),
+            "Landscape lock button must be present before tapping")
         // Tap to lock.
         lockButton.tap()
         // Verify no crash — player.view identifier doesn't exist; use app.state.
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must remain running after tapping the landscape lock button")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must remain running after tapping the landscape lock button")
         // Wait for the landscape rotation animation to settle before re-probing controls.
         Thread.sleep(forTimeInterval: 2)
         // Tap again to unlock.
         showControls()
-        XCTAssertTrue(lockButton.waitForExistence(timeout: 5),
-                      "Lock button must still exist after first tap")
+        XCTAssertTrue(
+            lockButton.waitForExistence(timeout: 5),
+            "Lock button must still exist after first tap")
         lockButton.tap()
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must remain running after unlocking")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must remain running after unlocking")
     }
 }

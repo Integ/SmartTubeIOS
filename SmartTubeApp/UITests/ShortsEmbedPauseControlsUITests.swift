@@ -117,7 +117,8 @@ final class ShortsEmbedPauseControlsUITests: XCTestCase {
 
         // 2. Controls overlay should be visible — showControls() is called from
         //    onChange(.playing) in ShortsPlayerView.
-        XCTAssertTrue(backButton.waitForExistence(timeout: 4),
+        XCTAssertTrue(
+            backButton.waitForExistence(timeout: 4),
             "shorts.backButton not visible after playing started — onChange(.playing)/showControls() not working")
 
         // 3. Tap center of screen — window-level UITapGestureRecognizer fires
@@ -125,18 +126,21 @@ final class ShortsEmbedPauseControlsUITests: XCTestCase {
         let paused = XCTDarwinNotificationExpectation(
             notificationName: "com.void.smarttube.shortsplayer.paused")
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7)).tap()
-        XCTAssertEqual(XCTWaiter().wait(for: [paused], timeout: 8), .completed,
+        XCTAssertEqual(
+            XCTWaiter().wait(for: [paused], timeout: 8), .completed,
             "paused notification never fired — stateChange → paused not received after overlay tap")
 
         // 4. Controls overlay must still be visible — cancelControlsHide() keeps
         //    them on screen indefinitely while paused.
-        XCTAssertTrue(backButton.waitForExistence(timeout: 3),
+        XCTAssertTrue(
+            backButton.waitForExistence(timeout: 3),
             "shorts.backButton not visible after pause — cancelControlsHide() not working")
 
         // 5. Verify controls remain visible for at least 2 more seconds — confirming
         //    cancelControlsHide() is holding them open indefinitely while paused.
         Thread.sleep(forTimeInterval: 2)
-        XCTAssertTrue(backButton.exists,
+        XCTAssertTrue(
+            backButton.exists,
             "shorts.backButton disappeared 2s into pause — cancelControlsHide() not holding")
     }
 
@@ -160,7 +164,8 @@ final class ShortsEmbedPauseControlsUITests: XCTestCase {
         }
 
         // Wait for back button — confirms controls overlay is on screen before we tap.
-        XCTAssertTrue(backButton.waitForExistence(timeout: 4),
+        XCTAssertTrue(
+            backButton.waitForExistence(timeout: 4),
             "shorts.backButton not visible after playing")
 
         // Tap center to pause — guard allows this because vm.playerState == .playing.
@@ -183,9 +188,9 @@ final class ShortsEmbedPauseControlsUITests: XCTestCase {
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.14, dy: 0.90)).tap()
         guard XCTWaiter().wait(for: [playing2], timeout: 5) == .completed else {
             throw XCTSkip(
-                "playing (resume) notification never fired — native play button tap at " +
-                "(0.14, 0.90) may not have aligned with the button on this device. " +
-                "Check device log: if no stateChange=1 appears, coordinates need adjusting.")
+                "playing (resume) notification never fired — native play button tap at "
+                    + "(0.14, 0.90) may not have aligned with the button on this device. "
+                    + "Check device log: if no stateChange=1 appears, coordinates need adjusting.")
         }
         // If we reach here the native play button received the touch → pass.
     }
@@ -217,14 +222,16 @@ final class ShortsEmbedPauseControlsUITests: XCTestCase {
         let resumed = XCTDarwinNotificationExpectation(
             notificationName: "com.void.smarttube.shortsplayer.playing")
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-        XCTAssertEqual(XCTWaiter().wait(for: [resumed], timeout: 5), .completed,
+        XCTAssertEqual(
+            XCTWaiter().wait(for: [resumed], timeout: 5), .completed,
             "playing notification never fired after center-tap resume")
 
         // Now watch closely: does a spurious "paused" notification fire within 1.5s?
         let spuriousPause = XCTDarwinNotificationExpectation(
             notificationName: "com.void.smarttube.shortsplayer.paused")
         let result = XCTWaiter().wait(for: [spuriousPause], timeout: 1.5)
-        XCTAssertNotEqual(result, .completed,
+        XCTAssertNotEqual(
+            result, .completed,
             "REPRO: spurious 'paused' notification fired within 1.5s of the resume tap — unpause did not persist")
     }
 
@@ -253,14 +260,16 @@ final class ShortsEmbedPauseControlsUITests: XCTestCase {
         let resumed = XCTDarwinNotificationExpectation(
             notificationName: "com.void.smarttube.shortsplayer.playing")
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-        XCTAssertEqual(XCTWaiter().wait(for: [resumed], timeout: 5), .completed,
+        XCTAssertEqual(
+            XCTWaiter().wait(for: [resumed], timeout: 5), .completed,
             "playing notification never fired after near-t0 center-tap resume")
 
         let spuriousPause = XCTDarwinNotificationExpectation(
             notificationName: "com.void.smarttube.shortsplayer.paused")
         let result = XCTWaiter().wait(for: [spuriousPause], timeout: 1.5)
-        XCTAssertNotEqual(result, .completed,
+        XCTAssertNotEqual(
+            result, .completed,
             "REPRO: spurious 'paused' notification fired within 1.5s of a near-t0 resume tap")
     }
 }
-#endif // os(iOS)
+#endif  // os(iOS)

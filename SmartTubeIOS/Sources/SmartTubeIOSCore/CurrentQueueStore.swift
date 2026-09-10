@@ -96,8 +96,8 @@ public actor CurrentQueueStore: UserDefaultsBackedStore {
     /// and the correct `playlistIndex`. This is what the player receives.
     public func videoAt(index: Int) -> Video? {
         guard videos.indices.contains(index) else { return nil }
-        var copy           = videos[index]
-        copy.playlistId    = Self.playlistID
+        var copy = videos[index]
+        copy.playlistId = Self.playlistID
         copy.playlistIndex = index
         return copy
     }
@@ -109,7 +109,7 @@ public actor CurrentQueueStore: UserDefaultsBackedStore {
         guard startIdx < videos.count else { return [] }
         return (startIdx..<videos.count).map { i in
             var copy = videos[i]
-            copy.playlistId    = Self.playlistID
+            copy.playlistId = Self.playlistID
             copy.playlistIndex = i
             return copy
         }
@@ -118,9 +118,9 @@ public actor CurrentQueueStore: UserDefaultsBackedStore {
     /// A `PlaylistInfo` stub for rendering the queue row in LibraryView.
     public var asPlaylistInfo: PlaylistInfo {
         PlaylistInfo(
-            id:           Self.playlistID,
-            title:        "Current Queue",
-            videoCount:   videos.count,
+            id: Self.playlistID,
+            title: "Current Queue",
+            videoCount: videos.count,
             thumbnailURL: videos.first?.thumbnailURL
         )
     }

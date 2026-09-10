@@ -26,8 +26,12 @@ extension InnerTubeAPI {
             return extractText(dict)
         }
         for run in runs {
-            guard let text = run["text"] as? String, !text.trimmingCharacters(in: .whitespaces).isEmpty else { continue }
-            let browseId = ((run["navigationEndpoint"] as? [String: Any])?["browseEndpoint"] as? [String: Any])?["browseId"] as? String
+            guard let text = run["text"] as? String, !text.trimmingCharacters(in: .whitespaces).isEmpty else {
+                continue
+            }
+            let browseId =
+                ((run["navigationEndpoint"] as? [String: Any])?["browseEndpoint"] as? [String: Any])?["browseId"]
+                as? String
             if browseId == channelId { return text }
         }
         return extractText(dict)
@@ -53,8 +57,9 @@ extension InnerTubeAPI {
         ]
         for key in rendererKeys {
             if let renderer = header[key] as? [String: Any],
-               let titleObj = renderer["title"] as? [String: Any],
-               let text = extractText(titleObj) {
+                let titleObj = renderer["title"] as? [String: Any],
+                let text = extractText(titleObj)
+            {
                 return text
             }
         }
@@ -98,7 +103,8 @@ extension InnerTubeAPI {
             return d
         default:
             let d = parseRelativeDate(title)
-            tubeLog.notice("parseSectionDate '\(title, privacy: .public)' → relativeDate fallback → \(fmt(d), privacy: .public)")
+            tubeLog.notice(
+                "parseSectionDate '\(title, privacy: .public)' → relativeDate fallback → \(fmt(d), privacy: .public)")
             return d
         }
     }
@@ -108,12 +114,14 @@ extension InnerTubeAPI {
     func parseScheduledDate(_ text: String) -> Date? {
         let stripped = text.replacingOccurrences(
             of: #"^Scheduled for\s+"#, with: "", options: .regularExpression)
-        guard stripped != text else { return nil }   // no "Scheduled for" prefix → bail early
+        guard stripped != text else { return nil }  // no "Scheduled for" prefix → bail early
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "M/d/yy, h:mm a"
         if let date = formatter.date(from: stripped) {
-            tubeLog.notice("parseScheduledDate '\(text, privacy: .public)' → \(ISO8601DateFormatter().string(from: date), privacy: .public)")
+            tubeLog.notice(
+                "parseScheduledDate '\(text, privacy: .public)' → \(ISO8601DateFormatter().string(from: date), privacy: .public)"
+            )
             return date
         }
         tubeLog.notice("parseScheduledDate '\(text, privacy: .public)' → no match")
@@ -121,15 +129,16 @@ extension InnerTubeAPI {
     }
 
     func parseRelativeDate(_ text: String) -> Date? {
-        let stripped = text
+        let stripped =
+            text
             .replacingOccurrences(of: #"^(Streamed|Premiered|Started)\s+"#, with: "", options: .regularExpression)
             .lowercased()
         let pattern = #"(\d+)\s+(second|minute|hour|day|week|month|year)s?\s+ago"#
         guard let regex = try? NSRegularExpression(pattern: pattern),
-              let match = regex.firstMatch(in: stripped, range: NSRange(stripped.startIndex..., in: stripped)),
-              let valueRange = Range(match.range(at: 1), in: stripped),
-              let unitRange = Range(match.range(at: 2), in: stripped),
-              let value = Int(stripped[valueRange])
+            let match = regex.firstMatch(in: stripped, range: NSRange(stripped.startIndex..., in: stripped)),
+            let valueRange = Range(match.range(at: 1), in: stripped),
+            let unitRange = Range(match.range(at: 2), in: stripped),
+            let value = Int(stripped[valueRange])
         else {
             tubeLog.notice("parseRelativeDate '\(text, privacy: .public)' → no regex match")
             return nil
@@ -139,15 +148,17 @@ extension InnerTubeAPI {
         switch unit {
         case "second": seconds = TimeInterval(value)
         case "minute": seconds = TimeInterval(value * 60)
-        case "hour":   seconds = TimeInterval(value * 3_600)
-        case "day":    seconds = TimeInterval(value * 86_400)
-        case "week":   seconds = TimeInterval(value * 7 * 86_400)
-        case "month":  seconds = TimeInterval(value * 30 * 86_400)
-        case "year":   seconds = TimeInterval(value * 365 * 86_400)
-        default:       return nil
+        case "hour": seconds = TimeInterval(value * 3_600)
+        case "day": seconds = TimeInterval(value * 86_400)
+        case "week": seconds = TimeInterval(value * 7 * 86_400)
+        case "month": seconds = TimeInterval(value * 30 * 86_400)
+        case "year": seconds = TimeInterval(value * 365 * 86_400)
+        default: return nil
         }
         let result = Date(timeIntervalSinceNow: -seconds)
-        tubeLog.notice("parseRelativeDate '\(text, privacy: .public)' → \(value, privacy: .public) \(unit, privacy: .public)(s) ago → \(ISO8601DateFormatter().string(from: result), privacy: .public)")
+        tubeLog.notice(
+            "parseRelativeDate '\(text, privacy: .public)' → \(value, privacy: .public) \(unit, privacy: .public)(s) ago → \(ISO8601DateFormatter().string(from: result), privacy: .public)"
+        )
         return result
     }
 
@@ -155,9 +166,10 @@ extension InnerTubeAPI {
         // Suffix path: extract leading decimal + K/M/B multiplier (e.g. "1.5K" → 1500)
         let pattern = #"([\d,]+(?:\.\d+)?)\s*([KkMmBb])\b"#
         if let regex = try? NSRegularExpression(pattern: pattern),
-           let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
-           let numRange = Range(match.range(at: 1), in: text),
-           let suffixRange = Range(match.range(at: 2), in: text) {
+            let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
+            let numRange = Range(match.range(at: 1), in: text),
+            let suffixRange = Range(match.range(at: 2), in: text)
+        {
             let numStr = text[numRange].replacingOccurrences(of: ",", with: "")
             if let value = Double(numStr) {
                 let suffix = text[suffixRange].uppercased()
@@ -166,7 +178,7 @@ extension InnerTubeAPI {
                 case "K": multiplier = 1_000
                 case "M": multiplier = 1_000_000
                 case "B": multiplier = 1_000_000_000
-                default:  multiplier = 1
+                default: multiplier = 1
                 }
                 return Int(value * multiplier)
             }

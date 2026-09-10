@@ -10,7 +10,7 @@ import Foundation
 // Metadata (title, thumbnail) is refreshed from RSS on each feed fetch.
 
 public struct LocalChannel: Codable, Hashable, Sendable, Identifiable {
-    public let id: String           // YouTube channel ID, e.g. "UCBcRF18a7Qf58cCRy5xuWwQ"
+    public let id: String  // YouTube channel ID, e.g. "UCBcRF18a7Qf58cCRy5xuWwQ"
     public var title: String
     public var thumbnailURL: URL?
     public var addedAt: Date

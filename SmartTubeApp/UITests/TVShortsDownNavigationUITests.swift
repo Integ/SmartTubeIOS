@@ -40,12 +40,16 @@ final class TVShortsDownNavigationUITests: XCTestCase {
 
     private func snap(_ label: String) {
         let shot = XCTAttachment(screenshot: app.screenshot())
-        shot.name = label; shot.lifetime = .keepAlways; add(shot)
+        shot.name = label
+        shot.lifetime = .keepAlways
+        add(shot)
     }
 
     private func treeSnapshot(_ label: String) {
         let tree = XCTAttachment(string: app.debugDescription)
-        tree.name = label; tree.lifetime = .keepAlways; add(tree)
+        tree.name = label
+        tree.lifetime = .keepAlways
+        add(tree)
     }
 
     // MARK: - Test
@@ -77,7 +81,9 @@ final class TVShortsDownNavigationUITests: XCTestCase {
         XCTContext.runActivity(named: "Shorts present: \(shortsPresent) (waiter=\(shortsResult.rawValue))") { _ in }
 
         guard shortsPresent else {
-            try captureAndSkip("No 'home.shortsRow' buttons found after 30s — Shorts not in feed; captured initial state above", in: app)
+            try captureAndSkip(
+                "No 'home.shortsRow' buttons found after 30s — Shorts not in feed; captured initial state above",
+                in: app)
         }
 
         // ── DOWN 1 ── tab-bar → chip-bar (or content if no chip-bar focus)
@@ -112,13 +118,13 @@ final class TVShortsDownNavigationUITests: XCTestCase {
         }()
         XCTAssertFalse(
             shortsStillFocused,
-            "A Shorts button (home.shortsRow) still has focus after 3 DOWNs — DOWN does NOT escape the Shorts row. " +
-            "focused1=\(focused1) focused2=\(focused2) focused3=\(focused3)"
+            "A Shorts button (home.shortsRow) still has focus after 3 DOWNs — DOWN does NOT escape the Shorts row. "
+                + "focused1=\(focused1) focused2=\(focused2) focused3=\(focused3)"
         )
         XCTAssertTrue(
             anyFocused(prefix: "video.card."),
-            "No video.card.* gained focus after 3 DOWNs. " +
-            "focused1=\(focused1) focused2=\(focused2) focused3=\(focused3)"
+            "No video.card.* gained focus after 3 DOWNs. "
+                + "focused1=\(focused1) focused2=\(focused2) focused3=\(focused3)"
         )
     }
 }
@@ -127,4 +133,3 @@ private extension String {
     var nilIfEmpty: String? { isEmpty ? nil : self }
 }
 #endif
-

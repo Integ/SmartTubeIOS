@@ -16,7 +16,7 @@ public actor LocalSubscriptionFeedCache {
     // MARK: - TTL
 
     /// Cache lifetime — matches FreeTube's implicit refresh behaviour.
-    static let ttl: TimeInterval = 15 * 60   // 15 minutes
+    static let ttl: TimeInterval = 15 * 60  // 15 minutes
 
     // MARK: - State
 

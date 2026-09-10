@@ -45,7 +45,8 @@ extension ShortsEmbedPlayerViewModel {
             let cached = await VideoPreloadCache.shared.consume(videoId: newVideoId)
             let urls = cached.trackingURLs ?? nil
             self.tracker.setTrackingURLs(urls)
-            shortsLog.notice("[watchtime] trackingURLs resolved for \(newVideoId): \(urls != nil ? "account-bound" : "none")")
+            shortsLog.notice(
+                "[watchtime] trackingURLs resolved for \(newVideoId): \(urls != nil ? "account-bound" : "none")")
         }
     }
 
@@ -55,7 +56,9 @@ extension ShortsEmbedPlayerViewModel {
     /// `ShortsPlayerView.onDisappear` (Task 9).
     func saveProgress() {
         guard settings.historyState == .enabled, duration > 0 else {
-            shortsLog.debug("[watchtime] saveProgress skipped — historyState=\(self.settings.historyState.rawValue, privacy: .public) duration=\(self.duration, format: .fixed(precision: 1))s")
+            shortsLog.debug(
+                "[watchtime] saveProgress skipped — historyState=\(self.settings.historyState.rawValue, privacy: .public) duration=\(self.duration, format: .fixed(precision: 1))s"
+            )
             return
         }
         let pos = currentTime
@@ -66,4 +69,4 @@ extension ShortsEmbedPlayerViewModel {
         }
     }
 }
-#endif // !os(tvOS)
+#endif  // !os(tvOS)

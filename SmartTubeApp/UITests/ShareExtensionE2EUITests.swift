@@ -24,8 +24,8 @@ import XCTest
 //
 // Skips gracefully when network is unavailable or Safari UI cannot be navigated.
 
-private let kTestVideoURL  = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-private let kExtensionName = "SmartTube"   // CFBundleDisplayName in ShareExtension/Info.plist
+private let kTestVideoURL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+private let kExtensionName = "SmartTube"  // CFBundleDisplayName in ShareExtension/Info.plist
 
 final class ShareExtensionE2EUITests: XCTestCase {
 
@@ -36,14 +36,14 @@ final class ShareExtensionE2EUITests: XCTestCase {
 
     override func setUpWithError() throws {
         continueAfterFailure = false
-        safari    = XCUIApplication(bundleIdentifier: "com.apple.mobilesafari")
+        safari = XCUIApplication(bundleIdentifier: "com.apple.mobilesafari")
         smartTube = XCUIApplication()
     }
 
     override func tearDownWithError() throws {
         // Always return to SmartTube so the test runner can clean up.
         smartTube.activate()
-        safari    = nil
+        safari = nil
         smartTube = nil
     }
 
@@ -103,8 +103,8 @@ final class ShareExtensionE2EUITests: XCTestCase {
         let appOpened = smartTube.wait(for: .runningForeground, timeout: 15)
         guard appOpened else {
             try captureAndSkip(
-                "SmartTube did not come to the foreground after tapping the share extension — " +
-                "Share Extension infrastructure (enabled extension, network) not ready on this simulator clone.",
+                "SmartTube did not come to the foreground after tapping the share extension — "
+                    + "Share Extension infrastructure (enabled extension, network) not ready on this simulator clone.",
                 in: smartTube
             )
         }
@@ -112,15 +112,16 @@ final class ShareExtensionE2EUITests: XCTestCase {
         // 5. The video player must open.
         guard waitForPlayerToOpen(in: smartTube, timeout: 20) else {
             try captureAndSkip(
-                "Neither player.titleLabel nor tosPlayer.stateLabel appeared within 20 s — " +
-                "SmartTube opened but InnerTube may not have resolved the video (network unavailable)",
+                "Neither player.titleLabel nor tosPlayer.stateLabel appeared within 20 s — "
+                    + "SmartTube opened but InnerTube may not have resolved the video (network unavailable)",
                 in: smartTube
             )
         }
 
         let errorBanner = smartTube.otherElements["player.errorBanner"].firstMatch
         if errorBanner.exists {
-            try captureAndSkip("player.errorBanner appeared — YouTube network error on this simulator clone", in: smartTube)
+            try captureAndSkip(
+                "player.errorBanner appeared — YouTube network error on this simulator clone", in: smartTube)
         }
     }
 
@@ -139,7 +140,9 @@ final class ShareExtensionE2EUITests: XCTestCase {
         try tapExtension(named: kExtensionName)
 
         guard smartTube.wait(for: .runningForeground, timeout: 15) else {
-            try captureAndSkip("SmartTube did not come to the foreground — Share Extension infrastructure not ready on this simulator clone", in: smartTube)
+            try captureAndSkip(
+                "SmartTube did not come to the foreground — Share Extension infrastructure not ready on this simulator clone",
+                in: smartTube)
         }
 
         guard waitForPlayerToOpen(in: smartTube, timeout: 20) else {
@@ -154,7 +157,8 @@ final class ShareExtensionE2EUITests: XCTestCase {
             // test (player dismissed before backgrounding) is not met.
             let miniBar = miniPlayerBar(in: smartTube)
             guard miniBar.waitForExistence(timeout: 5) else {
-                try captureAndSkip("Player did not minimize after back tap — cannot verify pending ID consumption", in: smartTube)
+                try captureAndSkip(
+                    "Player did not minimize after back tap — cannot verify pending ID consumption", in: smartTube)
             }
         }
 
@@ -166,8 +170,9 @@ final class ShareExtensionE2EUITests: XCTestCase {
 
         // Player must NOT reopen — pending key was already consumed.
         guard !waitForPlayerToOpen(in: smartTube, timeout: 5) else {
-            try captureAndSkip("player title/state label reappeared after re-foregrounding — " +
-                          "pendingVideoID may not have been cleared or player did not fully dismiss", in: smartTube)
+            try captureAndSkip(
+                "player title/state label reappeared after re-foregrounding — "
+                    + "pendingVideoID may not have been cleared or player did not fully dismiss", in: smartTube)
         }
     }
 
@@ -186,7 +191,8 @@ final class ShareExtensionE2EUITests: XCTestCase {
             if urlButton.waitForExistence(timeout: 4) {
                 urlButton.tap()
             } else {
-                try captureAndSkip("Cannot locate Safari address bar — layout may differ on this OS version", in: safari)
+                try captureAndSkip(
+                    "Cannot locate Safari address bar — layout may differ on this OS version", in: safari)
             }
         }
 
@@ -211,7 +217,7 @@ final class ShareExtensionE2EUITests: XCTestCase {
         let candidates: [XCUIElement] = [
             safari.toolbars.buttons["Share"].firstMatch,
             safari.navigationBars.buttons["Share"].firstMatch,
-            safari.buttons["ShareButton"].firstMatch,           // iOS 26 bottom toolbar
+            safari.buttons["ShareButton"].firstMatch,  // iOS 26 bottom toolbar
             safari.buttons["Share"].firstMatch,
             safari.buttons["square.and.arrow.up"].firstMatch,  // SF Symbol name fallback
         ]
@@ -248,8 +254,8 @@ final class ShareExtensionE2EUITests: XCTestCase {
 
         guard extensionButton.waitForExistence(timeout: 5) else {
             try captureAndSkip(
-                "'\(name)' extension not visible in the share sheet. " +
-                "Open the share sheet manually on this simulator, tap 'More', and enable \(name).",
+                "'\(name)' extension not visible in the share sheet. "
+                    + "Open the share sheet manually on this simulator, tap 'More', and enable \(name).",
                 in: smartTube
             )
         }

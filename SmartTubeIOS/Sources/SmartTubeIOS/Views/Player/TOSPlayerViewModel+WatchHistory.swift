@@ -40,8 +40,9 @@ extension TOSPlayerViewModel {
         // empty), exactly like the very first transition() call in a fresh
         // PlaybackViewModel. We still go through transition() (rather than hand-rolling
         // session state) so cpn/videoId bookkeeping stays identical to the standard path.
-        let flush = tracker.transition(to: videoId, cpn: InnerTubeAPI.generateCPN(),
-                                       flushPosition: 0, flushDuration: 0)
+        let flush = tracker.transition(
+            to: videoId, cpn: InnerTubeAPI.generateCPN(),
+            flushPosition: 0, flushDuration: 0)
         Task { await flush() }
         tosLog.notice("[watchtime] session opened for \(self.videoId)")
 
@@ -72,7 +73,9 @@ extension TOSPlayerViewModel {
             tosLog.notice("[watchtime] trackingURLs resolved from cache: \(urls != nil ? "account-bound" : "none")")
             if let status = cached.nextInfo?.likeStatus {
                 self.likeDislike.setLikeStatus(status)
-                tosLog.notice("[likeDislike] seeded likeStatus=\(String(describing: status), privacy: .public) from cached nextInfo")
+                tosLog.notice(
+                    "[likeDislike] seeded likeStatus=\(String(describing: status), privacy: .public) from cached nextInfo"
+                )
             }
         }
     }
@@ -85,7 +88,9 @@ extension TOSPlayerViewModel {
     /// wrote one back, so progress was lost on every close.
     func saveProgress() {
         guard settings.historyState == .enabled, duration > 0 else {
-            tosLog.debug("[watchtime] saveProgress skipped — historyState=\(self.settings.historyState.rawValue, privacy: .public) duration=\(self.duration, format: .fixed(precision: 1))s")
+            tosLog.debug(
+                "[watchtime] saveProgress skipped — historyState=\(self.settings.historyState.rawValue, privacy: .public) duration=\(self.duration, format: .fixed(precision: 1))s"
+            )
             return
         }
         let pos = currentTime
@@ -102,4 +107,4 @@ extension TOSPlayerViewModel {
         }
     }
 }
-#endif // !os(tvOS)
+#endif  // !os(tvOS)

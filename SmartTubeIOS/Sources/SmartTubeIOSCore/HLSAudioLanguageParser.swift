@@ -28,10 +28,12 @@ public func parseHLSAudioLanguages(from manifest: String) -> [AudioTrack] {
     for line in lines {
         let trimmed = line.trimmingCharacters(in: .whitespaces)
         guard trimmed.hasPrefix("#EXT-X-STREAM-INF:"),
-              trimmed.contains("YT-EXT-AUDIO-CONTENT-ID=") else { continue }
+            trimmed.contains("YT-EXT-AUDIO-CONTENT-ID=")
+        else { continue }
 
         guard let contentID = extractQuotedHLSAttribute("YT-EXT-AUDIO-CONTENT-ID", from: trimmed),
-              !contentID.isEmpty, !seenContentIDs.contains(contentID) else { continue }
+            !contentID.isEmpty, !seenContentIDs.contains(contentID)
+        else { continue }
         seenContentIDs.insert(contentID)
 
         // Content ID format: "xx-XX.N" or "xx.N" → language code is everything before last "."
@@ -45,29 +47,33 @@ public func parseHLSAudioLanguages(from manifest: String) -> [AudioTrack] {
         // Decode YT-EXT-XTAGS (base64 protobuf) to check for acont=original vs dubbed-auto.
         let isOriginal: Bool
         if let xtags = extractQuotedHLSAttribute("YT-EXT-XTAGS", from: trimmed),
-           let padded = { () -> Data? in
-               let s = xtags + String(repeating: "=", count: (4 - xtags.count % 4) % 4)
-               return Data(base64Encoded: s)
-           }(),
-           let decoded = String(data: padded, encoding: .utf8)
-                       ?? String(data: padded, encoding: .isoLatin1) {
+            let padded = { () -> Data? in
+                let s = xtags + String(repeating: "=", count: (4 - xtags.count % 4) % 4)
+                return Data(base64Encoded: s)
+            }(),
+            let decoded = String(data: padded, encoding: .utf8)
+                ?? String(data: padded, encoding: .isoLatin1)
+        {
             isOriginal = decoded.contains("original") && !decoded.contains("dubbed")
         } else {
             isOriginal = false
         }
 
         let name = Locale.current.localizedString(forLanguageCode: langCode) ?? langCode
-        tracks.append(AudioTrack(id: contentID, name: name, languageCode: langCode,
-                                 isOriginal: isOriginal, contentID: contentID))
+        tracks.append(
+            AudioTrack(
+                id: contentID, name: name, languageCode: langCode,
+                isOriginal: isOriginal, contentID: contentID))
     }
 
     // If dubbed tracks were found but none is marked isOriginal, the original-audio
     // variants carry no YT-EXT-AUDIO-CONTENT-ID — add a synthetic "Original" entry.
     // contentID=nil signals the proxy to keep variants with no CONTENT-ID attribute.
     if !tracks.isEmpty && !tracks.contains(where: \.isOriginal) {
-        let synthetic = AudioTrack(id: "yt-original-audio", name: "Original",
-                                   languageCode: "original", isOriginal: true,
-                                   contentID: nil)
+        let synthetic = AudioTrack(
+            id: "yt-original-audio", name: "Original",
+            languageCode: "original", isOriginal: true,
+            contentID: nil)
         tracks.insert(synthetic, at: 0)
     }
 

@@ -31,7 +31,8 @@ final class FallbackVideoPlaybackUITests: XCTestCase {
 
     private static var sharedApp: XCUIApplication!
     private static var skipAllTests = false
-    private static let skipReason = "Player did not open or play/pause button never became enabled within 50 s — network unavailable or fallback path broken"
+    private static let skipReason =
+        "Player did not open or play/pause button never became enabled within 50 s — network unavailable or fallback path broken"
 
     // MARK: - Lifecycle
 
@@ -41,7 +42,7 @@ final class FallbackVideoPlaybackUITests: XCTestCase {
         app.launchArguments = [
             "--uitesting",
             "--uitesting-disable-tos-player-on-ios",
-            "--uitesting-deeplink-video=\(fallbackVideoID)"
+            "--uitesting-deeplink-video=\(fallbackVideoID)",
         ]
         app.launch()
         sharedApp = app
@@ -107,8 +108,9 @@ final class FallbackVideoPlaybackUITests: XCTestCase {
     /// Returns `true` if the button became enabled within the deadline.
     private func waitForPlayPauseEnabled(timeout: TimeInterval = 30) -> Bool {
         let enabledPredicate = NSPredicate(format: "enabled == true")
-        let expectation = XCTNSPredicateExpectation(predicate: enabledPredicate,
-                                                    object: playPauseButton)
+        let expectation = XCTNSPredicateExpectation(
+            predicate: enabledPredicate,
+            object: playPauseButton)
         return XCTWaiter().wait(for: [expectation], timeout: timeout) == .completed
     }
 
@@ -134,13 +136,15 @@ final class FallbackVideoPlaybackUITests: XCTestCase {
             // In shared-state the class setUp already verified the fallback completed.
             // If we can't confirm the button is enabled here it means the video is
             // rebuffering — skip gracefully rather than producing a false failure.
-            try captureAndSkip("play button not enabled within 15 s — video may be rebuffering (not a task #92 regression; class setUp confirmed fallback completed)", in: app)
+            try captureAndSkip(
+                "play button not enabled within 15 s — video may be rebuffering (not a task #92 regression; class setUp confirmed fallback completed)",
+                in: app)
         }
 
         XCTAssertTrue(
             playPauseButton.isHittable,
-            "player.playPauseButton is enabled but not hittable — controls may be at 30% opacity (isLoading still true in UI). " +
-            "Video: \(Self.fallbackVideoID)"
+            "player.playPauseButton is enabled but not hittable — controls may be at 30% opacity (isLoading still true in UI). "
+                + "Video: \(Self.fallbackVideoID)"
         )
     }
 
@@ -151,20 +155,23 @@ final class FallbackVideoPlaybackUITests: XCTestCase {
 
         showControls()
         guard waitForPlayPauseEnabled(timeout: 15) else {
-            try captureAndSkip("player.playPauseButton did not become enabled within 15 s — network slow or fallback stalled", in: app)
+            try captureAndSkip(
+                "player.playPauseButton did not become enabled within 15 s — network slow or fallback stalled", in: app)
         }
 
         playPauseButton.tap()
         Thread.sleep(forTimeInterval: 0.5)
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must still be running after tapping play/pause following the Android fallback")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must still be running after tapping play/pause following the Android fallback")
 
         showControls()
         if playPauseButton.waitForExistence(timeout: 5) {
             playPauseButton.tap()
         }
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must still be running after second play/pause tap")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must still be running after second play/pause tap")
     }
 
     /// Confirms no persistent loading spinner is present after fallback playback
@@ -179,9 +186,10 @@ final class FallbackVideoPlaybackUITests: XCTestCase {
         // mean isLoading is permanently true: the task #92 regression.
         Thread.sleep(forTimeInterval: 0.3)
         let spinners = app.activityIndicators
-        XCTAssertEqual(spinners.count, 0,
-                       "Expected 0 activity indicators after fallback playback starts, found \(spinners.count). " +
-                       "The loading spinner may still be present — regression of task #92.")
+        XCTAssertEqual(
+            spinners.count, 0,
+            "Expected 0 activity indicators after fallback playback starts, found \(spinners.count). "
+                + "The loading spinner may still be present — regression of task #92.")
     }
 
     /// Confirms no error banner appeared during the fallback playback session.
@@ -209,8 +217,8 @@ final class FallbackVideoPlaybackUITests: XCTestCase {
         let errorBanner = app.otherElements["player.errorBanner"].firstMatch
         XCTAssertFalse(
             errorBanner.exists,
-            "player.errorBanner appeared during playback of '\(videoTitle)' (\(Self.fallbackVideoID)) — " +
-            "PlaybackViewModel.error was set. The Android-client fallback may not be working."
+            "player.errorBanner appeared during playback of '\(videoTitle)' (\(Self.fallbackVideoID)) — "
+                + "PlaybackViewModel.error was set. The Android-client fallback may not be working."
         )
 
         XCTAssertFalse(

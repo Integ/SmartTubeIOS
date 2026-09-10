@@ -83,8 +83,8 @@ final class TVWKHLSReplayRegressionUITests: XCTestCase {
             )
         }
 
-        let cardID = firstCard.identifier                              // "video.card.<videoId>"
-        let videoId = String(cardID.dropFirst("video.card.".count))   // "<videoId>"
+        let cardID = firstCard.identifier  // "video.card.<videoId>"
+        let videoId = String(cardID.dropFirst("video.card.".count))  // "<videoId>"
 
         // Short prewarm wait on tvOS — Darwin notification may not always fire;
         // we don't rely on the specific card being pre-warmed since cycles
@@ -122,7 +122,9 @@ final class TVWKHLSReplayRegressionUITests: XCTestCase {
             if readyResult == .completed {
                 print("[WKHLSReplay] cycle \(cycle)  \(label)  \(String(format: "%.2f", elapsed))s")
             } else {
-                print("[WKHLSReplay] cycle \(cycle)  \(label)  \(String(format: "%.2f", elapsed))s (readyToPlay not received within 35 s)")
+                print(
+                    "[WKHLSReplay] cycle \(cycle)  \(label)  \(String(format: "%.2f", elapsed))s (readyToPlay not received within 35 s)"
+                )
             }
             replayTimings.append((cycle: cycle, elapsed: elapsed))
 
@@ -189,7 +191,8 @@ final class TVWKHLSReplayRegressionUITests: XCTestCase {
             print("[WKHLSReplay] cycle \(cycle): stop complete — wkHLS cache evicted")
         }
 
-        let timingSummary = replayTimings
+        let timingSummary =
+            replayTimings
             .map { "c\($0.cycle)=\(String(format: "%.2f", $0.elapsed))s" }
             .joined(separator: " ")
         print("[WKHLSReplay] results: \(timingSummary)")
@@ -202,8 +205,9 @@ final class TVWKHLSReplayRegressionUITests: XCTestCase {
     private func firstNonShortVideoCard(timeout: TimeInterval) -> XCUIElement? {
         let predicate = NSPredicate(format: "identifier BEGINSWITH 'video.card.'")
         let cards = app.descendants(matching: .any).matching(predicate)
-        let any = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count > 0"),
-                                            object: cards)
+        let any = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "count > 0"),
+            object: cards)
         guard XCTWaiter().wait(for: [any], timeout: timeout) == .completed else {
             return nil
         }

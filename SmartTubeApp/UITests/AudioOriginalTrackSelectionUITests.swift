@@ -63,8 +63,8 @@ final class AudioOriginalTrackSelectionUITests: XCTestCase {
 
         guard let audioTrackRow = openMoreMenuWithAudioTrackRow(maxVideos: 8) else {
             try captureAndSkip(
-                "No video with multiple audio tracks found in the first 8 Home feed videos. " +
-                "Re-run when dubbed videos are present on the feed.",
+                "No video with multiple audio tracks found in the first 8 Home feed videos. "
+                    + "Re-run when dubbed videos are present on the feed.",
                 in: app
             )
         }
@@ -132,7 +132,8 @@ final class AudioOriginalTrackSelectionUITests: XCTestCase {
 
             let moreButton = app.buttons["player.moreButton"].firstMatch
             guard moreButton.waitForExistence(timeout: 5), moreButton.frame.width > 0 else {
-                navigateBack(); continue
+                navigateBack()
+                continue
             }
             moreButton.tap()
 

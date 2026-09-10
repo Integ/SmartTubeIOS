@@ -27,7 +27,7 @@ public final class SearchViewModel {
     private static let recommendedTerms: [String] = [
         "trending videos", "music 2025", "cooking recipes", "travel vlog",
         "programming tutorial", "workout", "movie trailer", "lofi hip hop",
-        "documentary", "gaming highlights"
+        "documentary", "gaming highlights",
     ]
 
     /// History entries that match the current query (case-insensitive). Returns
@@ -157,18 +157,20 @@ public final class SearchViewModel {
     // MARK: - Feed hide handling
 
     private func observeFeedHideNotifications() {
-        hideObserverTasks.append(Task { [weak self] in
-            for await note in NotificationCenter.default.notifications(named: .hideVideoFromFeed) {
-                guard let self, let videoId = note.userInfo?["videoId"] as? String else { continue }
-                self.results.removeAll { $0.id == videoId }
-            }
-        })
-        hideObserverTasks.append(Task { [weak self] in
-            for await note in NotificationCenter.default.notifications(named: .hideChannelFromFeed) {
-                guard let self, let channelId = note.userInfo?["channelId"] as? String else { continue }
-                self.results.removeAll { $0.channelId == channelId }
-            }
-        })
+        hideObserverTasks.append(
+            Task { [weak self] in
+                for await note in NotificationCenter.default.notifications(named: .hideVideoFromFeed) {
+                    guard let self, let videoId = note.userInfo?["videoId"] as? String else { continue }
+                    self.results.removeAll { $0.id == videoId }
+                }
+            })
+        hideObserverTasks.append(
+            Task { [weak self] in
+                for await note in NotificationCenter.default.notifications(named: .hideChannelFromFeed) {
+                    guard let self, let channelId = note.userInfo?["channelId"] as? String else { continue }
+                    self.results.removeAll { $0.channelId == channelId }
+                }
+            })
     }
 }
 
@@ -202,7 +204,7 @@ public final class ChannelViewModel {
         do {
             let (ch, group) = try await api.fetchChannel(channelId: channelId)
             channel = ch
-            videos  = group.videos
+            videos = group.videos
             nextPageToken = group.nextPageToken
         } catch {
             self.error = error
@@ -229,17 +231,19 @@ public final class ChannelViewModel {
     // MARK: - Feed hide handling
 
     private func observeFeedHideNotifications() {
-        hideObserverTasks.append(Task { [weak self] in
-            for await note in NotificationCenter.default.notifications(named: .hideVideoFromFeed) {
-                guard let self, let videoId = note.userInfo?["videoId"] as? String else { continue }
-                self.videos.removeAll { $0.id == videoId }
-            }
-        })
-        hideObserverTasks.append(Task { [weak self] in
-            for await note in NotificationCenter.default.notifications(named: .hideChannelFromFeed) {
-                guard let self, let channelId = note.userInfo?["channelId"] as? String else { continue }
-                self.videos.removeAll { $0.channelId == channelId }
-            }
-        })
+        hideObserverTasks.append(
+            Task { [weak self] in
+                for await note in NotificationCenter.default.notifications(named: .hideVideoFromFeed) {
+                    guard let self, let videoId = note.userInfo?["videoId"] as? String else { continue }
+                    self.videos.removeAll { $0.id == videoId }
+                }
+            })
+        hideObserverTasks.append(
+            Task { [weak self] in
+                for await note in NotificationCenter.default.notifications(named: .hideChannelFromFeed) {
+                    guard let self, let channelId = note.userInfo?["channelId"] as? String else { continue }
+                    self.videos.removeAll { $0.channelId == channelId }
+                }
+            })
     }
 }

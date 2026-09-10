@@ -59,8 +59,9 @@ final class CategoryChipHTTP400UITests: XCTestCase {
         }
         // iPad iOS 18 sidebar: tab items render as buttons outside the tab bar.
         let sidebarButton = app.buttons[label].firstMatch
-        XCTAssertTrue(sidebarButton.waitForExistence(timeout: timeout),
-                      "'\(label)' navigation item not found in tab bar or sidebar")
+        XCTAssertTrue(
+            sidebarButton.waitForExistence(timeout: timeout),
+            "'\(label)' navigation item not found in tab bar or sidebar")
         sidebarButton.tap()
     }
 
@@ -90,8 +91,8 @@ final class CategoryChipHTTP400UITests: XCTestCase {
             let errorAlert = app.alerts["Error"]
             XCTAssertFalse(
                 errorAlert.exists,
-                "An 'Error' alert appeared after tapping the '\(chipName)' chip — " +
-                "this indicates an HTTP error was returned for that category's feed request."
+                "An 'Error' alert appeared after tapping the '\(chipName)' chip — "
+                    + "this indicates an HTTP error was returned for that category's feed request."
             )
             // Dismiss if present so remaining chips can still run.
             if errorAlert.exists {
@@ -121,7 +122,7 @@ final class CategoryChipHTTP400UITests: XCTestCase {
         // gesture reliably scrolls the ScrollView rather than landing on a chip
         // button and inadvertently triggering a section change.
         let rightEdge = app.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.09))
-        let leftEdge  = app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.09))
+        let leftEdge = app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.09))
 
         // Scroll until the chip is fully inside the visible screen bounds.
         for _ in 0..<8 {
@@ -149,4 +150,3 @@ final class CategoryChipHTTP400UITests: XCTestCase {
         Thread.sleep(forTimeInterval: 5)
     }
 }
-

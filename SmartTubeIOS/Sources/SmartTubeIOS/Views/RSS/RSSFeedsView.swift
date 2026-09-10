@@ -1,5 +1,5 @@
-import SwiftUI
 import SmartTubeIOSCore
+import SwiftUI
 
 // MARK: - RSSFeedsView
 
@@ -27,12 +27,16 @@ struct RSSFeedsView: View {
                 Text("RSS Feeds")
                     .font(.headline)
                 Spacer()
-                Button { showManageFeeds = true } label: {
+                Button {
+                    showManageFeeds = true
+                } label: {
                     Image(systemName: "list.bullet.indent")
                 }
                 .accessibilityLabel("Manage RSS Feeds")
                 .accessibilityIdentifier("rss.manageFeedsButton")
-                Button { showAddFeed = true } label: {
+                Button {
+                    showAddFeed = true
+                } label: {
                     Image(systemName: "plus")
                 }
                 .accessibilityLabel("Add RSS Feed")

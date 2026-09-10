@@ -62,7 +62,7 @@ final class BotGuardWVAdaptiveUITests: XCTestCase {
         app.launchArguments = [
             "--uitesting",
             "--uitesting-disable-tos-player-on-ios",
-            "--uitesting-inject-recommended-ids=\(injectedIDs)"
+            "--uitesting-inject-recommended-ids=\(injectedIDs)",
         ]
         app.launch()
         sharedApp = app
@@ -113,8 +113,9 @@ final class BotGuardWVAdaptiveUITests: XCTestCase {
         // BotGuardWebViewRunner WAA pipeline: ~15 s; WEB client attempt: ~2 s.
         Thread.sleep(forTimeInterval: 50)
 
-        XCTAssertEqual(app.state, .runningForeground,
-                       "[\(id)] App crashed during BotGuard pipeline")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "[\(id)] App crashed during BotGuard pipeline")
 
         // Navigate back for next test.
         let back = app.buttons["player.backButton"].firstMatch
@@ -124,12 +125,12 @@ final class BotGuardWVAdaptiveUITests: XCTestCase {
     // MARK: - Tests (one per injected video, in inject order)
 
     func test00_LSMQ3U1Thzw() { playVideo(at: 0, id: "LSMQ3U1Thzw") }
-    func test01_Dy9ki9Q5nXs()  { playVideo(at: 1, id: "Dy9ki9Q5nXs") }
-    func test02_Wu8xNx4njoM()  { playVideo(at: 2, id: "Wu8xNx4njoM") }
-    func test03_m1WGX1uGvU()   { playVideo(at: 3, id: "m1WGX1-uGvU") }
-    func test04_JhCjw57u8mQ()  { playVideo(at: 4, id: "JhCjw57u8mQ") }
-    func test05_dQw4w9WgXcQ()  { playVideo(at: 5, id: "dQw4w9WgXcQ") }
-    func test06_9bZkp7q19f0()  { playVideo(at: 6, id: "9bZkp7q19f0") }
-    func test07_kJQP7kiw5Fk()  { playVideo(at: 7, id: "kJQP7kiw5Fk") }
-    func test08_OPf0YbXqDm0()  { playVideo(at: 8, id: "OPf0YbXqDm0") }
+    func test01_Dy9ki9Q5nXs() { playVideo(at: 1, id: "Dy9ki9Q5nXs") }
+    func test02_Wu8xNx4njoM() { playVideo(at: 2, id: "Wu8xNx4njoM") }
+    func test03_m1WGX1uGvU() { playVideo(at: 3, id: "m1WGX1-uGvU") }
+    func test04_JhCjw57u8mQ() { playVideo(at: 4, id: "JhCjw57u8mQ") }
+    func test05_dQw4w9WgXcQ() { playVideo(at: 5, id: "dQw4w9WgXcQ") }
+    func test06_9bZkp7q19f0() { playVideo(at: 6, id: "9bZkp7q19f0") }
+    func test07_kJQP7kiw5Fk() { playVideo(at: 7, id: "kJQP7kiw5Fk") }
+    func test08_OPf0YbXqDm0() { playVideo(at: 8, id: "OPf0YbXqDm0") }
 }

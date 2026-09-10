@@ -1,4 +1,5 @@
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - SponsorBlockDecisionEngine unit tests
@@ -10,7 +11,9 @@ import Testing
 @Suite("SponsorBlockDecisionEngine")
 struct SponsorBlockDecisionEngineTests {
 
-    private func settings(_ actions: [SponsorSegment.Category: AppSettings.SponsorBlockAction], enabled: Bool = true) -> AppSettings {
+    private func settings(
+        _ actions: [SponsorSegment.Category: AppSettings.SponsorBlockAction], enabled: Bool = true
+    ) -> AppSettings {
         var s = AppSettings()
         s.sponsorBlockEnabled = enabled
         s.sponsorBlockActions = actions

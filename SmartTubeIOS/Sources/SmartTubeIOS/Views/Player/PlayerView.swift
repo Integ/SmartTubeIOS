@@ -1,12 +1,12 @@
-import SwiftUI
 import AVFoundation
 import AVKit
 import SmartTubeIOSCore
+import SwiftUI
 import os
+
 #if canImport(UIKit)
 import UIKit
 #endif
-
 
 // MARK: - PlayerView
 //
@@ -124,11 +124,9 @@ public struct PlayerView: View {
         bodyWithLifecycleModifiers
     }
 
-
     // MARK: - Lifecycle + full player body
     // bodyWithLifecycleModifiers, makeControlsOverlay
     // → PlayerView+Lifecycle.swift
-
 
     // MARK: - Control elements
     // PlayerControlsOverlay (playPauseButton, seekButton, progressBar, etc.)

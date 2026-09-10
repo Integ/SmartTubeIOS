@@ -18,7 +18,9 @@ final class HomeShortsUITests: XCTestCase {
     override class func setUp() {
         super.setUp()
         sharedApp = XCUIApplication()
-        sharedApp.launchArguments += ["--uitesting", "--uitesting-reset-settings", "--uitesting-enable-shorts", "--uitesting-signed-in"]
+        sharedApp.launchArguments += [
+            "--uitesting", "--uitesting-reset-settings", "--uitesting-enable-shorts", "--uitesting-signed-in",
+        ]
         sharedApp.launch()
     }
 
@@ -52,10 +54,10 @@ final class HomeShortsUITests: XCTestCase {
 
     /// Scrolls the chip bar until the Shorts chip is fully visible on screen.
     private func scrollToShortsChip() {
-        let chip        = app.buttons["Shorts"]
+        let chip = app.buttons["Shorts"]
         let screenWidth = app.windows.firstMatch.frame.width
-        let rightEdge   = app.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: 0.09))
-        let leftEdge    = app.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.09))
+        let rightEdge = app.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: 0.09))
+        let leftEdge = app.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.09))
         for _ in 0..<6 {
             let frame = chip.frame
             guard frame.origin.x < 4 || frame.maxX > screenWidth - 4 else { break }
@@ -73,7 +75,7 @@ final class HomeShortsUITests: XCTestCase {
         let chipBar = app.scrollViews["home.chipBar"]
         guard chipBar.waitForExistence(timeout: 5) else { return }
         let homeChip = chipBar.buttons["Home"].firstMatch
-        let leftEdge  = app.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.09))
+        let leftEdge = app.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.09))
         let rightEdge = app.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: 0.09))
         for _ in 0..<6 {
             guard homeChip.frame.origin.x < 0 else { break }
@@ -127,7 +129,8 @@ final class HomeShortsUITests: XCTestCase {
         scrollToShortsChip()
         shortsChip.tap()
 
-        let contentOrEmpty = app.scrollViews.firstMatch.waitForExistence(timeout: 5)
+        let contentOrEmpty =
+            app.scrollViews.firstMatch.waitForExistence(timeout: 5)
             || app.staticTexts["Nothing here yet"].waitForExistence(timeout: 5)
             || app.staticTexts["Sign in to see your library"].waitForExistence(timeout: 5)
 
@@ -172,12 +175,14 @@ final class HomeShortsUITests: XCTestCase {
 
         firstCard.press(forDuration: 1.2)
 
-        let shareButton  = app.buttons["Share"].firstMatch
-        let addToQueue   = app.buttons["Add to Queue"].firstMatch
-        let menuAppeared = shareButton.waitForExistence(timeout: 4)
-                       || addToQueue.waitForExistence(timeout: 4)
+        let shareButton = app.buttons["Share"].firstMatch
+        let addToQueue = app.buttons["Add to Queue"].firstMatch
+        let menuAppeared =
+            shareButton.waitForExistence(timeout: 4)
+            || addToQueue.waitForExistence(timeout: 4)
 
-        XCTAssertTrue(menuAppeared,
+        XCTAssertTrue(
+            menuAppeared,
             "Long-pressing a Short card must show a context menu with Share or Add to Queue")
     }
 
@@ -207,13 +212,18 @@ final class HomeShortsUITests: XCTestCase {
         // The Shorts chip renders its vertical list via ShortsRowSection, whose
         // cards carry "shorts.card.*" identifiers (not "video.card.*", which is
         // used by the regular grid/row sections for other chips).
-        let hasContent = sectionContainer.descendants(matching: .any)
-                             .matching(NSPredicate(format: "identifier BEGINSWITH 'video.card.' OR identifier BEGINSWITH 'shorts.card.'"))
-                             .count > 0
-        let hasEmpty   = app.staticTexts["Nothing here yet"].exists
-                      || app.staticTexts["Sign in to see your library"].exists
+        let hasContent =
+            sectionContainer.descendants(matching: .any)
+            .matching(
+                NSPredicate(format: "identifier BEGINSWITH 'video.card.' OR identifier BEGINSWITH 'shorts.card.'")
+            )
+            .count > 0
+        let hasEmpty =
+            app.staticTexts["Nothing here yet"].exists
+            || app.staticTexts["Sign in to see your library"].exists
 
-        XCTAssertTrue(hasContent || hasEmpty,
+        XCTAssertTrue(
+            hasContent || hasEmpty,
             "Shorts chip must show content or empty state immediately — not require Settings nav")
     }
 
@@ -231,7 +241,8 @@ final class HomeShortsUITests: XCTestCase {
 
         let eitherPredicate = NSPredicate { [weak self] _, _ in
             guard let app = self?.app else { return false }
-            let hasCards = app.descendants(matching: .any)
+            let hasCards =
+                app.descendants(matching: .any)
                 .matching(NSPredicate(format: "identifier BEGINSWITH 'video.card.'"))
                 .count > 0
             let hasEmpty = app.staticTexts["Nothing here yet"].exists
@@ -242,14 +253,15 @@ final class HomeShortsUITests: XCTestCase {
 
         guard result == .completed else {
             try captureAndSkip(
-                "Neither Shorts cards nor empty state appeared in 60 s — " +
-                "network unavailable or fetchShorts() is hanging. Skipping.",
+                "Neither Shorts cards nor empty state appeared in 60 s — "
+                    + "network unavailable or fetchShorts() is hanging. Skipping.",
                 in: app
             )
         }
 
         if app.staticTexts["Nothing here yet"].exists {
-            let hasCards = app.descendants(matching: .any)
+            let hasCards =
+                app.descendants(matching: .any)
                 .matching(NSPredicate(format: "identifier BEGINSWITH 'video.card.'"))
                 .count > 0
             if !hasCards {
@@ -261,8 +273,8 @@ final class HomeShortsUITests: XCTestCase {
             .matching(NSPredicate(format: "identifier BEGINSWITH 'video.card.'"))
         XCTAssertGreaterThan(
             videoCards.count, 0,
-            "Shorts chip on cold launch showed 0 video.card.* — " +
-            "fetchShorts() regression #96 may be returning HTTP 400."
+            "Shorts chip on cold launch showed 0 video.card.* — "
+                + "fetchShorts() regression #96 may be returning HTTP 400."
         )
     }
 
@@ -279,8 +291,8 @@ final class HomeShortsUITests: XCTestCase {
         let shortsRow = app.scrollViews["home.shortsRow"]
         guard shortsRow.waitForExistence(timeout: 15) else {
             try captureAndSkip(
-                "home.shortsRow not found — fetchShorts() likely returned 0 videos " +
-                "(FEshorts API flakiness). Skipping rather than failing.",
+                "home.shortsRow not found — fetchShorts() likely returned 0 videos "
+                    + "(FEshorts API flakiness). Skipping rather than failing.",
                 in: app
             )
         }

@@ -1,9 +1,10 @@
 import AVFoundation
+import SmartTubeIOSCore
 import os
+
 #if canImport(UIKit)
 import MediaPlayer
 #endif
-import SmartTubeIOSCore
 
 private let playerLog = CrashlyticsLogger(category: "Player")
 
@@ -58,7 +59,9 @@ extension PlaybackViewModel {
                 // blocking the end-of-video / autoplay-next flow (crash log confirmed
                 // via Crashlytics: stall #1–4 at t=15s for a 15.3 s video).
                 let nearEnd = self.duration > 0 && self.currentTime >= self.duration - 1.0
-                let playerWentSilent = newRate == 0 && self.isPlaying && !self.isSwappingItem && !self.isHandlingAudioInterruption && !nearEnd
+                let playerWentSilent =
+                    newRate == 0 && self.isPlaying && !self.isSwappingItem && !self.isHandlingAudioInterruption
+                    && !nearEnd
                 if playerWentSilent {
                     self.isPlaying = false
                     playerLog.notice("[rateObserver] player.rate→0 while isPlaying=true — syncing isPlaying=false")
@@ -68,15 +71,20 @@ extension PlaybackViewModel {
                     let stallError = NSError(
                         domain: "SmartTube.PlaybackStall",
                         code: 1,
-                        userInfo: [NSLocalizedDescriptionKey: "player.rate→0 while isPlaying=true at t=\(t)s (stall #\(self.stallCount))"]
+                        userInfo: [
+                            NSLocalizedDescriptionKey:
+                                "player.rate→0 while isPlaying=true at t=\(t)s (stall #\(self.stallCount))"
+                        ]
                     )
-                    playerLog.recordNonFatal(stallError, userInfo: [
-                        "video_id":       self.currentVideo?.id ?? "unknown",
-                        "stall_at_time":  String(t),
-                        "stall_count":    String(self.stallCount),
-                        "video_duration": String(Int(self.duration)),
-                        "stall_trigger":  "rateObserver"
-                    ])
+                    playerLog.recordNonFatal(
+                        stallError,
+                        userInfo: [
+                            "video_id": self.currentVideo?.id ?? "unknown",
+                            "stall_at_time": String(t),
+                            "stall_count": String(self.stallCount),
+                            "video_duration": String(Int(self.duration)),
+                            "stall_trigger": "rateObserver",
+                        ])
                     #if canImport(UIKit)
                     self.updateNowPlayingPlayback()
                     #endif
@@ -96,21 +104,30 @@ extension PlaybackViewModel {
                         // another wasted seek. Guard on exhaustiveRetryTask == nil to avoid
                         // launching duplicate retries if further stalls fire during retry.
                         if let video = self.currentVideo {
-                            playerLog.notice("[rateObserver] rapid stall loop — \(recoveryCount) stalls in \(Int(elapsed))s — escalating to exhaustiveRetry")
+                            playerLog.notice(
+                                "[rateObserver] rapid stall loop — \(recoveryCount) stalls in \(Int(elapsed))s — escalating to exhaustiveRetry"
+                            )
                             let loopError = NSError(
                                 domain: "SmartTube.PlaybackStall",
                                 code: 2,
-                                userInfo: [NSLocalizedDescriptionKey: "Stall loop \(recoveryCount)× in \(Int(elapsed))s — format unrecoverable, escalating"]
+                                userInfo: [
+                                    NSLocalizedDescriptionKey:
+                                        "Stall loop \(recoveryCount)× in \(Int(elapsed))s — format unrecoverable, escalating"
+                                ]
                             )
-                            self.exhaustiveRetryTask = Task { await self.exhaustiveRetry(video: video, originalError: loopError) }
+                            self.exhaustiveRetryTask = Task {
+                                await self.exhaustiveRetry(video: video, originalError: loopError)
+                            }
                         }
                     } else if recoveryCount <= 3 {
                         Task { @MainActor [weak self] in
                             try? await Task.sleep(nanoseconds: 2_000_000_000)
                             guard let self, !self.isPlaying, self.player.rate == 0,
-                                  !self.isQualityChangePending, !self.isSwappingItem else { return }
+                                !self.isQualityChangePending, !self.isSwappingItem
+                            else { return }
                             let seekT = self.currentTime
-                            playerLog.notice("[rateObserver] recovery#\(recoveryCount): seeking to \(seekT)s to flush pipeline")
+                            playerLog.notice(
+                                "[rateObserver] recovery#\(recoveryCount): seeking to \(seekT)s to flush pipeline")
                             self.player.seek(
                                 to: CMTime(seconds: seekT, preferredTimescale: 600),
                                 toleranceBefore: .zero,
@@ -120,7 +137,8 @@ extension PlaybackViewModel {
                                     guard let self, !self.isPlaying, self.player.rate == 0 else { return }
                                     self.player.rate = Float(self.settings.playbackSpeed)
                                     self.isPlaying = true
-                                    playerLog.notice("[rateObserver] recovery#\(recoveryCount): rate restored, isPlaying=true")
+                                    playerLog.notice(
+                                        "[rateObserver] recovery#\(recoveryCount): rate restored, isPlaying=true")
                                 }
                             }
                         }

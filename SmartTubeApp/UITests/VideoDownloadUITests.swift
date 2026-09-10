@@ -86,7 +86,8 @@ final class VideoDownloadUITests: XCTestCase {
             // queue is cleared — without this the daemon keeps burning CPU on
             // queued-but-deleted assets.
             let photosSqlite = base.appendingPathComponent("PhotoData/Photos.sqlite")
-            let syndLib = base.appendingPathComponent("../Library/Photos/Libraries/Syndication.photoslibrary/database/Photos.sqlite")
+            let syndLib = base.appendingPathComponent(
+                "../Library/Photos/Libraries/Syndication.photoslibrary/database/Photos.sqlite")
             for db in [photosSqlite, syndLib] {
                 for suffix in ["", "-wal", "-shm"] {
                     let f = db.deletingPathExtension().appendingPathExtension("sqlite\(suffix)")
@@ -187,7 +188,8 @@ final class VideoDownloadUITests: XCTestCase {
         }
         let errorBanner = app.otherElements["player.errorBanner"].firstMatch
         guard !errorBanner.exists else {
-            try captureAndSkip("player.errorBanner visible — video inaccessible or requires auth on this simulator", in: app)
+            try captureAndSkip(
+                "player.errorBanner visible — video inaccessible or requires auth on this simulator", in: app)
         }
 
         // Give the player a moment to buffer before interacting.
@@ -196,7 +198,8 @@ final class VideoDownloadUITests: XCTestCase {
         showControls()
 
         guard openMoreMenu() else {
-            try captureAndSkip("player.moreButton not found — controls may not have appeared (timing-dependent)", in: app)
+            try captureAndSkip(
+                "player.moreButton not found — controls may not have appeared (timing-dependent)", in: app)
         }
 
         // The download button may be below the fold in the scrollable menu sheet.
@@ -215,12 +218,14 @@ final class VideoDownloadUITests: XCTestCase {
         // Wait for the completion alert — allow up to 90 s for real CDN download.
         // The interruption monitor handles the Photos permission dialog mid-wait.
         guard let alert = waitForDownloadAlert(timeout: 90) else {
-            try captureAndSkip("No download completion alert within 90 s — network or CDN unavailable in this environment", in: app)
+            try captureAndSkip(
+                "No download completion alert within 90 s — network or CDN unavailable in this environment", in: app)
         }
 
         // Alert must indicate success ("Saved to Gallery") not failure.
         guard alert.label.contains("Gallery") || alert.label.contains("Saved") else {
-            try captureAndSkip("Download failed (network/CDN unavailable or content restricted) — got: \(alert.label)", in: app)
+            try captureAndSkip(
+                "Download failed (network/CDN unavailable or content restricted) — got: \(alert.label)", in: app)
         }
 
         dismissAlert()
@@ -275,7 +280,8 @@ final class VideoDownloadUITests: XCTestCase {
         // Wait up to 40 s for any alert to appear, then verify it's the right one.
         let anyAlert = app.alerts.firstMatch
         guard anyAlert.waitForExistence(timeout: 40) else {
-            try captureAndSkip("No download completion alert within 40 s — network or CDN unavailable in this environment", in: app)
+            try captureAndSkip(
+                "No download completion alert within 40 s — network or CDN unavailable in this environment", in: app)
         }
 
         let alertLabel = anyAlert.label

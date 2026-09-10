@@ -17,14 +17,14 @@ public enum ShortsEmbedURL {
     public static func embedURL(videoId: String, startTime: Double = 0) -> URL {
         var comps = URLComponents(string: "https://www.youtube.com/embed/\(videoId)")!
         comps.queryItems = [
-            URLQueryItem(name: "autoplay",       value: "1"),
-            URLQueryItem(name: "mute",           value: "1"),
-            URLQueryItem(name: "controls",       value: "0"),
-            URLQueryItem(name: "playsinline",    value: "1"),
-            URLQueryItem(name: "rel",            value: "0"),
+            URLQueryItem(name: "autoplay", value: "1"),
+            URLQueryItem(name: "mute", value: "1"),
+            URLQueryItem(name: "controls", value: "0"),
+            URLQueryItem(name: "playsinline", value: "1"),
+            URLQueryItem(name: "rel", value: "0"),
             URLQueryItem(name: "iv_load_policy", value: "3"),
-            URLQueryItem(name: "start",          value: "\(Int(startTime))"),
-            URLQueryItem(name: "origin",         value: "https://www.example.com"),
+            URLQueryItem(name: "start", value: "\(Int(startTime))"),
+            URLQueryItem(name: "origin", value: "https://www.example.com"),
         ]
         return comps.url!
     }

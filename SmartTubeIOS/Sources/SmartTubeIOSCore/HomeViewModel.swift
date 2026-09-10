@@ -47,8 +47,9 @@ public final class HomeViewModel {
     // MARK: - Shelf definitions (in display order)
 
     public static let shelfSections: [BrowseSection] = [
-        BrowseSection(id: BrowseSection.SectionType.home.rawValue,          title: "Recommended",   type: .home),
-        BrowseSection(id: BrowseSection.SectionType.subscriptions.rawValue, title: "Subscriptions", type: .subscriptions),
+        BrowseSection(id: BrowseSection.SectionType.home.rawValue, title: "Recommended", type: .home),
+        BrowseSection(
+            id: BrowseSection.SectionType.subscriptions.rawValue, title: "Subscriptions", type: .subscriptions),
     ]
 
     /// Number of recommended videos inserted between each subscription video
@@ -66,16 +67,18 @@ public final class HomeViewModel {
     /// rearrange already-rendered cards.  Not called during pagination —
     /// `loadMore` appends to `mergedVideos` directly to keep positions stable.
     private func rebuildMergedVideos() {
-        let recState  = sections.first { $0.section.type == .home }
-        let subState  = sections.first { $0.section.type == .subscriptions }
-        let recs  = recState?.videos  ?? []
-        let subs  = subState?.videos  ?? []
+        let recState = sections.first { $0.section.type == .home }
+        let subState = sections.first { $0.section.type == .subscriptions }
+        let recs = recState?.videos ?? []
+        let subs = subState?.videos ?? []
 
         guard !subs.isEmpty else {
             var seen = Set<String>()
             let deduped = recs.filter { seen.insert($0.id).inserted }
             if deduped.count != recs.count {
-                homeLog.notice("rebuildMergedVideos: recs-only dedup removed \(recs.count - deduped.count) duplicate(s) (raw=\(recs.count))")
+                homeLog.notice(
+                    "rebuildMergedVideos: recs-only dedup removed \(recs.count - deduped.count) duplicate(s) (raw=\(recs.count))"
+                )
             }
             mergedVideos = deduped
             return
@@ -84,7 +87,9 @@ public final class HomeViewModel {
             var seen = Set<String>()
             let deduped = subs.filter { seen.insert($0.id).inserted }
             if deduped.count != subs.count {
-                homeLog.notice("rebuildMergedVideos: subs-only dedup removed \(subs.count - deduped.count) duplicate(s) (raw=\(subs.count))")
+                homeLog.notice(
+                    "rebuildMergedVideos: subs-only dedup removed \(subs.count - deduped.count) duplicate(s) (raw=\(subs.count))"
+                )
             }
             mergedVideos = deduped
             return
@@ -113,7 +118,9 @@ public final class HomeViewModel {
         var seen = Set<String>()
         let deduped = result.filter { seen.insert($0.id).inserted }
         if deduped.count != result.count {
-            homeLog.notice("rebuildMergedVideos: final dedup removed \(result.count - deduped.count) duplicate(s) (subs+recs raw=\(result.count))")
+            homeLog.notice(
+                "rebuildMergedVideos: final dedup removed \(result.count - deduped.count) duplicate(s) (subs+recs raw=\(result.count))"
+            )
         }
         mergedVideos = deduped
     }
@@ -154,18 +161,20 @@ public final class HomeViewModel {
     // MARK: - Feed hide handling
 
     private func observeFeedHideNotifications() {
-        hideObserverTasks.append(Task { [weak self] in
-            for await note in NotificationCenter.default.notifications(named: .hideVideoFromFeed) {
-                guard let self, let videoId = note.userInfo?["videoId"] as? String else { continue }
-                self.removeVideo(id: videoId)
-            }
-        })
-        hideObserverTasks.append(Task { [weak self] in
-            for await note in NotificationCenter.default.notifications(named: .hideChannelFromFeed) {
-                guard let self, let channelId = note.userInfo?["channelId"] as? String else { continue }
-                self.removeChannel(id: channelId)
-            }
-        })
+        hideObserverTasks.append(
+            Task { [weak self] in
+                for await note in NotificationCenter.default.notifications(named: .hideVideoFromFeed) {
+                    guard let self, let videoId = note.userInfo?["videoId"] as? String else { continue }
+                    self.removeVideo(id: videoId)
+                }
+            })
+        hideObserverTasks.append(
+            Task { [weak self] in
+                for await note in NotificationCenter.default.notifications(named: .hideChannelFromFeed) {
+                    guard let self, let channelId = note.userInfo?["channelId"] as? String else { continue }
+                    self.removeChannel(id: channelId)
+                }
+            })
     }
 
     public func removeVideo(id: String) {
@@ -253,7 +262,9 @@ public final class HomeViewModel {
             loadedAt = Date()
             let merged = self.mergedVideos
             let mergedShorts = merged.filter { $0.isShort }.count
-            homeLog.notice("load complete: merged=\(merged.count) regular=\(merged.count - mergedShorts) mergedShorts=\(mergedShorts) shortsSection=\(shortsVideos.count)")
+            homeLog.notice(
+                "load complete: merged=\(merged.count) regular=\(merged.count - mergedShorts) mergedShorts=\(mergedShorts) shortsSection=\(shortsVideos.count)"
+            )
             // Keep paging Shorts content in the background toward preloadMoreShorts's
             // higher threshold, without delaying the load completion above.
             shortsPreloadTask = Task { @MainActor [weak self] in
@@ -289,9 +300,10 @@ public final class HomeViewModel {
 
     public func loadMore(sectionId: String) {
         guard let idx = sections.firstIndex(where: { $0.id == sectionId }),
-              let token = sections[idx].nextPageToken,
-              !sections[idx].isLoadingMore,
-              !sections[idx].isLoading else { return }
+            let token = sections[idx].nextPageToken,
+            !sections[idx].isLoadingMore,
+            !sections[idx].isLoading
+        else { return }
         sections[idx].isLoadingMore = true
         let type = sections[idx].section.type
         Task {
@@ -336,7 +348,9 @@ public final class HomeViewModel {
     /// grows on demand as the user scrolls past the already-loaded cards.
     public func loadNextShortsPage() {
         let subsToken = sections.first { $0.section.type == .subscriptions }?.nextPageToken
-        homeLog.notice("loadNextShortsPage: called — count=\(shortsVideos.count) isLoading=\(isLoadingMoreShorts) searchToken=\(shortsNextPageToken != nil) subsToken=\(subsToken != nil)")
+        homeLog.notice(
+            "loadNextShortsPage: called — count=\(shortsVideos.count) isLoading=\(isLoadingMoreShorts) searchToken=\(shortsNextPageToken != nil) subsToken=\(subsToken != nil)"
+        )
         guard !isLoadingMoreShorts, shortsNextPageToken != nil || subsToken != nil else {
             homeLog.notice("loadNextShortsPage: skipped — no tokens available")
             return
@@ -370,7 +384,9 @@ public final class HomeViewModel {
                 let newVideos = more.videos.filter { !existingIDs.contains($0.id) }
                 shortsVideos.append(contentsOf: newVideos)
                 shortsNextPageToken = more.nextPageToken
-                homeLog.notice("fetchOneShortsPage search: added \(newVideos.count) total=\(shortsVideos.count) hasMore=\(more.nextPageToken != nil)")
+                homeLog.notice(
+                    "fetchOneShortsPage search: added \(newVideos.count) total=\(shortsVideos.count) hasMore=\(more.nextPageToken != nil)"
+                )
                 if !newVideos.isEmpty {
                     return true
                 }
@@ -382,7 +398,8 @@ public final class HomeViewModel {
         }
         // Phase 2: one subs page when search is exhausted or returned nothing new.
         if let idx = sections.firstIndex(where: { $0.section.type == .subscriptions }),
-           let token = sections[idx].nextPageToken {
+            let token = sections[idx].nextPageToken
+        {
             homeLog.notice("fetchOneShortsPage subs: fetching token=\(String(token.prefix(16)))\u{2026}")
             let more = await Self.fetchMoreVideos(type: .subscriptions, token: token, api: api)
             let existingIDs = Set(sections[idx].videos.map(\.id))
@@ -390,7 +407,8 @@ public final class HomeViewModel {
             sections[idx].videos.append(contentsOf: newVideos)
             sections[idx].nextPageToken = more.1
             let newShorts = newVideos.filter { $0.isShort }.count
-            homeLog.notice("fetchOneShortsPage subs: added \(newVideos.count) (\(newShorts) shorts) hasMore=\(more.1 != nil)")
+            homeLog.notice(
+                "fetchOneShortsPage subs: added \(newVideos.count) (\(newShorts) shorts) hasMore=\(more.1 != nil)")
             return !newVideos.isEmpty
         }
         return false
@@ -412,7 +430,9 @@ public final class HomeViewModel {
         guard shortsVideos.count < threshold, shortsNextPageToken != nil else {
             // If search token is exhausted but subs has a continuation, Phase 2 of
             // fetchOneShortsPage will cover it. Nothing to do here.
-            homeLog.notice("loadMoreShortsIfNeeded: skipped count=\(shortsVideos.count) hasToken=\(shortsNextPageToken != nil) loading=\(isLoadingMoreShorts)")
+            homeLog.notice(
+                "loadMoreShortsIfNeeded: skipped count=\(shortsVideos.count) hasToken=\(shortsNextPageToken != nil) loading=\(isLoadingMoreShorts)"
+            )
             return
         }
         isLoadingMoreShorts = true
@@ -421,7 +441,8 @@ public final class HomeViewModel {
         // Loop until we have at least `threshold` items or pages run out.
         while shortsVideos.count < threshold, shortsNextPageToken != nil {
             loopIteration += 1
-            homeLog.notice("loadMoreShortsIfNeeded: loop=\(loopIteration) count=\(shortsVideos.count) threshold=\(threshold)")
+            homeLog.notice(
+                "loadMoreShortsIfNeeded: loop=\(loopIteration) count=\(shortsVideos.count) threshold=\(threshold)")
             guard await fetchOneShortsPage() else { break }
         }
     }
@@ -445,11 +466,13 @@ public final class HomeViewModel {
         while !Task.isCancelled, homeShortsVideos.count < preloadHighThreshold {
             let subsToken = sections.first { $0.section.type == .subscriptions }?.nextPageToken
             guard shortsNextPageToken != nil || subsToken != nil else {
-                homeLog.notice("preloadMoreShorts: stopping — no continuation tokens left, count=\(homeShortsVideos.count)")
+                homeLog.notice(
+                    "preloadMoreShorts: stopping — no continuation tokens left, count=\(homeShortsVideos.count)")
                 break
             }
             loopIteration += 1
-            homeLog.notice("preloadMoreShorts: iteration=\(loopIteration) count=\(homeShortsVideos.count)/\(preloadHighThreshold)")
+            homeLog.notice(
+                "preloadMoreShorts: iteration=\(loopIteration) count=\(homeShortsVideos.count)/\(preloadHighThreshold)")
             guard await fetchOneShortsPage() else {
                 homeLog.notice("preloadMoreShorts: stopping — page returned no new videos")
                 break
@@ -475,13 +498,17 @@ public final class HomeViewModel {
 
     /// Non-isolated so child tasks run on the global executor and network
     /// calls can overlap.
-    private static func fetchVideos(type: BrowseSection.SectionType, api: any InnerTubeAPIProtocol) async -> ([Video], String?) {
+    private static func fetchVideos(
+        type: BrowseSection.SectionType, api: any InnerTubeAPIProtocol
+    ) async -> ([Video], String?) {
         do {
             switch type {
             case .subscriptions:
                 let group = try await api.fetchSubscriptions()
                 let shortsCount = group.videos.filter { $0.isShort }.count
-                homeLog.notice("fetchVideos subs: total=\(group.videos.count) shorts=\(shortsCount) regular=\(group.videos.count - shortsCount)")
+                homeLog.notice(
+                    "fetchVideos subs: total=\(group.videos.count) shorts=\(shortsCount) regular=\(group.videos.count - shortsCount)"
+                )
                 return (Array(group.videos.prefix(InnerTubeClients.maxVideoResults)), group.nextPageToken)
             case .home:
                 let rows = try await api.fetchHomeRows()
@@ -489,7 +516,9 @@ public final class HomeViewModel {
                 var seen = Set<String>()
                 let deduped = rows.flatMap(\.videos).filter { seen.insert($0.id).inserted }
                 let fetchedShortsCount = deduped.filter { $0.isShort }.count
-                homeLog.notice("fetchVideos home: total=\(deduped.count) shorts=\(fetchedShortsCount) regular=\(deduped.count - fetchedShortsCount)")
+                homeLog.notice(
+                    "fetchVideos home: total=\(deduped.count) shorts=\(fetchedShortsCount) regular=\(deduped.count - fetchedShortsCount)"
+                )
                 if deduped.isEmpty {
                     // Home feed empty (no watch history / feedNudgeRenderer) — fall back to popular
                     let popular = try await api.search(query: "popular")
@@ -505,7 +534,9 @@ public final class HomeViewModel {
         }
     }
 
-    private static func fetchMoreVideos(type: BrowseSection.SectionType, token: String, api: any InnerTubeAPIProtocol) async -> ([Video], String?) {
+    private static func fetchMoreVideos(
+        type: BrowseSection.SectionType, token: String, api: any InnerTubeAPIProtocol
+    ) async -> ([Video], String?) {
         do {
             switch type {
             case .subscriptions:
@@ -513,7 +544,9 @@ public final class HomeViewModel {
                     try await api.fetchSubscriptions(continuationToken: token)
                 }
                 let shortsCount = group.videos.filter { $0.isShort }.count
-                homeLog.notice("fetchMoreVideos subs: total=\(group.videos.count) shorts=\(shortsCount) regular=\(group.videos.count - shortsCount)")
+                homeLog.notice(
+                    "fetchMoreVideos subs: total=\(group.videos.count) shorts=\(shortsCount) regular=\(group.videos.count - shortsCount)"
+                )
                 return (group.videos, group.nextPageToken)
             case .home:
                 let rows = try await retryWithBackoff(label: "HomeVM.home") {

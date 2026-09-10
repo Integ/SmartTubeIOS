@@ -57,7 +57,7 @@ final class NextVideoPrefetchUITests: XCTestCase {
             "--uitesting-disable-tos-player-on-ios",
             "--uitesting-inject-queue-video-ids=\(Self.videoAID),\(Self.videoBID)",
             "--uitesting-show-controls",
-            "--uitesting-disable-sponsorblock"
+            "--uitesting-disable-sponsorblock",
         ]
         #if os(iOS)
         XCUIDevice.shared.orientation = .portrait
@@ -89,7 +89,8 @@ final class NextVideoPrefetchUITests: XCTestCase {
         //
         // For the in-process check: confirm that the player is actively playing
         // (title exists, controls are visible) and the app hasn't crashed.
-        XCTAssertTrue(playerTitle.exists, "Player title must appear — confirms first queue video loaded and prefetch hook ran")
+        XCTAssertTrue(
+            playerTitle.exists, "Player title must appear — confirms first queue video loaded and prefetch hook ran")
         XCTAssertEqual(app.state, .runningForeground, "App must remain running while prefetch runs in background")
 
         // Verify the quick-access row is present (controls are up via --uitesting-show-controls).
@@ -128,7 +129,8 @@ final class NextVideoPrefetchUITests: XCTestCase {
             app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
             Thread.sleep(forTimeInterval: 1.0)
             if nextButton.waitForExistence(timeout: 2), nextButton.isEnabled {
-                nextEnabled = true; break
+                nextEnabled = true
+                break
             }
         }
         guard nextEnabled else {
@@ -148,8 +150,9 @@ final class NextVideoPrefetchUITests: XCTestCase {
             return
         }
 
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must remain in foreground after queue advance")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must remain in foreground after queue advance")
 
         // Post-run log check (see AGENT-POST-RUN-CHECK block at top of file):
         //   grep "cache HIT: playerInfo" app_log.txt

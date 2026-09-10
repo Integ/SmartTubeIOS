@@ -48,7 +48,10 @@ struct TOSPlaybackEndAutoplayTests {
         // playNext()'s queue path spawns a Task that awaits CurrentQueueStore — poll.
         var fired = false
         for _ in 0..<50 {
-            if advancedTo != nil { fired = true; break }
+            if advancedTo != nil {
+                fired = true
+                break
+            }
             try? await Task.sleep(for: .milliseconds(10))
         }
 

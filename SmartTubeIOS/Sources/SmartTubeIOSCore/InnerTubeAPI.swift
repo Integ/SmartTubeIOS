@@ -1,6 +1,7 @@
 import Foundation
-import os
 import Network
+import os
+
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
@@ -260,7 +261,7 @@ public actor InnerTubeAPI {
     // Public InnerTube API key embedded in YouTube's own web client JS — not a developer secret.
     // nosec: false positive — this key is published by Google in youtube.com/s/player JS.
     // Used only for unauthenticated requests (aligned to Android RetrofitOkHttpHelper pattern).
-    let apiKey = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8" // gitleaks:allow
+    let apiKey = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8"  // gitleaks:allow
     // Note: TV key (AIzaSyDCU8...) is defined in Android as API_KEY_OLD and never used.
 
     /// Request timeout for all InnerTube API calls (NW-4-FIX).

@@ -46,7 +46,7 @@ extension UserDefaultsBackedStore {
     /// from actor `init` before isolation is established.
     static func loadFrom(_ defaults: UserDefaults) -> Value? {
         guard let data = defaults.data(forKey: Self.defaultsKey),
-              let decoded = try? JSONDecoder().decode(Value.self, from: data)
+            let decoded = try? JSONDecoder().decode(Value.self, from: data)
         else { return nil }
         return decoded
     }
@@ -60,7 +60,9 @@ extension UserDefaultsBackedStore {
             defaults.set(data, forKey: Self.defaultsKey)
             afterPersist()
         } catch {
-            storeLog.error("[\(Self.defaultsKey, privacy: .public)] persist failed: \(error.localizedDescription, privacy: .public)")
+            storeLog.error(
+                "[\(Self.defaultsKey, privacy: .public)] persist failed: \(error.localizedDescription, privacy: .public)"
+            )
         }
     }
 }

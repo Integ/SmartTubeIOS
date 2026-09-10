@@ -56,8 +56,9 @@ final class BotGuardPoTokenUITests: XCTestCase {
 
     private static var sharedApp: XCUIApplication!
     private static var skipAllTests = false
-    private static let skipReason = "Player did not open or play within deadline — " +
-        "network unavailable or WKWebView extraction broken for \(videoID)"
+    private static let skipReason =
+        "Player did not open or play within deadline — "
+        + "network unavailable or WKWebView extraction broken for \(videoID)"
 
     // MARK: - Lifecycle
 
@@ -67,7 +68,7 @@ final class BotGuardPoTokenUITests: XCTestCase {
         app.launchArguments = [
             "--uitesting",
             "--uitesting-disable-tos-player-on-ios",
-            "--uitesting-deeplink-video=\(videoID)"
+            "--uitesting-deeplink-video=\(videoID)",
         ]
         app.launch()
         sharedApp = app
@@ -134,9 +135,10 @@ final class BotGuardPoTokenUITests: XCTestCase {
         try XCTSkipIf(Self.skipAllTests, Self.skipReason)
 
         let ready = showControlsAndWaitEnabled(timeout: 6)
-        XCTAssertTrue(ready,
-            "play/pause button did not become enabled — WKWebView HLS path may be broken by Option B changes " +
-            "(check log for 'failed to fetch master manifest' or 404 from /pot/ URL encoding bug)")
+        XCTAssertTrue(
+            ready,
+            "play/pause button did not become enabled — WKWebView HLS path may be broken by Option B changes "
+                + "(check log for 'failed to fetch master manifest' or 404 from /pot/ URL encoding bug)")
     }
 
     /// Confirms playback is truly running by checking the player has not stalled
@@ -147,7 +149,8 @@ final class BotGuardPoTokenUITests: XCTestCase {
         let ready = showControlsAndWaitEnabled(timeout: 6)
         XCTAssertTrue(ready, "play/pause button not hittable — player stalled or controls overlay never shown")
         let btn = Self.sharedApp.buttons["player.playPauseButton"].firstMatch
-        XCTAssertTrue(btn.isHittable,
+        XCTAssertTrue(
+            btn.isHittable,
             "play/pause button not hittable — controls visible but button is disabled")
     }
 }

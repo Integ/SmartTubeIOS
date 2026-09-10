@@ -1,10 +1,11 @@
 import AVFoundation
+import SmartTubeIOSCore
 import os
+
 #if canImport(UIKit)
 import UIKit
 import MediaPlayer
 #endif
-import SmartTubeIOSCore
 
 private let playerLog = CrashlyticsLogger(category: "Player")
 
@@ -31,8 +32,9 @@ extension PlaybackViewModel {
             queue: .main
         ) { [weak self] notification in
             guard let self,
-                  let typeValue = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
-                  let type = AVAudioSession.InterruptionType(rawValue: typeValue) else { return }
+                let typeValue = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
+                let type = AVAudioSession.InterruptionType(rawValue: typeValue)
+            else { return }
             switch type {
             case .began:
                 // System (phone call, Siri, etc.) took the audio session — note we
@@ -159,8 +161,9 @@ extension PlaybackViewModel {
         // isolation via dispatch_assert_queue and throw EXC_BREAKPOINT (fix238).
         if let thumbURL = video.thumbnailURL {
             let snapshot: UIImage = cachedArtwork ?? UIImage()
-            let artwork = MPMediaItemArtwork(boundsSize: CGSize(width: 600, height: 600),
-                                             requestHandler: makeNonisolatedArtworkProvider(image: snapshot))
+            let artwork = MPMediaItemArtwork(
+                boundsSize: CGSize(width: 600, height: 600),
+                requestHandler: makeNonisolatedArtworkProvider(image: snapshot))
             nowPlayingInfoCache[MPMediaItemPropertyArtwork] = artwork
 
             // Kick off fetch only when the video changes to avoid redundant network hits.
@@ -169,7 +172,8 @@ extension PlaybackViewModel {
                 cachedArtwork = nil
                 Task { [weak self, url = thumbURL, videoID = video.id] in
                     guard let (data, _) = try? await URLSession.shared.data(from: url),
-                          let image = UIImage(data: data) else { return }
+                        let image = UIImage(data: data)
+                    else { return }
                     await MainActor.run { [weak self] in
                         guard let self, self.cachedArtworkVideoID == videoID else { return }
                         self.cachedArtwork = image
@@ -178,8 +182,9 @@ extension PlaybackViewModel {
                         // internal background queue without hitting the Swift 6 actor-isolation
                         // assertion (same fix as the initial artwork registration above).
                         self.nowPlayingInfoCache[MPMediaItemPropertyArtwork] =
-                            MPMediaItemArtwork(boundsSize: image.size,
-                                               requestHandler: makeNonisolatedArtworkProvider(image: image))
+                            MPMediaItemArtwork(
+                                boundsSize: image.size,
+                                requestHandler: makeNonisolatedArtworkProvider(image: image))
                         self.setNowPlayingInfo(self.nowPlayingInfoCache)
                     }
                 }
@@ -196,7 +201,8 @@ extension PlaybackViewModel {
 
     func updateNowPlayingPlayback() {
         nowPlayingInfoCache[MPNowPlayingInfoPropertyElapsedPlaybackTime] = NSNumber(value: currentTime)
-        nowPlayingInfoCache[MPNowPlayingInfoPropertyPlaybackRate] = NSNumber(value: isPlaying ? Double(player.rate) : 0.0)
+        nowPlayingInfoCache[MPNowPlayingInfoPropertyPlaybackRate] = NSNumber(
+            value: isPlaying ? Double(player.rate) : 0.0)
         setNowPlayingInfo(nowPlayingInfoCache)
     }
 

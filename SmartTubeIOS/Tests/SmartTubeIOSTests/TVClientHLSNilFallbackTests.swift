@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - TVClientHLSNilFallbackTests (NW-3-FIX)
@@ -117,10 +118,11 @@ struct TVClientHLSNilFallbackTests {
     @Test("Muxed-only TV response: NW-3-FIX fallback condition fires")
     func muxedOnlyFallbackConditionFires() {
         let info = makeMuxedOnlyPlayerInfo()
-        let shouldFallback = info.hlsURL == nil &&
-            (info.bestAdaptiveVideoURL == nil || info.bestAdaptiveAudioURL == nil)
-        #expect(shouldFallback,
-                "Expected NW-3-FIX condition to be true for muxed-only TV response")
+        let shouldFallback =
+            info.hlsURL == nil && (info.bestAdaptiveVideoURL == nil || info.bestAdaptiveAudioURL == nil)
+        #expect(
+            shouldFallback,
+            "Expected NW-3-FIX condition to be true for muxed-only TV response")
     }
 
     // MARK: - HLS response (no fallback expected)
@@ -128,10 +130,11 @@ struct TVClientHLSNilFallbackTests {
     @Test("HLS response: fallback condition does NOT fire")
     func hlsResponseFallbackConditionDoesNotFire() {
         let info = makeHLSPlayerInfo()
-        let shouldFallback = info.hlsURL == nil &&
-            (info.bestAdaptiveVideoURL == nil || info.bestAdaptiveAudioURL == nil)
-        #expect(!shouldFallback,
-                "NW-3-FIX condition must not fire when hlsURL is present")
+        let shouldFallback =
+            info.hlsURL == nil && (info.bestAdaptiveVideoURL == nil || info.bestAdaptiveAudioURL == nil)
+        #expect(
+            !shouldFallback,
+            "NW-3-FIX condition must not fire when hlsURL is present")
     }
 
     // MARK: - Adaptive streams response (no fallback expected)
@@ -155,10 +158,11 @@ struct TVClientHLSNilFallbackTests {
         // for the condition to fire, so we also need hlsURL == nil to be true here.
         // The full condition is: hlsURL==nil AND (adaptiveVideo==nil OR adaptiveAudio==nil)
         // With adaptive streams present both are non-nil, so the AND's RHS is false.
-        let shouldFallback = info.hlsURL == nil &&
-            (info.bestAdaptiveVideoURL == nil || info.bestAdaptiveAudioURL == nil)
-        #expect(!shouldFallback,
-                "NW-3-FIX condition must not fire when adaptive streams are available")
+        let shouldFallback =
+            info.hlsURL == nil && (info.bestAdaptiveVideoURL == nil || info.bestAdaptiveAudioURL == nil)
+        #expect(
+            !shouldFallback,
+            "NW-3-FIX condition must not fire when adaptive streams are available")
     }
 
     // MARK: - NW-3-FIX (extended): Android muxed-only response
@@ -168,31 +172,32 @@ struct TVClientHLSNilFallbackTests {
     ///      fallbackInfo.bestAdaptiveVideoURL == nil,
     ///      fallbackInfo.bestAdaptiveAudioURL == nil { … }
     private func shouldSkipAndroidMuxedFallback(_ info: PlayerInfo) -> Bool {
-        info.hlsURL == nil &&
-        info.bestAdaptiveVideoURL == nil &&
-        info.bestAdaptiveAudioURL == nil
+        info.hlsURL == nil && info.bestAdaptiveVideoURL == nil && info.bestAdaptiveAudioURL == nil
     }
 
     @Test("NW-3-FIX-ANDROID: muxed-only Android response triggers early-exit guard")
     func androidMuxedOnlyTriggersEarlyExit() {
         let info = makeMuxedOnlyPlayerInfo()
         // Same muxed-only shape applies whether from TV or Android client.
-        #expect(shouldSkipAndroidMuxedFallback(info),
-                "Guard must fire for muxed-only Android response to prevent AVFoundation -11828 non-fatal")
+        #expect(
+            shouldSkipAndroidMuxedFallback(info),
+            "Guard must fire for muxed-only Android response to prevent AVFoundation -11828 non-fatal")
     }
 
     @Test("NW-3-FIX-ANDROID: HLS Android response does NOT trigger early-exit guard")
     func androidHLSResponseDoesNotTriggerEarlyExit() {
         let info = makeHLSPlayerInfo()
-        #expect(!shouldSkipAndroidMuxedFallback(info),
-                "Guard must not fire when Android returns HLS")
+        #expect(
+            !shouldSkipAndroidMuxedFallback(info),
+            "Guard must not fire when Android returns HLS")
     }
 
     @Test("NW-3-FIX-ANDROID: adaptive Android response does NOT trigger early-exit guard")
     func androidAdaptiveResponseDoesNotTriggerEarlyExit() {
         let info = makeAdaptivePlayerInfo()
-        #expect(!shouldSkipAndroidMuxedFallback(info),
-                "Guard must not fire when Android returns adaptive streams")
+        #expect(
+            !shouldSkipAndroidMuxedFallback(info),
+            "Guard must not fire when Android returns adaptive streams")
     }
 
     @Test("NW-3-FIX-ANDROID: muxed-only response still has a preferredStreamURL (muxed URL)")
@@ -200,10 +205,12 @@ struct TVClientHLSNilFallbackTests {
         // Confirms the guard is necessary — preferredStreamURL returns a non-nil muxed URL
         // even in this case, so without the guard AVPlayer would be tried and fail.
         let info = makeMuxedOnlyPlayerInfo()
-        #expect(info.preferredStreamURL != nil,
-                "muxed-only response has a preferredStreamURL — guard prevents handing it to AVPlayer")
-        #expect(shouldSkipAndroidMuxedFallback(info),
-                "Guard must fire so we don't pass the muxed URL to AVPlayer")
+        #expect(
+            info.preferredStreamURL != nil,
+            "muxed-only response has a preferredStreamURL — guard prevents handing it to AVPlayer")
+        #expect(
+            shouldSkipAndroidMuxedFallback(info),
+            "Guard must fire so we don't pass the muxed URL to AVPlayer")
     }
 
     // MARK: - Fix #122: Android no-HLS with adaptive streams → use adaptive composition
@@ -213,9 +220,7 @@ struct TVClientHLSNilFallbackTests {
     ///      fallbackInfo.bestAdaptiveVideoURL != nil,
     ///      fallbackInfo.bestAdaptiveAudioURL != nil { → use adaptive composition }
     private func shouldDelegateToAdaptiveComposition(_ info: PlayerInfo) -> Bool {
-        info.hlsURL == nil &&
-        info.bestAdaptiveVideoURL != nil &&
-        info.bestAdaptiveAudioURL != nil
+        info.hlsURL == nil && info.bestAdaptiveVideoURL != nil && info.bestAdaptiveAudioURL != nil
     }
 
     @Test("Fix #122: Android adaptive-only response triggers adaptive composition delegation")
@@ -223,8 +228,9 @@ struct TVClientHLSNilFallbackTests {
         // Adaptive video + audio, no HLS — the new guard must route to adaptive composition
         // instead of using preferredStreamURL (muxed URL) which would fail with -11828.
         let info = makeAdaptivePlayerInfo()
-        #expect(shouldDelegateToAdaptiveComposition(info),
-                "Fix #122: guard must fire for no-HLS + adaptive Android response")
+        #expect(
+            shouldDelegateToAdaptiveComposition(info),
+            "Fix #122: guard must fire for no-HLS + adaptive Android response")
     }
 
     @Test("Fix #122: adaptive response preferredStreamURL returns nil (no muxed URL to fall back to)")
@@ -232,15 +238,17 @@ struct TVClientHLSNilFallbackTests {
         // When the Android response has only adaptive streams (no muxed MP4 with ", "),
         // preferredStreamURL returns nil — confirming the muxed path cannot be used.
         let info = makeAdaptivePlayerInfo()
-        #expect(info.preferredStreamURL == nil,
-                "Fix #122: adaptive-only response has no muxed URL — must use adaptive composition")
+        #expect(
+            info.preferredStreamURL == nil,
+            "Fix #122: adaptive-only response has no muxed URL — must use adaptive composition")
     }
 
     @Test("Fix #122: HLS Android response does NOT trigger adaptive composition delegation")
     func fix122HLSResponseDoesNotTriggerDelegation() {
         let info = makeHLSPlayerInfo()
-        #expect(!shouldDelegateToAdaptiveComposition(info),
-                "Fix #122: delegation must not fire when Android returns HLS")
+        #expect(
+            !shouldDelegateToAdaptiveComposition(info),
+            "Fix #122: delegation must not fire when Android returns HLS")
     }
 
     @Test("Fix #122: muxed-only Android response does NOT trigger adaptive composition (caught by earlier guard)")
@@ -248,7 +256,8 @@ struct TVClientHLSNilFallbackTests {
         // Muxed-only has no adaptive streams, so the Fix #122 condition is false.
         // The earlier NW-3-FIX guard catches it first.
         let info = makeMuxedOnlyPlayerInfo()
-        #expect(!shouldDelegateToAdaptiveComposition(info),
-                "Fix #122: delegation must not fire for muxed-only — NW-3-FIX guard handles it")
+        #expect(
+            !shouldDelegateToAdaptiveComposition(info),
+            "Fix #122: delegation must not fire for muxed-only — NW-3-FIX guard handles it")
     }
 }

@@ -1,6 +1,7 @@
-import Foundation
 import AVFoundation
+import Foundation
 import Testing
+
 @testable import SmartTubeIOS
 @testable import SmartTubeIOSCore
 
@@ -48,8 +49,11 @@ struct PerVideoQualityOverrideTests {
     }
 
     @MainActor
-    private func makeManager(default quality: AppSettings.VideoQuality)
-        -> (PlaybackQualityManager, MockQualityDelegate) {
+    private func makeManager(
+        default quality: AppSettings.VideoQuality
+    )
+        -> (PlaybackQualityManager, MockQualityDelegate)
+    {
         let mgr = PlaybackQualityManager(player: MockPlayer())
         let delegate = MockQualityDelegate()
         delegate.settings.preferredQuality = quality

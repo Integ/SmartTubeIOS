@@ -174,24 +174,27 @@ final class ShortsEmbedPlayerViewModel: NSObject {
         let proxyHandler = ShortsScriptMessageProxy()
         contentController.add(proxyHandler, contentWorld: .page, name: "ytCallback")
 
-        contentController.addUserScript(WKUserScript(
-            source: ShortsEmbedJS.webkitHiderJS,
-            injectionTime: .atDocumentStart,
-            forMainFrameOnly: false,
-            in: .page
-        ))
-        contentController.addUserScript(WKUserScript(
-            source: ShortsEmbedJS.playerControlsHiderJS,
-            injectionTime: .atDocumentStart,
-            forMainFrameOnly: false,
-            in: .page
-        ))
-        contentController.addUserScript(WKUserScript(
-            source: ShortsEmbedJS.stateDetectionJS,
-            injectionTime: .atDocumentEnd,
-            forMainFrameOnly: false,
-            in: .page
-        ))
+        contentController.addUserScript(
+            WKUserScript(
+                source: ShortsEmbedJS.webkitHiderJS,
+                injectionTime: .atDocumentStart,
+                forMainFrameOnly: false,
+                in: .page
+            ))
+        contentController.addUserScript(
+            WKUserScript(
+                source: ShortsEmbedJS.playerControlsHiderJS,
+                injectionTime: .atDocumentStart,
+                forMainFrameOnly: false,
+                in: .page
+            ))
+        contentController.addUserScript(
+            WKUserScript(
+                source: ShortsEmbedJS.stateDetectionJS,
+                injectionTime: .atDocumentEnd,
+                forMainFrameOnly: false,
+                in: .page
+            ))
         config.userContentController = contentController
 
         self.webView = WKWebView(frame: .zero, configuration: config)
@@ -202,9 +205,9 @@ final class ShortsEmbedPlayerViewModel: NSObject {
         // web variant needs a YouTube WEB session (SAPISID) which the TV flow
         // can't produce. See AuthService+YouTubeCookies.swift for the
         // Multilogin 403 INVALID_TOKENS root cause.
-        self.webView.customUserAgent = "Mozilla/5.0 (SMART-TV; Linux; Tizen 5.0) " +
-            "AppleWebKit/537.36 (KHTML, like Gecko) " +
-            "SamsungBrowser/2.1 Chrome/56.0.2924.0 TV Safari/537.36"
+        self.webView.customUserAgent =
+            "Mozilla/5.0 (SMART-TV; Linux; Tizen 5.0) " + "AppleWebKit/537.36 (KHTML, like Gecko) "
+            + "SamsungBrowser/2.1 Chrome/56.0.2924.0 TV Safari/537.36"
         #if os(iOS)
         // isOpaque=false forces WebKit into software compositing, which silently
         // disables the hardware-accelerated <video> layer — the JS bridge still
@@ -347,7 +350,9 @@ final class ShortsEmbedPlayerViewModel: NSObject {
         do {
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
-            shortsLog.error("[\(self.logTag, privacy: .public)] [audioSession] setActive(true) failed: \(error.localizedDescription, privacy: .public)")
+            shortsLog.error(
+                "[\(self.logTag, privacy: .public)] [audioSession] setActive(true) failed: \(error.localizedDescription, privacy: .public)"
+            )
         }
         #endif
         // Cookie sync happens in loadShort (the await syncYouTubeCookies runs
@@ -355,7 +360,8 @@ final class ShortsEmbedPlayerViewModel: NSObject {
         // comment for syncYouTubeCookiesIntoWKWebView for the root cause.
         let url = ShortsEmbedURL.embedURL(videoId: videoId)
         let html = ShortsEmbedURL.htmlWrapper(embedURL: url)
-        shortsLog.notice("[\(self.logTag, privacy: .public)] [loadShort] initial load — videoId=\(videoId, privacy: .public)")
+        shortsLog.notice(
+            "[\(self.logTag, privacy: .public)] [loadShort] initial load — videoId=\(videoId, privacy: .public)")
         webView.loadHTMLString(html, baseURL: URL(string: "https://www.example.com")!)
     }
 
@@ -365,14 +371,18 @@ final class ShortsEmbedPlayerViewModel: NSObject {
     private func syncYouTubeCookiesIntoWKWebView() async {
         let yt = URL(string: "https://www.youtube.com")!
         let google = URL(string: "https://www.google.com")!
-        let cookies = (HTTPCookieStorage.shared.cookies(for: yt) ?? []) +
-                      (HTTPCookieStorage.shared.cookies(for: google) ?? [])
+        let cookies =
+            (HTTPCookieStorage.shared.cookies(for: yt) ?? []) + (HTTPCookieStorage.shared.cookies(for: google) ?? [])
         guard !cookies.isEmpty else {
-            shortsLog.notice("[\(self.logTag, privacy: .public)] [loadShort] no youtube/google cookies in HTTPCookieStorage — IFrame will run unauthenticated")
+            shortsLog.notice(
+                "[\(self.logTag, privacy: .public)] [loadShort] no youtube/google cookies in HTTPCookieStorage — IFrame will run unauthenticated"
+            )
             return
         }
         let names = cookies.map { "\($0.name)@\($0.domain)" }.joined(separator: " ")
-        shortsLog.notice("[\(self.logTag, privacy: .public)] [loadShort] copying \(cookies.count) cookies → WKWebsiteDataStore: \(names as NSString)")
+        shortsLog.notice(
+            "[\(self.logTag, privacy: .public)] [loadShort] copying \(cookies.count) cookies → WKWebsiteDataStore: \(names as NSString)"
+        )
         let store = WKWebsiteDataStore.default().httpCookieStore
         await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
             let group = DispatchGroup()
@@ -390,7 +400,8 @@ final class ShortsEmbedPlayerViewModel: NSObject {
     /// Task 1's `ShortsEmbedSrcSwapSpikeViewModel.swapToNextVideo()`.
     private func swapEmbed(to videoId: String) {
         let url = ShortsEmbedURL.embedURL(videoId: videoId)
-        shortsLog.notice("[\(self.logTag, privacy: .public)] [loadShort] src swap — videoId=\(videoId, privacy: .public)")
+        shortsLog.notice(
+            "[\(self.logTag, privacy: .public)] [loadShort] src swap — videoId=\(videoId, privacy: .public)")
         eval("swap", "document.getElementById('yt').src = '\(url.absoluteString)';")
     }
 
@@ -406,7 +417,9 @@ final class ShortsEmbedPlayerViewModel: NSObject {
             try? await Task.sleep(for: .seconds(9))
             guard let self, !Task.isCancelled else { return }
             guard self.videoId == videoId, !self.isReady else { return }
-            shortsLog.notice("[\(self.logTag, privacy: .public)] [loadShort] ready TIMEOUT — videoId=\(videoId, privacy: .public) after 9s")
+            shortsLog.notice(
+                "[\(self.logTag, privacy: .public)] [loadShort] ready TIMEOUT — videoId=\(videoId, privacy: .public) after 9s"
+            )
             self.playerError = .webViewLoadFailed
         }
     }
@@ -426,7 +439,10 @@ final class ShortsEmbedPlayerViewModel: NSObject {
         Task { [weak self] in
             await priorPause?.value
             guard let self, self.playPauseEpoch == myEpoch else { return }
-            self.eval("play", "(function(){var v=document.querySelector('video');var ifr=document.querySelectorAll('iframe').length;if(v){v.play();}return {found: !!v, iframes: ifr, paused: v ? v.paused : null};})();")
+            self.eval(
+                "play",
+                "(function(){var v=document.querySelector('video');var ifr=document.querySelectorAll('iframe').length;if(v){v.play();}return {found: !!v, iframes: ifr, paused: v ? v.paused : null};})();"
+            )
             // Defense-in-depth: even after awaiting the prior pause, a late-landing
             // pause from some other source (e.g. WebKit's own stall handling) can
             // still clobber this resume a few hundred ms later — exactly the "plays
@@ -435,7 +451,10 @@ final class ShortsEmbedPlayerViewModel: NSObject {
             // nothing more recent (a deliberate pause or another play) has happened.
             try? await Task.sleep(for: .milliseconds(400))
             guard !Task.isCancelled, self.playPauseEpoch == myEpoch else { return }
-            self.eval("verifyPlay", "(function(){var v=document.querySelector('video');if(v&&v.paused){v.play();}return {paused: v?v.paused:null};})();")
+            self.eval(
+                "verifyPlay",
+                "(function(){var v=document.querySelector('video');if(v&&v.paused){v.play();}return {paused: v?v.paused:null};})();"
+            )
         }
     }
 
@@ -454,11 +473,17 @@ final class ShortsEmbedPlayerViewModel: NSObject {
                 nil, nil, true
             )
         }
-        eval("pause", "(function(){var v=document.querySelector('video');var ifr=document.querySelectorAll('iframe').length;if(v){v.pause();}return {found: !!v, iframes: ifr, paused: v ? v.paused : null};})();")
+        eval(
+            "pause",
+            "(function(){var v=document.querySelector('video');var ifr=document.querySelectorAll('iframe').length;if(v){v.pause();}return {found: !!v, iframes: ifr, paused: v ? v.paused : null};})();"
+        )
     }
 
     func seekTo(_ seconds: Double) {
-        eval("seekTo(\(seconds))", "(function(){var v=document.querySelector('video');var ifr=document.querySelectorAll('iframe').length;if(v){v.currentTime=\(seconds);}return {found: !!v, iframes: ifr, currentTime: v ? v.currentTime : null};})();")
+        eval(
+            "seekTo(\(seconds))",
+            "(function(){var v=document.querySelector('video');var ifr=document.querySelectorAll('iframe').length;if(v){v.currentTime=\(seconds);}return {found: !!v, iframes: ifr, currentTime: v ? v.currentTime : null};})();"
+        )
     }
 
     /// Shows the native `<video controls>` UI inside the embed iframe (play/pause,
@@ -476,7 +501,10 @@ final class ShortsEmbedPlayerViewModel: NSObject {
     }
 
     func setPlaybackRate(_ rate: Double) {
-        eval("setPlaybackRate(\(rate))", "(function(){var v=document.querySelector('video');var ifr=document.querySelectorAll('iframe').length;if(v){v.playbackRate=\(rate);}return {found: !!v, iframes: ifr, playbackRate: v ? v.playbackRate : null};})();")
+        eval(
+            "setPlaybackRate(\(rate))",
+            "(function(){var v=document.querySelector('video');var ifr=document.querySelectorAll('iframe').length;if(v){v.playbackRate=\(rate);}return {found: !!v, iframes: ifr, playbackRate: v ? v.playbackRate : null};})();"
+        )
     }
 
     // MARK: - Private helpers
@@ -487,9 +515,13 @@ final class ShortsEmbedPlayerViewModel: NSObject {
         webView.evaluateJavaScript(js, in: embedFrameInfo, in: .page) { result in
             switch result {
             case .success(let value):
-                shortsLog.notice("[\(self.logTag, privacy: .public)] [eval] \(label, privacy: .public) result: \(String(describing: value), privacy: .public)")
+                shortsLog.notice(
+                    "[\(self.logTag, privacy: .public)] [eval] \(label, privacy: .public) result: \(String(describing: value), privacy: .public)"
+                )
             case .failure(let error):
-                shortsLog.notice("[\(self.logTag, privacy: .public)] [eval] \(label, privacy: .public) ERROR: \(String(describing: error), privacy: .public)")
+                shortsLog.notice(
+                    "[\(self.logTag, privacy: .public)] [eval] \(label, privacy: .public) ERROR: \(String(describing: error), privacy: .public)"
+                )
             }
         }
     }

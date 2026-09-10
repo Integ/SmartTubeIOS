@@ -76,9 +76,11 @@ final class ChannelViewUITests: XCTestCase {
         let headerEl = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == 'channel.header'")).firstMatch
 
-        guard channelNavBar.waitForExistence(timeout: 30)
+        guard
+            channelNavBar.waitForExistence(timeout: 30)
                 || channelTitleEl.waitForExistence(timeout: 5)
-                || headerEl.waitForExistence(timeout: 5) else {
+                || headerEl.waitForExistence(timeout: 5)
+        else {
             try captureAndSkip(
                 "ChannelView did not appear within 30 s — deeplink may not have fired or network is unavailable",
                 in: app
@@ -176,7 +178,8 @@ final class ChannelViewUITests: XCTestCase {
         try openChannelViaDeeplink()
         let picker = app.segmentedControls["channel.filterPicker"]
         guard picker.waitForExistence(timeout: 10) else {
-            try captureAndSkip("channel.filterPicker did not appear — network unavailable or channel slow to load", in: app)
+            try captureAndSkip(
+                "channel.filterPicker did not appear — network unavailable or channel slow to load", in: app)
         }
     }
 

@@ -110,15 +110,17 @@ final class HomeFeedAndSettingsUITests: XCTestCase {
     func testSettingsTabOpens() {
         openSettings()
         let form = app.collectionViews.firstMatch
-        XCTAssertTrue(form.waitForExistence(timeout: 5),
-                      "Settings form should appear after tapping the Settings tab")
+        XCTAssertTrue(
+            form.waitForExistence(timeout: 5),
+            "Settings form should appear after tapping the Settings tab")
     }
 
     func testPlayerSectionVisible() {
         openSettings()
         let speedRow = app.cells.containing(.staticText, identifier: "Playback Speed").firstMatch
-        XCTAssertTrue(speedRow.waitForExistence(timeout: 5),
-                      "'Playback Speed' row must be visible in the Player section")
+        XCTAssertTrue(
+            speedRow.waitForExistence(timeout: 5),
+            "'Playback Speed' row must be visible in the Player section")
     }
 
     func testHideShortsToggleToggles() {
@@ -126,13 +128,15 @@ final class HomeFeedAndSettingsUITests: XCTestCase {
         let form = app.collectionViews.firstMatch
         let toggle = form.switches["settings.hideShortsToggle"]
         UITestHelpers.scrollUntilVisible(toggle, in: form)
-        XCTAssertTrue(toggle.waitForExistence(timeout: 5),
-                      "settings.hideShortsToggle must be present in the Interface section")
+        XCTAssertTrue(
+            toggle.waitForExistence(timeout: 5),
+            "settings.hideShortsToggle must be present in the Interface section")
         let before = toggle.value as? String
         toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5)).tap()
         let after = toggle.value as? String
-        XCTAssertNotEqual(before, after,
-                          "Hide Shorts toggle value should change after tapping")
+        XCTAssertNotEqual(
+            before, after,
+            "Hide Shorts toggle value should change after tapping")
         toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5)).tap()
     }
 
@@ -141,12 +145,14 @@ final class HomeFeedAndSettingsUITests: XCTestCase {
         let form = app.collectionViews.firstMatch
         let link = form.cells.containing(.staticText, identifier: "Visible Sections").firstMatch
         UITestHelpers.scrollUntilVisible(link, in: form)
-        XCTAssertTrue(link.waitForExistence(timeout: 5),
-                      "'Visible Sections' NavigationLink row must be present in Interface section")
+        XCTAssertTrue(
+            link.waitForExistence(timeout: 5),
+            "'Visible Sections' NavigationLink row must be present in Interface section")
         link.tap()
         let navTitle = app.navigationBars["Visible Sections"].firstMatch
-        XCTAssertTrue(navTitle.waitForExistence(timeout: 5),
-                      "Navigating to Visible Sections should show that navigation title")
+        XCTAssertTrue(
+            navTitle.waitForExistence(timeout: 5),
+            "Navigating to Visible Sections should show that navigation title")
     }
 
     func testSponsorBlockToggleEnablesSection() {
@@ -154,8 +160,9 @@ final class HomeFeedAndSettingsUITests: XCTestCase {
         let form = app.collectionViews.firstMatch
         let toggleQuery = app.switches["settings.sponsorBlockToggle"]
         UITestHelpers.scrollUntilVisible(toggleQuery, in: form)
-        XCTAssertTrue(toggleQuery.waitForExistence(timeout: 5),
-                      "settings.sponsorBlockToggle must be present in the SponsorBlock section")
+        XCTAssertTrue(
+            toggleQuery.waitForExistence(timeout: 5),
+            "settings.sponsorBlockToggle must be present in the SponsorBlock section")
 
         if (toggleQuery.value as? String) == "1" {
             toggleQuery.tap()
@@ -163,16 +170,18 @@ final class HomeFeedAndSettingsUITests: XCTestCase {
         }
 
         let enableToggle = app.switches["settings.sponsorBlockToggle"].firstMatch
-        XCTAssertTrue(enableToggle.waitForExistence(timeout: 5),
-                      "settings.sponsorBlockToggle must still be present after turning it off")
+        XCTAssertTrue(
+            enableToggle.waitForExistence(timeout: 5),
+            "settings.sponsorBlockToggle must still be present after turning it off")
         enableToggle.tap()
 
         let excludedChannelsRow = app.buttons
             .matching(NSPredicate(format: "label BEGINSWITH 'Excluded Channels'"))
             .firstMatch
         UITestHelpers.scrollUntilVisible(excludedChannelsRow, in: form)
-        XCTAssertTrue(excludedChannelsRow.waitForExistence(timeout: 6),
-                      "SponsorBlock category pickers should appear when SponsorBlock is enabled")
+        XCTAssertTrue(
+            excludedChannelsRow.waitForExistence(timeout: 6),
+            "SponsorBlock category pickers should appear when SponsorBlock is enabled")
 
         Thread.sleep(forTimeInterval: 0.5)
         let restoreToggle = app.switches["settings.sponsorBlockToggle"].firstMatch
@@ -181,8 +190,9 @@ final class HomeFeedAndSettingsUITests: XCTestCase {
             form.swipeDown()
             scrollBack += 1
         }
-        XCTAssertTrue(restoreToggle.waitForExistence(timeout: 5),
-                      "settings.sponsorBlockToggle must still be present for cleanup")
+        XCTAssertTrue(
+            restoreToggle.waitForExistence(timeout: 5),
+            "settings.sponsorBlockToggle must still be present for cleanup")
         restoreToggle.tap()
     }
 
@@ -191,8 +201,9 @@ final class HomeFeedAndSettingsUITests: XCTestCase {
         let form = app.collectionViews.firstMatch
         let resetButton = form.buttons["settings.resetAllButton"]
         UITestHelpers.scrollUntilVisible(resetButton, in: form)
-        XCTAssertTrue(resetButton.waitForExistence(timeout: 5),
-                      "settings.resetAllButton should be visible in the About section")
+        XCTAssertTrue(
+            resetButton.waitForExistence(timeout: 5),
+            "settings.resetAllButton should be visible in the About section")
     }
 
     func testResetAllSettingsShowsConfirmation() {
@@ -208,19 +219,22 @@ final class HomeFeedAndSettingsUITests: XCTestCase {
         if app.alerts.firstMatch.waitForExistence(timeout: 2) {
             app.alerts.firstMatch.buttons.firstMatch.tap()
         }
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App should still be running after Reset All Settings")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App should still be running after Reset All Settings")
     }
 
     func testAudioOnlyToggleAbsentFromSettings() {
         openSettings()
         let form = app.collectionViews.firstMatch
-        XCTAssertTrue(form.waitForExistence(timeout: 5),
-                      "Settings form must be visible")
+        XCTAssertTrue(
+            form.waitForExistence(timeout: 5),
+            "Settings form must be visible")
         for _ in 0..<8 { form.swipeUp() }
         let toggle = form.switches["settings.audioOnlyToggle"]
-        XCTAssertFalse(toggle.exists,
-                       "settings.audioOnlyToggle must NOT exist in Settings — it was moved to the player overlay (task #39)")
+        XCTAssertFalse(
+            toggle.exists,
+            "settings.audioOnlyToggle must NOT exist in Settings — it was moved to the player overlay (task #39)")
     }
 
     /// The "Landscape Always Play" toggle must no longer appear in Settings (moved to in-player lock button).
@@ -228,20 +242,25 @@ final class HomeFeedAndSettingsUITests: XCTestCase {
     func testLandscapeAlwaysPlayRemovedFromSettings() {
         openSettings()
         let form = app.collectionViews.firstMatch
-        XCTAssertTrue(form.waitForExistence(timeout: 5),
-                      "Settings form must appear")
+        XCTAssertTrue(
+            form.waitForExistence(timeout: 5),
+            "Settings form must appear")
         var found = false
         var lastFrame = CGRect.zero
         for _ in 0..<20 {
             let toggle = form.switches["settings.landscapeAlwaysPlayToggle"].firstMatch
-            if toggle.exists { found = true; break }
+            if toggle.exists {
+                found = true
+                break
+            }
             let currentFrame = form.frame
             if currentFrame == lastFrame { break }
             lastFrame = currentFrame
             form.swipeUp()
         }
-        XCTAssertFalse(found,
-                       "settings.landscapeAlwaysPlayToggle must not appear in Settings — replaced by the in-player lock button")
+        XCTAssertFalse(
+            found,
+            "settings.landscapeAlwaysPlayToggle must not appear in Settings — replaced by the in-player lock button")
     }
 
     // MARK: - Prefer H.264 Codec toggle (iOS-TOS settings cleanup)
@@ -251,20 +270,25 @@ final class HomeFeedAndSettingsUITests: XCTestCase {
     func testPreferH264ToggleAbsentFromIOSSettings() {
         openSettings()
         let form = app.collectionViews.firstMatch
-        XCTAssertTrue(form.waitForExistence(timeout: 5),
-                      "Settings form must be visible")
+        XCTAssertTrue(
+            form.waitForExistence(timeout: 5),
+            "Settings form must be visible")
         var found = false
         var lastFrame = CGRect.zero
         for _ in 0..<20 {
             let toggle = form.switches["settings.preferH264Toggle"].firstMatch
-            if toggle.exists { found = true; break }
+            if toggle.exists {
+                found = true
+                break
+            }
             let currentFrame = form.frame
             if currentFrame == lastFrame { break }
             lastFrame = currentFrame
             form.swipeUp()
         }
-        XCTAssertFalse(found,
-                       "settings.preferH264Toggle must not appear on iOS — TOS never reads AppSettings.preferH264")
+        XCTAssertFalse(
+            found,
+            "settings.preferH264Toggle must not appear on iOS — TOS never reads AppSettings.preferH264")
     }
 
     // MARK: - Tests (from HomeFeedNoDuplicatesUITests)
@@ -280,9 +304,10 @@ final class HomeFeedAndSettingsUITests: XCTestCase {
         XCTAssertFalse(ids.isEmpty, "Expected at least one video card on the Home feed")
 
         let dupes = duplicates(in: ids)
-        XCTAssertTrue(dupes.isEmpty,
-                      "Duplicate video.card IDs found after initial load: \(dupes.prefix(5)). " +
-                      "This means the Home feed contains repeated video IDs, which causes blank cells.")
+        XCTAssertTrue(
+            dupes.isEmpty,
+            "Duplicate video.card IDs found after initial load: \(dupes.prefix(5)). "
+                + "This means the Home feed contains repeated video IDs, which causes blank cells.")
     }
 
     func test_AfterPagination_NoDuplicateCards() throws {
@@ -306,9 +331,10 @@ final class HomeFeedAndSettingsUITests: XCTestCase {
         XCTAssertFalse(ids.isEmpty, "Expected video cards to still be present after pagination")
 
         let dupes = duplicates(in: ids)
-        XCTAssertTrue(dupes.isEmpty,
-                      "Duplicate video.card IDs found after pagination: \(dupes.prefix(5)). " +
-                      "This means loadMore is appending videos that are already in the feed.")
+        XCTAssertTrue(
+            dupes.isEmpty,
+            "Duplicate video.card IDs found after pagination: \(dupes.prefix(5)). "
+                + "This means loadMore is appending videos that are already in the feed.")
     }
 
     func test_AllCards_HaveNonEmptyTitles() throws {
@@ -339,8 +365,9 @@ final class HomeFeedAndSettingsUITests: XCTestCase {
             if !hasNonEmptyText { blankCardIds.append(cardId) }
         }
 
-        XCTAssertTrue(blankCardIds.isEmpty,
-                      "Cards with blank/missing text: \(blankCardIds.prefix(5)). " +
-                      "Blank cells usually mean duplicate video IDs reached ForEach.")
+        XCTAssertTrue(
+            blankCardIds.isEmpty,
+            "Cards with blank/missing text: \(blankCardIds.prefix(5)). "
+                + "Blank cells usually mean duplicate video IDs reached ForEach.")
     }
 }

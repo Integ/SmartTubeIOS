@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - AudioOnlyModeTests
@@ -92,9 +93,9 @@ struct AudioOnlyModeTests {
 
     @Test("bestAdaptiveAudioURL picks highest bitrate when multiple audio formats")
     func bestAdaptiveAudioURL_highestBitrate() {
-        let low  = audioFormat(bitrate: 64_000,  url: "https://audio.example.com/64k.mp4")
+        let low = audioFormat(bitrate: 64_000, url: "https://audio.example.com/64k.mp4")
         let high = audioFormat(bitrate: 256_000, url: "https://audio.example.com/256k.mp4")
-        let mid  = audioFormat(bitrate: 128_000, url: "https://audio.example.com/128k.mp4")
+        let mid = audioFormat(bitrate: 128_000, url: "https://audio.example.com/128k.mp4")
         let info = makeInfo(formats: [low, high, mid])
         #expect(info.bestAdaptiveAudioURL == URL(string: "https://audio.example.com/256k.mp4"))
     }

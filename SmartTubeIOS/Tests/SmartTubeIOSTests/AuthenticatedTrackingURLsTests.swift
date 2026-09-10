@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - AuthenticatedTrackingURLsTests
@@ -116,20 +117,24 @@ struct AuthenticatedTrackingURLsTests {
         // the actual /player request.
         StubURLProtocol.responses = [
             "youtube.com/": (200, Data("\"STS\":12345".utf8)),
-            "youtubei/v1/player": (200, Data("{}".utf8))
+            "youtubei/v1/player": (200, Data("{}".utf8)),
         ]
         StubURLProtocol.capturedBodies = [:]
         let api = makeAPI()
         _ = await api.fetchAuthenticatedTrackingURLs(videoId: "testvid123")
 
         guard let playerBodyData = StubURLProtocol.capturedBodies["youtubei/v1/player"],
-              let body = try? JSONSerialization.jsonObject(with: playerBodyData) as? [String: Any] else {
+            let body = try? JSONSerialization.jsonObject(with: playerBodyData) as? [String: Any]
+        else {
             Issue.record("No request body captured for /player")
             return
         }
         let playbackContext = body["playbackContext"] as? [String: Any]
         let cpbc = playbackContext?["contentPlaybackContext"] as? [String: Any]
-        #expect(cpbc != nil, "Body must include playbackContext.contentPlaybackContext — its absence is why playbackTracking never came back from YouTube")
+        #expect(
+            cpbc != nil,
+            "Body must include playbackContext.contentPlaybackContext — its absence is why playbackTracking never came back from YouTube"
+        )
         #expect(cpbc?["html5Preference"] as? String == "HTML5_PREF_WANTS")
         #expect(body["videoId"] as? String == "testvid123")
     }
@@ -141,14 +146,18 @@ struct AuthenticatedTrackingURLsTests {
             "playabilityStatus": ["status": "OK"],
             "streamingData": ["formats": [], "adaptiveFormats": []],
             "playbackTracking": [
-                "videostatsPlaybackUrl": ["baseUrl": "https://www.youtube.com/api/stats/playback?ns=yt&c=TVHTML5&cver=7.0&ver=2"],
-                "videostatsWatchtimeUrl": ["baseUrl": "https://www.youtube.com/api/stats/watchtime?ns=yt&c=TVHTML5&cver=7.0&ver=2"]
-            ]
+                "videostatsPlaybackUrl": [
+                    "baseUrl": "https://www.youtube.com/api/stats/playback?ns=yt&c=TVHTML5&cver=7.0&ver=2"
+                ],
+                "videostatsWatchtimeUrl": [
+                    "baseUrl": "https://www.youtube.com/api/stats/watchtime?ns=yt&c=TVHTML5&cver=7.0&ver=2"
+                ],
+            ],
         ]
         let responseData = try! JSONSerialization.data(withJSONObject: playerResponse)
         StubURLProtocol.responses = [
             "youtube.com/": (200, Data("\"STS\":12345".utf8)),
-            "youtubei/v1/player": (200, responseData)
+            "youtubei/v1/player": (200, responseData),
         ]
         let api = makeAPI()
         let result = await api.fetchAuthenticatedTrackingURLs(videoId: "testvid123")
@@ -174,7 +183,7 @@ struct AuthenticatedTrackingURLsTests {
         // (the same endpoint the IFrame player and youtube.com use), which does.
         StubURLProtocol.responses = [
             "youtube.com/": (200, Data("\"STS\":12345".utf8)),
-            "youtubei/v1/player": (200, Data("{}".utf8))
+            "youtubei/v1/player": (200, Data("{}".utf8)),
         ]
         StubURLProtocol.capturedURLs = [:]
         let api = makeAPI()
@@ -184,8 +193,10 @@ struct AuthenticatedTrackingURLsTests {
             Issue.record("No request URL captured for /player")
             return
         }
-        #expect(playerURL.host?.contains("www.youtube.com") == true,
-                "Tracking-URLs fetch must hit www.youtube.com (where playbackTracking is returned), not youtubei.googleapis.com. Captured: \(playerURL.absoluteString)")
+        #expect(
+            playerURL.host?.contains("www.youtube.com") == true,
+            "Tracking-URLs fetch must hit www.youtube.com (where playbackTracking is returned), not youtubei.googleapis.com. Captured: \(playerURL.absoluteString)"
+        )
     }
 
     @Test("fetchAuthenticatedTrackingURLs uses SAPISIDHASH auth when SAPISID is present")
@@ -198,7 +209,7 @@ struct AuthenticatedTrackingURLsTests {
         // modes; SAPISIDHASH is the canonical "legitimate web session" mode.
         StubURLProtocol.responses = [
             "youtube.com/": (200, Data("\"STS\":12345".utf8)),
-            "youtubei/v1/player": (200, Data("{}".utf8))
+            "youtubei/v1/player": (200, Data("{}".utf8)),
         ]
         StubURLProtocol.capturedHeaders = [:]
         let api = makeAPI()
@@ -210,11 +221,15 @@ struct AuthenticatedTrackingURLsTests {
             return
         }
         let auth = playerHeaders["Authorization"] ?? playerHeaders["authorization"]
-        #expect(auth?.hasPrefix("SAPISIDHASH ") == true,
-                "With SAPISID set, request must use SAPISIDHASH Authorization (the only auth scheme www.youtube.com accepts for web-client nameIDs). Captured Authorization: \(auth ?? "<none>")")
+        #expect(
+            auth?.hasPrefix("SAPISIDHASH ") == true,
+            "With SAPISID set, request must use SAPISIDHASH Authorization (the only auth scheme www.youtube.com accepts for web-client nameIDs). Captured Authorization: \(auth ?? "<none>")"
+        )
         // The X-Origin header is required for SAPISIDHASH auth (per postWebSafari's existing wiring).
-        #expect(playerHeaders["X-Origin"] == "1",
-                "SAPISIDHASH auth requires X-Origin: 1 (set by postWebSafari). Captured headers: \(playerHeaders.keys.sorted())")
+        #expect(
+            playerHeaders["X-Origin"] == "1",
+            "SAPISIDHASH auth requires X-Origin: 1 (set by postWebSafari). Captured headers: \(playerHeaders.keys.sorted())"
+        )
     }
 
     // MARK: - Safety net: fallback URL c= parameter
@@ -230,9 +245,11 @@ struct AuthenticatedTrackingURLsTests {
         let watchtime = InnerTubeAPI.fallbackWatchtimeURLForTesting(videoId: "abc123")
         let playbackComps = URLComponents(url: playback, resolvingAgainstBaseURL: false)
         let watchtimeComps = URLComponents(url: watchtime, resolvingAgainstBaseURL: false)
-        #expect(playbackComps?.queryItems?.contains(where: { $0.name == "c" && $0.value == "TVHTML5" }) == true,
-                "fallbackPlaybackURL must include c=TVHTML5. Actual: \(playback.absoluteString)")
-        #expect(watchtimeComps?.queryItems?.contains(where: { $0.name == "c" && $0.value == "TVHTML5" }) == true,
-                "fallbackWatchtimeURL must include c=TVHTML5. Actual: \(watchtime.absoluteString)")
+        #expect(
+            playbackComps?.queryItems?.contains(where: { $0.name == "c" && $0.value == "TVHTML5" }) == true,
+            "fallbackPlaybackURL must include c=TVHTML5. Actual: \(playback.absoluteString)")
+        #expect(
+            watchtimeComps?.queryItems?.contains(where: { $0.name == "c" && $0.value == "TVHTML5" }) == true,
+            "fallbackWatchtimeURL must include c=TVHTML5. Actual: \(watchtime.absoluteString)")
     }
 }

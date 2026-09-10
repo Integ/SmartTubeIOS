@@ -1,5 +1,5 @@
-import SwiftUI
 import SmartTubeIOSCore
+import SwiftUI
 
 // MARK: - ChannelListView
 //
@@ -19,7 +19,9 @@ struct ChannelListView: View {
             LazyVStack(spacing: 0) {
                 ForEach(channels) { channel in
                     #if os(tvOS)
-                    Button { onSelect(channel) } label: {
+                    Button {
+                        onSelect(channel)
+                    } label: {
                         ChannelListRow(channel: channel)
                             .background(
                                 focusedChannelId == channel.id
@@ -79,9 +81,9 @@ private struct ChannelListRow: View {
                 switch phase {
                 case .success(let img):
                     img.resizable()
-                       .aspectRatio(contentMode: .fill)
-                       .frame(width: 48, height: 48)
-                       .clipShape(Circle())
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 48, height: 48)
+                        .clipShape(Circle())
                 default:
                     avatarPlaceholder
                 }

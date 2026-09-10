@@ -159,15 +159,17 @@ final class TOSPlayerIOSUITests: XCTestCase {
 
         let side = 12
         var pixels = [UInt8](repeating: 0, count: side * side * 4)
-        guard let context = CGContext(
-            data: &pixels,
-            width: side,
-            height: side,
-            bitsPerComponent: 8,
-            bytesPerRow: side * 4,
-            space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        ) else { return 255 }
+        guard
+            let context = CGContext(
+                data: &pixels,
+                width: side,
+                height: side,
+                bitsPerComponent: 8,
+                bytesPerRow: side * 4,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+            )
+        else { return 255 }
         context.draw(cropped, in: CGRect(x: 0, y: 0, width: side, height: side))
 
         var total: CGFloat = 0
@@ -186,7 +188,8 @@ final class TOSPlayerIOSUITests: XCTestCase {
         for style in ["Light", "Dark"] {
             launchApp(extraArguments: ["-AppleInterfaceStyle", style])
             guard let cards = waitForVideoCards(),
-                  let card = firstNonShortCard(from: cards) else {
+                let card = firstNonShortCard(from: cards)
+            else {
                 throw XCTSkip("No non-short video card found in \(style) appearance")
             }
 
@@ -232,11 +235,13 @@ final class TOSPlayerIOSUITests: XCTestCase {
         // (TOSPlayerViewModel.loadEmbed). If error.153 still fires, treat it
         // as a FAILURE (the fix didn't take, or there's a new cause) — not
         // a skip.
-        let readyNote        = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.ready")
-        let pageVisibleNote  = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.pagevisible")
-        let timeadvancedNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.timeadvanced")
-        let error153Note     = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.error.153")
-        let errorNote        = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.error")
+        let readyNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.ready")
+        let pageVisibleNote = XCTDarwinNotificationExpectation(
+            notificationName: "com.void.smarttube.tosplayer.pagevisible")
+        let timeadvancedNote = XCTDarwinNotificationExpectation(
+            notificationName: "com.void.smarttube.tosplayer.timeadvanced")
+        let error153Note = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.error.153")
+        let errorNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.error")
 
         // ── 2. Wait for IFrame ready ────────────────────────────────────────
         // NO stateLabel UI query here. `stateLabel.waitForExistence` triggers
@@ -250,7 +255,8 @@ final class TOSPlayerIOSUITests: XCTestCase {
         // up — no UI query needed.
         let readyResult = XCTWaiter().wait(for: [readyNote], timeout: 30)
         guard readyResult == .completed else {
-            throw XCTSkip("onPlayerReady never fired within 30 s — IFrame embed failed to load (network/YouTube availability)")
+            throw XCTSkip(
+                "onPlayerReady never fired within 30 s — IFrame embed failed to load (network/YouTube availability)")
         }
         print("[TOS-iOS] ✓ IFrame ready — YouTube embed loaded")
 
@@ -269,7 +275,9 @@ final class TOSPlayerIOSUITests: XCTestCase {
         if pageVisibleResult == .completed {
             print("[TOS-iOS] ✓ WKWebView visible — pageVisible received")
         } else {
-            print("[TOS-iOS] ⚠️ pageVisible never fired within 8s — proceeding to timeadvanced wait anyway (will likely time out → skip with error.153)")
+            print(
+                "[TOS-iOS] ⚠️ pageVisible never fired within 8s — proceeding to timeadvanced wait anyway (will likely time out → skip with error.153)"
+            )
         }
 
         // ── 4. Wait for timeadvanced (strict "video is actually playing").
@@ -288,31 +296,30 @@ final class TOSPlayerIOSUITests: XCTestCase {
                 errAttachment.name = "tosPlayerIOSSmoke_error153_staleTVSession"
                 errAttachment.lifetime = .keepAlways
                 add(errAttachment)
-                try? errShot.pngRepresentation.write(to: URL(fileURLWithPath: "/tmp/smarttube-logs/tosPlayerIOSSmoke_error153.png"))
+                try? errShot.pngRepresentation.write(
+                    to: URL(fileURLWithPath: "/tmp/smarttube-logs/tosPlayerIOSSmoke_error153.png"))
                 throw XCTSkip(
-                    "YouTube IFrame fired error 153 (player-config-error) after the IFrame " +
-                    "had already authenticated the user and loaded the video metadata " +
-                    "(title, channel, duration all visible in the player UI). ROOT CAUSE " +
-                    "(verified 2026-07-14): the simulator's YouTube TV device-code " +
-                    "session is stale server-side — the `__Secure-YT_TVFAS` and " +
-                    "`__Secure-YT_DERP` cookies in the simulator are from an old sign-in " +
-                    "and are no longer honored for stream playback. The " +
-                    "HTTPCookieStorage → WKWebsiteDataStore cookie sync fix " +
-                    "(TOSPlayerViewModel.syncYouTubeCookiesIntoWKWebView + " +
-                    "ShortsEmbedPlayerViewModel.syncYouTubeCookiesIntoWKWebView) IS " +
-                    "working — log line '[loadEmbed] syncYouTubeCookiesIntoWKWebView: " +
-                    "copying 8 cookies → WKWebsiteDataStore' fires on every IFrame " +
-                    "load, and the IFrame now gets past the initial player-config " +
-                    "check and into the stream-fetch stage (it was failing at IFrame " +
-                    "load before the fix). The remaining error 153 is a different " +
-                    "check — the stream-license check — and it requires a fresh " +
-                    "`__Secure-YT_TVFAS`. " +
-                    "TO FIX: launch the app, sign out of YouTube TV (Settings → " +
-                    "Sign out), then sign back in via the YouTube TV device-code " +
-                    "flow. After a fresh sign-in, the new cookies in binarycookies " +
-                    "will be honored by the IFrame and the test will pass. " +
-                    "See /tmp/smarttube-logs/tosPlayerIOSSmoke_error153.png for the " +
-                    "YouTube error overlay."
+                    "YouTube IFrame fired error 153 (player-config-error) after the IFrame "
+                        + "had already authenticated the user and loaded the video metadata "
+                        + "(title, channel, duration all visible in the player UI). ROOT CAUSE "
+                        + "(verified 2026-07-14): the simulator's YouTube TV device-code "
+                        + "session is stale server-side — the `__Secure-YT_TVFAS` and "
+                        + "`__Secure-YT_DERP` cookies in the simulator are from an old sign-in "
+                        + "and are no longer honored for stream playback. The "
+                        + "HTTPCookieStorage → WKWebsiteDataStore cookie sync fix "
+                        + "(TOSPlayerViewModel.syncYouTubeCookiesIntoWKWebView + "
+                        + "ShortsEmbedPlayerViewModel.syncYouTubeCookiesIntoWKWebView) IS "
+                        + "working — log line '[loadEmbed] syncYouTubeCookiesIntoWKWebView: "
+                        + "copying 8 cookies → WKWebsiteDataStore' fires on every IFrame "
+                        + "load, and the IFrame now gets past the initial player-config "
+                        + "check and into the stream-fetch stage (it was failing at IFrame "
+                        + "load before the fix). The remaining error 153 is a different "
+                        + "check — the stream-license check — and it requires a fresh " + "`__Secure-YT_TVFAS`. "
+                        + "TO FIX: launch the app, sign out of YouTube TV (Settings → "
+                        + "Sign out), then sign back in via the YouTube TV device-code "
+                        + "flow. After a fresh sign-in, the new cookies in binarycookies "
+                        + "will be honored by the IFrame and the test will pass. "
+                        + "See /tmp/smarttube-logs/tosPlayerIOSSmoke_error153.png for the " + "YouTube error overlay."
                 )
             }
             // Neither timeadvanced nor error.153 fired in 30s — something
@@ -322,13 +329,15 @@ final class TOSPlayerIOSUITests: XCTestCase {
             dbgAttachment.name = "tosPlayerIOSSmoke_stuckAtT0"
             dbgAttachment.lifetime = .keepAlways
             add(dbgAttachment)
-            try? dbg.pngRepresentation.write(to: URL(fileURLWithPath: "/tmp/smarttube-logs/tosPlayerIOSSmoke_stuckAtT0.png"))
-            XCTAssertEqual(timeAdvResult, .completed,
-                "tosplayer.timeadvanced never fired within 30 s and no error.153 was observed. " +
-                "The video playhead is stuck at t=0 with no diagnostic. See " +
-                "/tmp/smarttube-logs/tosPlayerIOSSmoke_stuckAtT0.png and inspect the device log " +
-                "for '[ytCallback]' events to diagnose. Likely causes: autoplay blocked, JS bridge " +
-                "broken, or an unexpected IFrame error code (not 153).")
+            try? dbg.pngRepresentation.write(
+                to: URL(fileURLWithPath: "/tmp/smarttube-logs/tosPlayerIOSSmoke_stuckAtT0.png"))
+            XCTAssertEqual(
+                timeAdvResult, .completed,
+                "tosplayer.timeadvanced never fired within 30 s and no error.153 was observed. "
+                    + "The video playhead is stuck at t=0 with no diagnostic. See "
+                    + "/tmp/smarttube-logs/tosPlayerIOSSmoke_stuckAtT0.png and inspect the device log "
+                    + "for '[ytCallback]' events to diagnose. Likely causes: autoplay blocked, JS bridge "
+                    + "broken, or an unexpected IFrame error code (not 153).")
         }
         print("[TOS-iOS] ✓ timeadvanced fired — video playhead moved past t=0.1 in playing state")
 
@@ -354,7 +363,8 @@ final class TOSPlayerIOSUITests: XCTestCase {
         //        the production app's behavior).
         Thread.sleep(forTimeInterval: 1.0)
         let t1Path = "/tmp/smarttube-logs/tosPlayerIOSSmoke_t1.png"
-        let snapshotTaken1 = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.snapshot.taken")
+        let snapshotTaken1 = XCTDarwinNotificationExpectation(
+            notificationName: "com.void.smarttube.tosplayer.snapshot.taken")
         CFNotificationCenterPostNotification(
             CFNotificationCenterGetDarwinNotifyCenter(),
             CFNotificationName("com.void.smarttube.tosplayer.takesnapshot" as CFString),
@@ -371,7 +381,8 @@ final class TOSPlayerIOSUITests: XCTestCase {
         // ── 6. Wait 3 seconds, then snapshot #2 (also informational) ─────
         Thread.sleep(forTimeInterval: 3.0)
         let t2Path = "/tmp/smarttube-logs/tosPlayerIOSSmoke_t2.png"
-        let snapshotTaken2 = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.snapshot.taken")
+        let snapshotTaken2 = XCTDarwinNotificationExpectation(
+            notificationName: "com.void.smarttube.tosplayer.snapshot.taken")
         CFNotificationCenterPostNotification(
             CFNotificationCenterGetDarwinNotifyCenter(),
             CFNotificationName("com.void.smarttube.tosplayer.takesnapshot" as CFString),
@@ -510,14 +521,16 @@ final class TOSPlayerIOSUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 0.5)
 
         let lockButton = app.buttons["tosPlayer.landscapeLockButton"]
-        XCTAssertTrue(lockButton.waitForExistence(timeout: 10),
-                      "tosPlayer.landscapeLockButton must appear in the player controls overlay")
+        XCTAssertTrue(
+            lockButton.waitForExistence(timeout: 10),
+            "tosPlayer.landscapeLockButton must appear in the player controls overlay")
         XCTAssertTrue(lockButton.isHittable, "Landscape lock button must be tappable once controls are shown")
 
         // Tap to lock landscape.
         lockButton.tap()
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must remain running after tapping the landscape lock button")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must remain running after tapping the landscape lock button")
         Thread.sleep(forTimeInterval: 2)
 
         // Tap again to unlock — re-reveal controls first since they may have
@@ -526,8 +539,9 @@ final class TOSPlayerIOSUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 0.5)
         XCTAssertTrue(lockButton.waitForExistence(timeout: 5), "Lock button must still exist after first tap")
         lockButton.tap()
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must remain running after unlocking")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must remain running after unlocking")
     }
 
     /// Regression test for GitHub #111: "Tap on video to move the slider
@@ -581,8 +595,10 @@ final class TOSPlayerIOSUITests: XCTestCase {
         // 1s and should bring playback back. Give it a margin beyond that.
         let resumedNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.playing")
         let resumeResult = XCTWaiter().wait(for: [resumedNote], timeout: 3)
-        XCTAssertEqual(resumeResult, .completed,
-            "Tap caused a spurious pause and playback never resumed — TOSPlayerView's detect-and-undo recovery did not fire")
+        XCTAssertEqual(
+            resumeResult, .completed,
+            "Tap caused a spurious pause and playback never resumed — TOSPlayerView's detect-and-undo recovery did not fire"
+        )
     }
 
     /// Regression test for GitHub #51/#78 follow-up: watch history still didn't
@@ -608,7 +624,8 @@ final class TOSPlayerIOSUITests: XCTestCase {
         // ~280ms), so registering durationKnown only after waiting for
         // playingNote loses the race almost every time.
         let playingNote = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.playing")
-        let durationKnown = XCTDarwinNotificationExpectation(notificationName: "com.void.smarttube.tosplayer.durationknown")
+        let durationKnown = XCTDarwinNotificationExpectation(
+            notificationName: "com.void.smarttube.tosplayer.durationknown")
         guard openTOSPlayer(from: card) != nil else {
             throw XCTSkip("tosPlayer.stateLabel did not appear — TOS player was not opened")
         }
@@ -616,8 +633,10 @@ final class TOSPlayerIOSUITests: XCTestCase {
             throw XCTSkip("playing notification never fired — IFrame embed failed to load")
         }
         let result = XCTWaiter().wait(for: [durationKnown], timeout: 10)
-        XCTAssertEqual(result, .completed,
-            "REGRESSION #51/#78: duration never became known from tick — watch history checkpoint would be skipped on dismiss")
+        XCTAssertEqual(
+            result, .completed,
+            "REGRESSION #51/#78: duration never became known from tick — watch history checkpoint would be skipped on dismiss"
+        )
     }
 }
-#endif // os(iOS)
+#endif  // os(iOS)

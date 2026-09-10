@@ -15,13 +15,13 @@ private let tosLog = Logger(subsystem: "com.void.smarttube.app", category: "TOSP
 
 /// Maps the numeric state code returned by the YouTube IFrame API.
 enum YTPlayerState: Int {
-    case unstarted  = -1
-    case ended      =  0
-    case playing    =  1
-    case paused     =  2
-    case buffering  =  3
-    case cued       =  5
-    case unknown    = 999
+    case unstarted = -1
+    case ended = 0
+    case playing = 1
+    case paused = 2
+    case buffering = 3
+    case cued = 5
+    case unknown = 999
 
     init(raw: Int) {
         self = YTPlayerState(rawValue: raw) ?? .unknown
@@ -243,7 +243,11 @@ final class TOSPlayerViewModel: NSObject {
 
     // MARK: - Init
 
-    init(videoId: String, title: String = "", channelId: String? = nil, channelTitle: String = "", thumbnailURL: URL? = nil, playlistId: String? = nil, playlistIndex: Int? = nil, startTime: Double = 0, api: InnerTubeAPI) {
+    init(
+        videoId: String, title: String = "", channelId: String? = nil, channelTitle: String = "",
+        thumbnailURL: URL? = nil, playlistId: String? = nil, playlistIndex: Int? = nil, startTime: Double = 0,
+        api: InnerTubeAPI
+    ) {
         self.videoId = videoId
         self.videoTitle = title
         self.channelId = channelId
@@ -320,9 +324,9 @@ final class TOSPlayerViewModel: NSObject {
         // Same user agent as `YouTubeClientCredentials.swift` (TVHTML5 bot
         // scraping) and the yuliskov Android SmartTube app's TV WebView
         // config — confirmed to work against YouTube's TV auth path.
-        self.webView.customUserAgent = "Mozilla/5.0 (SMART-TV; Linux; Tizen 5.0) " +
-            "AppleWebKit/537.36 (KHTML, like Gecko) " +
-            "SamsungBrowser/2.1 Chrome/56.0.2924.0 TV Safari/537.36"
+        self.webView.customUserAgent =
+            "Mozilla/5.0 (SMART-TV; Linux; Tizen 5.0) " + "AppleWebKit/537.36 (KHTML, like Gecko) "
+            + "SamsungBrowser/2.1 Chrome/56.0.2924.0 TV Safari/537.36"
         #if os(macOS)
         // NSView-level KVC — not available on iOS UIView.
         self.webView.setValue(false, forKey: "drawsBackground")
@@ -380,7 +384,9 @@ final class TOSPlayerViewModel: NSObject {
         // uses the cover-present, where a small delay is still needed.
         let useInlinePresentation = ProcessInfo.processInfo.arguments.contains("--uitesting-inline-tos")
         let delaySeconds: TimeInterval = useInlinePresentation ? 0.3 : 1.5
-        tosLog.notice("[vm] startIfNeededWhenWindowReady — useInlinePresentation=\(useInlinePresentation) delaySeconds=\(delaySeconds)")
+        tosLog.notice(
+            "[vm] startIfNeededWhenWindowReady — useInlinePresentation=\(useInlinePresentation) delaySeconds=\(delaySeconds)"
+        )
         // Using DispatchQueue.main.asyncAfter (not a Task @MainActor in)
         // because Tasks get cancelled by the SwiftUI re-render cycle before
         // the sleep completes — asyncAfter isn't subject to view-lifecycle
@@ -390,7 +396,9 @@ final class TOSPlayerViewModel: NSObject {
                 tosLog.notice("[vm] asyncAfter fired but self is nil — skipping")
                 return
             }
-            tosLog.notice("[vm] asyncAfter fired, webView isNil=\(self.webView == nil), calling loadEmbed directly (no Task wrapper)")
+            tosLog.notice(
+                "[vm] asyncAfter fired, webView isNil=\(self.webView == nil), calling loadEmbed directly (no Task wrapper)"
+            )
             Task { @MainActor in
                 await self.syncYouTubeCookiesIntoWKWebView()
                 tosLog.notice("[vm] cookies synced, calling loadEmbed")
@@ -438,7 +446,10 @@ final class TOSPlayerViewModel: NSObject {
     // MARK: - JS Commands (operating on YouTube embed page's <video> element)
 
     func play() {
-        eval("play", "(function(){var v=document.querySelector('video');var ifr=document.querySelectorAll('iframe').length;if(v){v.play();}return {found: !!v, iframes: ifr, paused: v ? v.paused : null};})();")
+        eval(
+            "play",
+            "(function(){var v=document.querySelector('video');var ifr=document.querySelectorAll('iframe').length;if(v){v.play();}return {found: !!v, iframes: ifr, paused: v ? v.paused : null};})();"
+        )
     }
 
     /// Stops playback — including audio — regardless of which frame the `<video>`
@@ -473,7 +484,9 @@ final class TOSPlayerViewModel: NSObject {
     func pause() {
         let stateBefore = playerState
         let timeBefore = currentTime
-        tosLog.notice("[pause] requested — playerState=\(String(describing: stateBefore), privacy: .public) currentTime=\(timeBefore, format: .fixed(precision: 1))s")
+        tosLog.notice(
+            "[pause] requested — playerState=\(String(describing: stateBefore), privacy: .public) currentTime=\(timeBefore, format: .fixed(precision: 1))s"
+        )
         // Strong capture deliberate (mirrors saveProgress()/beginWatchtimeTracking()):
         // this fires from onDisappear, where SwiftUI may release `self` (and thus
         // `webView`) at any moment — [weak self] would race losing the webView
@@ -481,7 +494,9 @@ final class TOSPlayerViewModel: NSObject {
         // reintroducing the exact bug this method exists to fix.
         Task {
             await self.webView.pauseAllMediaPlayback()
-            tosLog.notice("[pause] pauseAllMediaPlayback completed (was playerState=\(String(describing: stateBefore), privacy: .public) currentTime=\(timeBefore, format: .fixed(precision: 1))s)")
+            tosLog.notice(
+                "[pause] pauseAllMediaPlayback completed (was playerState=\(String(describing: stateBefore), privacy: .public) currentTime=\(timeBefore, format: .fixed(precision: 1))s)"
+            )
             // Cross-process signal for XCTest — lets a UI test `wait(for:)` confirmation
             // that the OS-level "stop everything" pause actually completed when the
             // player is dismissed, instead of guessing a sleep duration. Mirrors the
@@ -495,15 +510,24 @@ final class TOSPlayerViewModel: NSObject {
         // Diagnostic-only (kept for ongoing monitoring — see eval()'s comment): proves
         // empirically, on every pause() call, that the main-frame query keeps finding
         // nothing. Harmless no-op against the wrapper page's empty `document.querySelector`.
-        eval("pause", "(function(){var v=document.querySelector('video');var ifr=document.querySelectorAll('iframe').length;if(v){v.pause();}return {found: !!v, iframes: ifr, paused: v ? v.paused : null};})();")
+        eval(
+            "pause",
+            "(function(){var v=document.querySelector('video');var ifr=document.querySelectorAll('iframe').length;if(v){v.pause();}return {found: !!v, iframes: ifr, paused: v ? v.paused : null};})();"
+        )
     }
 
     func seekTo(_ seconds: Double) {
-        eval("seekTo(\(seconds))", "(function(){var v=document.querySelector('video');var ifr=document.querySelectorAll('iframe').length;if(v){v.currentTime=\(seconds);}return {found: !!v, iframes: ifr, currentTime: v ? v.currentTime : null};})();")
+        eval(
+            "seekTo(\(seconds))",
+            "(function(){var v=document.querySelector('video');var ifr=document.querySelectorAll('iframe').length;if(v){v.currentTime=\(seconds);}return {found: !!v, iframes: ifr, currentTime: v ? v.currentTime : null};})();"
+        )
     }
 
     func setPlaybackRate(_ rate: Double) {
-        eval("setPlaybackRate(\(rate))", "(function(){var v=document.querySelector('video');var ifr=document.querySelectorAll('iframe').length;if(v){v.playbackRate=\(rate);}return {found: !!v, iframes: ifr, playbackRate: v ? v.playbackRate : null};})();")
+        eval(
+            "setPlaybackRate(\(rate))",
+            "(function(){var v=document.querySelector('video');var ifr=document.querySelectorAll('iframe').length;if(v){v.playbackRate=\(rate);}return {found: !!v, iframes: ifr, playbackRate: v ? v.playbackRate : null};})();"
+        )
     }
 
     // MARK: - Private helpers
@@ -528,7 +552,8 @@ final class TOSPlayerViewModel: NSObject {
         webView.evaluateJavaScript(js, in: embedFrameInfo, in: .page) { result in
             switch result {
             case .success(let value):
-                tosLog.notice("[eval] \(label, privacy: .public) result: \(String(describing: value), privacy: .public)")
+                tosLog.notice(
+                    "[eval] \(label, privacy: .public) result: \(String(describing: value), privacy: .public)")
             case .failure(let error):
                 tosLog.notice("[eval] \(label, privacy: .public) ERROR: \(String(describing: error), privacy: .public)")
             }
@@ -574,14 +599,18 @@ final class TOSPlayerViewModel: NSObject {
     private func syncYouTubeCookiesIntoWKWebView() async {
         let yt = URL(string: "https://www.youtube.com")!
         let google = URL(string: "https://www.google.com")!
-        let cookies = (HTTPCookieStorage.shared.cookies(for: yt) ?? []) +
-                      (HTTPCookieStorage.shared.cookies(for: google) ?? [])
+        let cookies =
+            (HTTPCookieStorage.shared.cookies(for: yt) ?? []) + (HTTPCookieStorage.shared.cookies(for: google) ?? [])
         guard !cookies.isEmpty else {
-            tosLog.notice("[loadEmbed] syncYouTubeCookiesIntoWKWebView: no youtube/google cookies in HTTPCookieStorage — IFrame will run unauthenticated")
+            tosLog.notice(
+                "[loadEmbed] syncYouTubeCookiesIntoWKWebView: no youtube/google cookies in HTTPCookieStorage — IFrame will run unauthenticated"
+            )
             return
         }
         let names = cookies.map { "\($0.name)@\($0.domain)" }.joined(separator: " ")
-        tosLog.notice("[loadEmbed] syncYouTubeCookiesIntoWKWebView: copying \(cookies.count) cookies → WKWebsiteDataStore: \(names as NSString)")
+        tosLog.notice(
+            "[loadEmbed] syncYouTubeCookiesIntoWKWebView: copying \(cookies.count) cookies → WKWebsiteDataStore: \(names as NSString)"
+        )
         let store = WKWebsiteDataStore.default().httpCookieStore
         await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
             let group = DispatchGroup()
@@ -619,14 +648,14 @@ final class TOSPlayerViewModel: NSObject {
         // dispatch-group round-tripping for the IFrame.
         var comps = URLComponents(string: "https://www.youtube.com/embed/\(videoId)")!
         comps.queryItems = [
-            URLQueryItem(name: "autoplay",       value: "1"),
-            URLQueryItem(name: "mute",           value: "1"),
-            URLQueryItem(name: "controls",       value: "1"),
-            URLQueryItem(name: "playsinline",    value: "1"),
-            URLQueryItem(name: "rel",            value: "0"),
+            URLQueryItem(name: "autoplay", value: "1"),
+            URLQueryItem(name: "mute", value: "1"),
+            URLQueryItem(name: "controls", value: "1"),
+            URLQueryItem(name: "playsinline", value: "1"),
+            URLQueryItem(name: "rel", value: "0"),
             URLQueryItem(name: "iv_load_policy", value: "3"),
-            URLQueryItem(name: "start",          value: "\(Int(startTime))"),
-            URLQueryItem(name: "origin",         value: "https://www.example.com"),
+            URLQueryItem(name: "start", value: "\(Int(startTime))"),
+            URLQueryItem(name: "origin", value: "https://www.example.com"),
         ]
         let embedURL = comps.url!
         tosLog.notice("[loadEmbed] loading \(embedURL)")
@@ -640,25 +669,25 @@ final class TOSPlayerViewModel: NSObject {
         // directly as the top-level document makes window.parent === window,
         // which causes YouTube to fire error 153 for all videos.
         let html = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta name="viewport" content="width=device-width,initial-scale=1">
-            <style>
-                html,body,iframe{margin:0;padding:0;border:0;width:100%;height:100%;background:#000}
-                iframe{position:absolute;top:0;left:0}
-            </style>
-        </head>
-        <body>
-            <iframe id="yt"
-                src="\(embedURL.absoluteString)"
-                frameborder="0"
-                allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-                allowfullscreen>
-            </iframe>
-        </body>
-        </html>
-        """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta name="viewport" content="width=device-width,initial-scale=1">
+                <style>
+                    html,body,iframe{margin:0;padding:0;border:0;width:100%;height:100%;background:#000}
+                    iframe{position:absolute;top:0;left:0}
+                </style>
+            </head>
+            <body>
+                <iframe id="yt"
+                    src="\(embedURL.absoluteString)"
+                    frameborder="0"
+                    allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                    allowfullscreen>
+                </iframe>
+            </body>
+            </html>
+            """
         // Use a real baseURL so the parent page has a non-null cross-origin origin.
         // This gives iframe HTTP requests a proper Referer and Sec-Fetch-Site: cross-site
         // header (matching a legitimate third-party embed). nil/about:blank produces
@@ -673,230 +702,230 @@ final class TOSPlayerViewModel: NSObject {
     /// script runs so YouTube's player can't detect the WKWebView environment. Stores
     /// the native ytCallback reference as window.__nativeYTCallback for stateDetectionJS.
     private static let webkitHiderJS: String = """
-    (function() {
-        try {
-            var wk = window.webkit;
-            if (!wk) return;
-            var mh = wk.messageHandlers;
-            window.__nativeYTCallback = (mh && mh.ytCallback) ? mh.ytCallback : null;
-            Object.defineProperty(window, 'webkit', {
-                get: function() { return undefined; },
-                set: function() {},
-                configurable: true,
-                enumerable: false
-            });
-        } catch(e) {}
-    })();
-    """
+        (function() {
+            try {
+                var wk = window.webkit;
+                if (!wk) return;
+                var mh = wk.messageHandlers;
+                window.__nativeYTCallback = (mh && mh.ytCallback) ? mh.ytCallback : null;
+                Object.defineProperty(window, 'webkit', {
+                    get: function() { return undefined; },
+                    set: function() {},
+                    configurable: true,
+                    enumerable: false
+                });
+            } catch(e) {}
+        })();
+        """
 
     /// JavaScript injected at document-end into the YouTube embed page.
     /// Polls the `<video>` element and relays state via window.__nativeYTCallback
     /// (saved by webkitHiderJS before window.webkit was hidden).
     private static let stateDetectionJS: String = """
-    (function() {
-        try {
-            var _cb = window.__nativeYTCallback;
-            if (_cb) _cb.postMessage('{"type":"ping"}');
-        } catch(e) {}
-
-        var _prevState = -2;
-        var _playAttempts = 0;
-        var _autoUnmuted = false;
-        var _pausedCandidate = false;
-        var _prevMuted = null;
-        // Set to true by visibilitychange when the page hides (app backgrounds).
-        // Cleared when we detect a mute→true transition caused by the hide, so the
-        // subsequent false→true mute is attributed to iOS, not to the user.
-        var _wasHidden = false;
-        // When > 0, pollVideo re-applies unmute each tick and decrements.
-        // Started when we detect iOS re-muted the video after a background event.
-        // Cap of 12 polls ≈ 3 seconds — enough for YouTube's player to finish
-        // re-initialising after setAllMediaPlaybackSuspended(false), but short enough
-        // that we don't fight a user-intentional mute forever.
-        var _bgRemutePollRetries = 0;
-
-        function postMsg(obj) {
+        (function() {
             try {
-                var cb = window.__nativeYTCallback;
-                if (cb) cb.postMessage(JSON.stringify(obj));
+                var _cb = window.__nativeYTCallback;
+                if (_cb) _cb.postMessage('{"type":"ping"}');
             } catch(e) {}
-        }
 
-        // Page Visibility API — fires when the app backgrounds (hidden=true) or
-        // returns to foreground (hidden=false). Used to distinguish iOS background
-        // re-muting from a user-intentional mute: if video.muted flips to true
-        // within a poll or two of becoming hidden, it's the OS, not the user.
-        //
-        // Also: when the WKWebView becomes visible again, iOS often leaves the
-        // <video> element paused (the WKWebView was hidden briefly during
-        // XCUITest's UI query or system events; iOS pauses HTML5 video on view
-        // hide and doesn't auto-resume). We call video.play() on the
-        // visible transition to recover — without this, the video stays
-        // stuck in buffering state=3 at t=0 and `timeadvanced` never fires,
-        // which breaks TOSPlayerIOSUITests.testTOSPlayerIOSSmoke's strict
-        // "video is actually playing" assertion. The play() is silent
-        // (catch-swallowed) because iOS may reject the call if no user
-        // gesture has been seen for several minutes — that's fine, the
-        // user will be tapping the screen and play() will work then.
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                _wasHidden = true;
-                postMsg({type: 'pageHidden'});
-            } else {
-                postMsg({type: 'pageVisible', wasHidden: _wasHidden});
-                // Page just became visible — reset the play-attempt counter so the
-                // poll loop's uncapped play() retries have a fresh budget. The cap
-                // was already removed (the test simulator's cover-present animation
-                // routinely takes >5s to finish), but resetting the counter here
-                // also ensures we don't keep trying to play forever after the page
-                // stabilised in a paused state.
-                _playAttempts = 0;
-                var v = document.querySelector('video');
-                if (v && v.paused) {
-                    var p = v.play();
+            var _prevState = -2;
+            var _playAttempts = 0;
+            var _autoUnmuted = false;
+            var _pausedCandidate = false;
+            var _prevMuted = null;
+            // Set to true by visibilitychange when the page hides (app backgrounds).
+            // Cleared when we detect a mute→true transition caused by the hide, so the
+            // subsequent false→true mute is attributed to iOS, not to the user.
+            var _wasHidden = false;
+            // When > 0, pollVideo re-applies unmute each tick and decrements.
+            // Started when we detect iOS re-muted the video after a background event.
+            // Cap of 12 polls ≈ 3 seconds — enough for YouTube's player to finish
+            // re-initialising after setAllMediaPlaybackSuspended(false), but short enough
+            // that we don't fight a user-intentional mute forever.
+            var _bgRemutePollRetries = 0;
+
+            function postMsg(obj) {
+                try {
+                    var cb = window.__nativeYTCallback;
+                    if (cb) cb.postMessage(JSON.stringify(obj));
+                } catch(e) {}
+            }
+
+            // Page Visibility API — fires when the app backgrounds (hidden=true) or
+            // returns to foreground (hidden=false). Used to distinguish iOS background
+            // re-muting from a user-intentional mute: if video.muted flips to true
+            // within a poll or two of becoming hidden, it's the OS, not the user.
+            //
+            // Also: when the WKWebView becomes visible again, iOS often leaves the
+            // <video> element paused (the WKWebView was hidden briefly during
+            // XCUITest's UI query or system events; iOS pauses HTML5 video on view
+            // hide and doesn't auto-resume). We call video.play() on the
+            // visible transition to recover — without this, the video stays
+            // stuck in buffering state=3 at t=0 and `timeadvanced` never fires,
+            // which breaks TOSPlayerIOSUITests.testTOSPlayerIOSSmoke's strict
+            // "video is actually playing" assertion. The play() is silent
+            // (catch-swallowed) because iOS may reject the call if no user
+            // gesture has been seen for several minutes — that's fine, the
+            // user will be tapping the screen and play() will work then.
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    _wasHidden = true;
+                    postMsg({type: 'pageHidden'});
+                } else {
+                    postMsg({type: 'pageVisible', wasHidden: _wasHidden});
+                    // Page just became visible — reset the play-attempt counter so the
+                    // poll loop's uncapped play() retries have a fresh budget. The cap
+                    // was already removed (the test simulator's cover-present animation
+                    // routinely takes >5s to finish), but resetting the counter here
+                    // also ensures we don't keep trying to play forever after the page
+                    // stabilised in a paused state.
+                    _playAttempts = 0;
+                    var v = document.querySelector('video');
+                    if (v && v.paused) {
+                        var p = v.play();
+                        if (p && p['catch']) { p['catch'](function() {}); }
+                    }
+                }
+            }, false);
+
+            // Watch for YouTube's error overlay appearing in the DOM. This fires when
+            // the player shows "Error 153 - Video player configuration error" (or similar)
+            // instead of loading the video. MutationObserver is used so the check runs
+            // asynchronously on DOM changes, not inside the pollVideo hot-path.
+            var _errorReported = false;
+            function checkErrorOverlay(node) {
+                if (_errorReported) return;
+                var errEl = node.nodeType === 1 && (
+                    (node.classList && node.classList.contains('ytp-error')) ||
+                    node.querySelector && node.querySelector('.ytp-error')
+                );
+                if (!errEl) return;
+                _errorReported = true;
+                var txt = (typeof errEl === 'object' ? (errEl.textContent || '') : (node.textContent || ''));
+                var m = txt.match(/Error\\s+(\\d+)/i);
+                postMsg({type: 'error', code: m ? parseInt(m[1], 10) : 153, text: txt.trim().substring(0, 200)});
+            }
+            var _observer = new MutationObserver(function(mutations) {
+                for (var i = 0; i < mutations.length; i++) {
+                    var added = mutations[i].addedNodes;
+                    for (var j = 0; j < added.length; j++) { checkErrorOverlay(added[j]); }
+                }
+            });
+            _observer.observe(document.documentElement, {childList: true, subtree: true});
+
+            function pollVideo() {
+                var video = document.querySelector('video');
+                if (!video) return;
+
+                // video.paused can flicker true→false within a single poll interval right
+                // after a resume (confirmed via live device log on the Shorts copy of this
+                // poll — see ShortsEmbedJS.swift's stateDetectionJS for the full story).
+                // Debounce: only commit to the paused state on the 2nd consecutive poll
+                // observing it after a playing state, so a transient blip doesn't get
+                // broadcast as a real pause. Already-paused readings (and ended) report
+                // immediately.
+                var rawPaused = video.paused;
+                var s;
+                if (video.ended) {
+                    s = 0;
+                    _pausedCandidate = false;
+                } else if (rawPaused) {
+                    var wasActivelyPlaying = (_prevState === 1 || _prevState === 3);
+                    if (wasActivelyPlaying && !_pausedCandidate) {
+                        _pausedCandidate = true;
+                        s = _prevState;
+                    } else {
+                        s = 2;
+                    }
+                } else {
+                    _pausedCandidate = false;
+                    s = (video.readyState >= 3) ? 1 : 3;
+                }
+
+                var t = video.currentTime || 0;
+
+                if (_prevState === -2) {
+                    _prevState = s;
+                    postMsg({type: 'ready', duration: video.duration || 0,
+                             readyState: video.readyState, buffered: video.buffered.length});
+                }
+
+                // Kick off playback if YouTube's own autoplay didn't fire (common in WKWebView).
+                // Retry every poll, no cap — when the WKWebView finally becomes visible
+                // (cover-present animation completes, app returns from background, etc.)
+                // the next play() will succeed. The 20-poll cap that used to be here was
+                // removed because the test simulator's cover-present animation can take
+                // >5s on the first run, leaving the page hidden long enough to exhaust
+                // the old cap and leave the video stuck at t=0 indefinitely.
+                if (video.paused && t === 0) {
+                    _playAttempts++;
+                    video.muted = true;
+                    var p = video.play();
                     if (p && p['catch']) { p['catch'](function() {}); }
                 }
-            }
-        }, false);
 
-        // Watch for YouTube's error overlay appearing in the DOM. This fires when
-        // the player shows "Error 153 - Video player configuration error" (or similar)
-        // instead of loading the video. MutationObserver is used so the check runs
-        // asynchronously on DOM changes, not inside the pollVideo hot-path.
-        var _errorReported = false;
-        function checkErrorOverlay(node) {
-            if (_errorReported) return;
-            var errEl = node.nodeType === 1 && (
-                (node.classList && node.classList.contains('ytp-error')) ||
-                node.querySelector && node.querySelector('.ytp-error')
-            );
-            if (!errEl) return;
-            _errorReported = true;
-            var txt = (typeof errEl === 'object' ? (errEl.textContent || '') : (node.textContent || ''));
-            var m = txt.match(/Error\\s+(\\d+)/i);
-            postMsg({type: 'error', code: m ? parseInt(m[1], 10) : 153, text: txt.trim().substring(0, 200)});
-        }
-        var _observer = new MutationObserver(function(mutations) {
-            for (var i = 0; i < mutations.length; i++) {
-                var added = mutations[i].addedNodes;
-                for (var j = 0; j < added.length; j++) { checkErrorOverlay(added[j]); }
-            }
-        });
-        _observer.observe(document.documentElement, {childList: true, subtree: true});
-
-        function pollVideo() {
-            var video = document.querySelector('video');
-            if (!video) return;
-
-            // video.paused can flicker true→false within a single poll interval right
-            // after a resume (confirmed via live device log on the Shorts copy of this
-            // poll — see ShortsEmbedJS.swift's stateDetectionJS for the full story).
-            // Debounce: only commit to the paused state on the 2nd consecutive poll
-            // observing it after a playing state, so a transient blip doesn't get
-            // broadcast as a real pause. Already-paused readings (and ended) report
-            // immediately.
-            var rawPaused = video.paused;
-            var s;
-            if (video.ended) {
-                s = 0;
-                _pausedCandidate = false;
-            } else if (rawPaused) {
-                var wasActivelyPlaying = (_prevState === 1 || _prevState === 3);
-                if (wasActivelyPlaying && !_pausedCandidate) {
-                    _pausedCandidate = true;
-                    s = _prevState;
-                } else {
-                    s = 2;
+                // Auto-unmute once playback is CONFIRMED actively progressing. Loading
+                // muted (URL's mute=1 + the video.muted=true nudge above) exists solely
+                // to satisfy WebKit's autoplay policy — autoplay is only ever guaranteed
+                // to fire unmuted after a recent user gesture, so a muted start is the
+                // only reliable way to avoid landing on a frozen first frame. Once we can
+                // SEE forward progress (t advancing past startup), drop the mute exactly
+                // once. Gated by _autoUnmuted so a later user-initiated mute (via
+                // YouTube's own controls=1 chrome) is never fought/overridden.
+                //
+                // Both video.muted AND #movie_player.unMute() are needed: YouTube's
+                // player object keeps its own internal mute flag (seeded true from the
+                // mute=1 URL param) and periodically re-applies it onto video.muted,
+                // undoing a DOM-only override ~250ms later. unMute() updates that
+                // internal flag directly.
+                if (!_autoUnmuted && !video.paused && t > 0.1) {
+                    _autoUnmuted = true;
+                    video.muted = false;
+                    var ytPlayer = document.getElementById('movie_player');
+                    if (ytPlayer && typeof ytPlayer.unMute === 'function') { ytPlayer.unMute(); }
+                    postMsg({type: 'autoUnmuted', t: t, muted: video.muted});
                 }
-            } else {
-                _pausedCandidate = false;
-                s = (video.readyState >= 3) ? 1 : 3;
-            }
 
-            var t = video.currentTime || 0;
-
-            if (_prevState === -2) {
-                _prevState = s;
-                postMsg({type: 'ready', duration: video.duration || 0,
-                         readyState: video.readyState, buffered: video.buffered.length});
-            }
-
-            // Kick off playback if YouTube's own autoplay didn't fire (common in WKWebView).
-            // Retry every poll, no cap — when the WKWebView finally becomes visible
-            // (cover-present animation completes, app returns from background, etc.)
-            // the next play() will succeed. The 20-poll cap that used to be here was
-            // removed because the test simulator's cover-present animation can take
-            // >5s on the first run, leaving the page hidden long enough to exhaust
-            // the old cap and leave the video stuck at t=0 indefinitely.
-            if (video.paused && t === 0) {
-                _playAttempts++;
-                video.muted = true;
-                var p = video.play();
-                if (p && p['catch']) { p['catch'](function() {}); }
-            }
-
-            // Auto-unmute once playback is CONFIRMED actively progressing. Loading
-            // muted (URL's mute=1 + the video.muted=true nudge above) exists solely
-            // to satisfy WebKit's autoplay policy — autoplay is only ever guaranteed
-            // to fire unmuted after a recent user gesture, so a muted start is the
-            // only reliable way to avoid landing on a frozen first frame. Once we can
-            // SEE forward progress (t advancing past startup), drop the mute exactly
-            // once. Gated by _autoUnmuted so a later user-initiated mute (via
-            // YouTube's own controls=1 chrome) is never fought/overridden.
-            //
-            // Both video.muted AND #movie_player.unMute() are needed: YouTube's
-            // player object keeps its own internal mute flag (seeded true from the
-            // mute=1 URL param) and periodically re-applies it onto video.muted,
-            // undoing a DOM-only override ~250ms later. unMute() updates that
-            // internal flag directly.
-            if (!_autoUnmuted && !video.paused && t > 0.1) {
-                _autoUnmuted = true;
-                video.muted = false;
-                var ytPlayer = document.getElementById('movie_player');
-                if (ytPlayer && typeof ytPlayer.unMute === 'function') { ytPlayer.unMute(); }
-                postMsg({type: 'autoUnmuted', t: t, muted: video.muted});
-            }
-
-            // Track video.muted transitions. When we see false→true AFTER _autoUnmuted
-            // and the page was recently hidden, iOS re-muted the video during background.
-            // Start the retry cycle to fight it from inside the iframe (correct frame,
-            // always has access to movie_player) rather than from a Swift eval.
-            if (_prevMuted !== null && video.muted !== _prevMuted) {
-                if (video.muted && _autoUnmuted && _wasHidden) {
-                    // iOS re-muted after background — arm the retry loop.
-                    _wasHidden = false;
-                    _bgRemutePollRetries = 12;
-                    postMsg({type: 'bgRemute', t: t, retriesArmed: _bgRemutePollRetries});
-                } else if (video.muted && _autoUnmuted) {
-                    // Muted without a preceding background event — treat as user action.
-                    postMsg({type: 'userMute', t: t});
+                // Track video.muted transitions. When we see false→true AFTER _autoUnmuted
+                // and the page was recently hidden, iOS re-muted the video during background.
+                // Start the retry cycle to fight it from inside the iframe (correct frame,
+                // always has access to movie_player) rather than from a Swift eval.
+                if (_prevMuted !== null && video.muted !== _prevMuted) {
+                    if (video.muted && _autoUnmuted && _wasHidden) {
+                        // iOS re-muted after background — arm the retry loop.
+                        _wasHidden = false;
+                        _bgRemutePollRetries = 12;
+                        postMsg({type: 'bgRemute', t: t, retriesArmed: _bgRemutePollRetries});
+                    } else if (video.muted && _autoUnmuted) {
+                        // Muted without a preceding background event — treat as user action.
+                        postMsg({type: 'userMute', t: t});
+                    }
+                    postMsg({type: 'muteChange', muted: video.muted, t: t, prevMuted: _prevMuted});
                 }
-                postMsg({type: 'muteChange', muted: video.muted, t: t, prevMuted: _prevMuted});
+                _prevMuted = video.muted;
+
+                // Self-healing unmute: re-apply every poll tick until the counter runs out.
+                // Runs entirely inside the iframe's document so movie_player is always
+                // reachable — no embedFrameInfo needed, no cross-origin issues.
+                if (_bgRemutePollRetries > 0) {
+                    _bgRemutePollRetries--;
+                    video.muted = false;
+                    var ytp = document.getElementById('movie_player');
+                    if (ytp && typeof ytp.unMute === 'function') { ytp.unMute(); }
+                    postMsg({type: 'pollUnmuted', t: t, retriesLeft: _bgRemutePollRetries, muted: video.muted});
+                }
+
+                postMsg({type: 'tick', t: t, state: s, duration: video.duration || 0});
+
+                if (s !== _prevState) {
+                    _prevState = s;
+                    postMsg({type: 'stateChange', state: s});
+                }
             }
-            _prevMuted = video.muted;
 
-            // Self-healing unmute: re-apply every poll tick until the counter runs out.
-            // Runs entirely inside the iframe's document so movie_player is always
-            // reachable — no embedFrameInfo needed, no cross-origin issues.
-            if (_bgRemutePollRetries > 0) {
-                _bgRemutePollRetries--;
-                video.muted = false;
-                var ytp = document.getElementById('movie_player');
-                if (ytp && typeof ytp.unMute === 'function') { ytp.unMute(); }
-                postMsg({type: 'pollUnmuted', t: t, retriesLeft: _bgRemutePollRetries, muted: video.muted});
-            }
-
-            postMsg({type: 'tick', t: t, state: s, duration: video.duration || 0});
-
-            if (s !== _prevState) {
-                _prevState = s;
-                postMsg({type: 'stateChange', state: s});
-            }
-        }
-
-        setInterval(pollVideo, 250);
-    })();
-    """
+            setInterval(pollVideo, 250);
+        })();
+        """
 }
 
 // MARK: - TOSNavigationDelegate
@@ -924,9 +953,11 @@ private final class TOSNavigationDelegate: NSObject, WKNavigationDelegate {
         tosLog.notice("[nav] navigation finished")
     }
 
-    func webView(_ webView: WKWebView,
-                 didFailProvisionalNavigation navigation: WKNavigation!,
-                 withError error: Error) {
+    func webView(
+        _ webView: WKWebView,
+        didFailProvisionalNavigation navigation: WKNavigation!,
+        withError error: Error
+    ) {
         tosLog.error("[nav] provisional navigation failed: \(error)")
     }
 
@@ -967,4 +998,4 @@ private final class ScriptMessageProxy: NSObject, WKScriptMessageHandler, @unche
     }
 }
 
-#endif // !os(tvOS)
+#endif  // !os(tvOS)

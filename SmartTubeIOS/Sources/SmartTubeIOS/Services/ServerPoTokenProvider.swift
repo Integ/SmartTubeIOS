@@ -36,7 +36,8 @@ public struct ServerPoTokenProvider: PoTokenProvider {
             throw APIError.httpError(code)
         }
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let token = json["token"] as? String, !token.isEmpty else {
+            let token = json["token"] as? String, !token.isEmpty
+        else {
             throw APIError.decodingError("ServerPoTokenProvider: missing 'token' in response")
         }
         return token

@@ -83,8 +83,9 @@ final class AirPlayUITests: XCTestCase {
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         Thread.sleep(forTimeInterval: 0.5)
         guard airPlayButton.waitForExistence(timeout: 8) else {
-            try captureAndSkip("player.airPlayButton not found — AVRoutePickerView may not be " +
-                          "accessible on this simulator configuration (controls may have dismissed)", in: app)
+            try captureAndSkip(
+                "player.airPlayButton not found — AVRoutePickerView may not be "
+                    + "accessible on this simulator configuration (controls may have dismissed)", in: app)
         }
     }
 
@@ -101,8 +102,9 @@ final class AirPlayUITests: XCTestCase {
         // Both must be in the same screen region (top-right area).
         let airPlayFrame = airPlayButton.frame
         let pipFrame = pipButton.frame
-        XCTAssertFalse(airPlayFrame.intersects(pipFrame),
-                       "player.airPlayButton and player.pipButton must not overlap")
+        XCTAssertFalse(
+            airPlayFrame.intersects(pipFrame),
+            "player.airPlayButton and player.pipButton must not overlap")
     }
 
     /// Verifies that tapping the AirPlay button does not crash the app.
@@ -121,8 +123,9 @@ final class AirPlayUITests: XCTestCase {
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.15)).tap()
         Thread.sleep(forTimeInterval: 0.5)
         // The app must still be running after the tap.
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must not crash after tapping the AirPlay button")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must not crash after tapping the AirPlay button")
     }
 
     /// Verifies the player continues playing after the AirPlay button is tapped and dismissed.
@@ -139,9 +142,11 @@ final class AirPlayUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 1.0)
         // Player title must still be present — player did not close or error.
         let titleLabel = app.staticTexts["player.titleLabel"].firstMatch
-        XCTAssertTrue(titleLabel.exists,
-                      "player.titleLabel should still be visible after dismissing the AirPlay picker")
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must be in foreground after dismissing the AirPlay route picker")
+        XCTAssertTrue(
+            titleLabel.exists,
+            "player.titleLabel should still be visible after dismissing the AirPlay picker")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must be in foreground after dismissing the AirPlay route picker")
     }
 }

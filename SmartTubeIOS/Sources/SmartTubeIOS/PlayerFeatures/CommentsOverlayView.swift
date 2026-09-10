@@ -1,5 +1,5 @@
-import SwiftUI
 import SmartTubeIOSCore
+import SwiftUI
 
 // MARK: - Comments overlay
 //
@@ -26,7 +26,9 @@ struct CommentsOverlayView: View {
 
             VStack(spacing: 0) {
                 HStack {
-                    Button { onDismiss() } label: {
+                    Button {
+                        onDismiss()
+                    } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 16, weight: .semibold))
                             .padding(12)

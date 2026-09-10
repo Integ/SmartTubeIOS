@@ -1,7 +1,8 @@
-import SwiftUI
 import AVFoundation
 import AVKit
 import SmartTubeIOSCore
+import SwiftUI
+
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -64,7 +65,8 @@ struct PlayerControlsOverlay: View {
                     #if os(iOS)
                     if store.settings.miniPlayerEnabled { playerState.minimize() } else { playerState.stop() }
                     #else
-                    vm.stop(); withAnimation(.none) { dismiss() }
+                    vm.stop()
+                    withAnimation(.none) { dismiss() }
                     #endif
                 } label: {
                     Image(systemName: AppSymbol.chevronLeft)
@@ -167,7 +169,8 @@ struct PlayerControlsOverlay: View {
                 }
                 #else
                 Button {
-                    controlsLog.notice("[menu] ... button tapped — controlsVisible=\(vm.controlsVisible) showMoreMenu=\(showMoreMenu)")
+                    controlsLog.notice(
+                        "[menu] ... button tapped — controlsVisible=\(vm.controlsVisible) showMoreMenu=\(showMoreMenu)")
                     showMoreMenu = true
                 } label: {
                     Image(systemName: "ellipsis")
@@ -193,21 +196,25 @@ struct PlayerControlsOverlay: View {
             // Centre: rewind / play-pause / forward
             HStack(spacing: 40) {
                 #if os(tvOS)
-                seekButton(symbol: "gobackward.\(store.settings.seekBackSeconds)",
-                           seconds: -Double(store.settings.seekBackSeconds),
-                           tvHighlighted: highlightedControl == .seekBack)
+                seekButton(
+                    symbol: "gobackward.\(store.settings.seekBackSeconds)",
+                    seconds: -Double(store.settings.seekBackSeconds),
+                    tvHighlighted: highlightedControl == .seekBack)
                 #else
-                seekButton(symbol: "gobackward.\(store.settings.seekBackSeconds)",
-                           seconds: -Double(store.settings.seekBackSeconds))
+                seekButton(
+                    symbol: "gobackward.\(store.settings.seekBackSeconds)",
+                    seconds: -Double(store.settings.seekBackSeconds))
                 #endif
                 playPauseButton
                 #if os(tvOS)
-                seekButton(symbol: "goforward.\(store.settings.seekForwardSeconds)",
-                           seconds: Double(store.settings.seekForwardSeconds),
-                           tvHighlighted: highlightedControl == .seekForward)
+                seekButton(
+                    symbol: "goforward.\(store.settings.seekForwardSeconds)",
+                    seconds: Double(store.settings.seekForwardSeconds),
+                    tvHighlighted: highlightedControl == .seekForward)
                 #else
-                seekButton(symbol: "goforward.\(store.settings.seekForwardSeconds)",
-                           seconds: Double(store.settings.seekForwardSeconds))
+                seekButton(
+                    symbol: "goforward.\(store.settings.seekForwardSeconds)",
+                    seconds: Double(store.settings.seekForwardSeconds))
                 #endif
             }
             .disabled(vm.isLoading)
@@ -255,9 +262,9 @@ struct PlayerControlsOverlay: View {
                             .font(.system(size: 18 * controlScale))
                             .foregroundStyle(vm.hasPrevious && !vm.isLoading ? .white : .white.opacity(0.3))
                             #if os(iOS)
-                            .padding(8)
-                            .background(.black.opacity(0.4))
-                            .clipShape(Circle())
+                        .padding(8)
+                        .background(.black.opacity(0.4))
+                        .clipShape(Circle())
                             #endif
                     }
                     .buttonStyle(.plain)
@@ -391,9 +398,9 @@ struct PlayerControlsOverlay: View {
                             .font(.system(size: 18 * controlScale))
                             .foregroundStyle(vm.hasNext ? .white : .white.opacity(0.3))
                             #if os(iOS)
-                            .padding(8)
-                            .background(.black.opacity(0.4))
-                            .clipShape(Circle())
+                        .padding(8)
+                        .background(.black.opacity(0.4))
+                        .clipShape(Circle())
                             #endif
                     }
                     .buttonStyle(.plain)
@@ -476,7 +483,9 @@ extension PlayerControlsOverlay {
             playPauseIcon
         }
         #else
-        Button { vm.togglePlayPause() } label: {
+        Button {
+            vm.togglePlayPause()
+        } label: {
             playPauseIcon
                 .padding(12)
         }
@@ -510,7 +519,9 @@ extension PlayerControlsOverlay {
             seekIcon(symbol: symbol)
         }
         #else
-        Button { vm.seekRelative(seconds: seconds) } label: {
+        Button {
+            vm.seekRelative(seconds: seconds)
+        } label: {
             seekIcon(symbol: symbol)
                 .padding(12)
         }
@@ -701,10 +712,10 @@ extension PlayerView {
                 slideOffset = direction * screenWidth
             }
             try? await Task.sleep(for: .milliseconds(220))
-            action()                                        // load new video, clears AVPlayer
-            slideOffset = -direction * screenWidth          // snap to opposite side (off-screen)
+            action()  // load new video, clears AVPlayer
+            slideOffset = -direction * screenWidth  // snap to opposite side (off-screen)
             withAnimation(.easeOut(duration: 0.25)) {
-                slideOffset = 0                             // slide new content in
+                slideOffset = 0  // slide new content in
             }
             try? await Task.sleep(for: .milliseconds(270))
             isTransitioning = false
@@ -733,7 +744,7 @@ extension PlayerView {
                     // the button a way to pass the direction through to seeking.
                     .onMoveCommand { direction in
                         switch direction {
-                        case .left:  vm.seekRelative(seconds: -Double(store.settings.seekBackSeconds))
+                        case .left: vm.seekRelative(seconds: -Double(store.settings.seekBackSeconds))
                         case .right: vm.seekRelative(seconds: Double(store.settings.seekForwardSeconds))
                         default: break
                         }
@@ -852,7 +863,8 @@ extension PlayerControlsOverlay {
     // MARK: - Quick-access label helpers
 
     private var speedLabel: String {
-        store.settings.playbackSpeed == 1.0 ? "Normal"
+        store.settings.playbackSpeed == 1.0
+            ? "Normal"
             : String(format: "%.2g", store.settings.playbackSpeed) + "×"
     }
 

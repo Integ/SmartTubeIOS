@@ -61,8 +61,10 @@ final class ShortsPlayerUITests: XCTestCase {
     /// Direct-launch: `ShortsPlayerView` with specific real YouTube Short IDs.
     /// InnerTubeAPI fetches real streams — use when testing playback behavior.
     private func launchWithRealShorts(ids: [String]) {
-        app.launchArguments = ["--uitesting", "--uitesting-shorts",
-                               "--uitesting-shorts-ids=\(ids.joined(separator: ","))"]
+        app.launchArguments = [
+            "--uitesting", "--uitesting-shorts",
+            "--uitesting-shorts-ids=\(ids.joined(separator: ","))",
+        ]
         app.launch()
     }
 
@@ -100,33 +102,36 @@ final class ShortsPlayerUITests: XCTestCase {
         // still in the accessibility tree during the section-switch animation.
         let sectionFeed = app.descendants(matching: .any)["home.sectionContainer"]
         guard sectionFeed.waitForExistence(timeout: 20) else {
-            try captureAndSkip("Shorts section feed did not appear within 20 s — network unavailable or Shorts empty", in: app)
+            try captureAndSkip(
+                "Shorts section feed did not appear within 20 s — network unavailable or Shorts empty", in: app)
         }
 
         let feedPredicate = NSPredicate(format: "identifier BEGINSWITH 'video.card.'")
         let cards = app.descendants(matching: .any).matching(feedPredicate)
-        let feedLoaded = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count > 0"),
-                                                   object: cards)
+        let feedLoaded = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "count > 0"),
+            object: cards)
         guard XCTWaiter().wait(for: [feedLoaded], timeout: 10) == .completed else {
             try captureAndSkip("Shorts feed did not load within 10 s — network unavailable or Shorts empty", in: app)
         }
 
         cards.firstMatch.tap()
-        XCTAssertTrue(indexLabel.waitForExistence(timeout: 15),
-                      "shorts.indexLabel must appear after tapping a Short")
+        XCTAssertTrue(
+            indexLabel.waitForExistence(timeout: 15),
+            "shorts.indexLabel must appear after tapping a Short")
     }
 
     /// Performs a swipe-up gesture on the Shorts player.
     private func swipeUp() {
         let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
-        let end   = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
         start.press(forDuration: 0.05, thenDragTo: end)
     }
 
     /// Performs a swipe-down gesture on the Shorts player.
     private func swipeDown() {
         let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
-        let end   = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
         start.press(forDuration: 0.05, thenDragTo: end)
     }
 
@@ -156,16 +161,19 @@ final class ShortsPlayerUITests: XCTestCase {
         guard indexLabel.waitForExistence(timeout: 20) else {
             try captureAndSkip("Shorts player did not appear — network unavailable or Short IDs may be stale", in: app)
         }
-        XCTAssertTrue(indexLabel.exists,
-                      "shorts.indexLabel should be visible when ShortsPlayerView is open")
+        XCTAssertTrue(
+            indexLabel.exists,
+            "shorts.indexLabel should be visible when ShortsPlayerView is open")
     }
 
     /// Verifies the back button in the Shorts player is tappable and does not crash the app.
     /// Uses direct-launch with real Short IDs to avoid auth dependency on parallel clone simulators.
     func testBackButtonDismissesShortsPlayer() throws {
-        app.launchArguments = ["--uitesting", "--uitesting-shorts",
-                               "--uitesting-shorts-ids=\(Self.knownGoodShortIDs.joined(separator: ","))",
-                               "--uitesting-show-controls"]
+        app.launchArguments = [
+            "--uitesting", "--uitesting-shorts",
+            "--uitesting-shorts-ids=\(Self.knownGoodShortIDs.joined(separator: ","))",
+            "--uitesting-show-controls",
+        ]
         app.launch()
         guard indexLabel.waitForExistence(timeout: 40) else {
             try captureAndSkip("Shorts player did not appear — network unavailable or Short IDs may be stale", in: app)
@@ -180,8 +188,9 @@ final class ShortsPlayerUITests: XCTestCase {
         // In direct-launch mode ShortsPlayerView is the root view, so dismiss() has no visual
         // navigation effect. The key regression to catch is a crash on tap.
         Thread.sleep(forTimeInterval: 1)
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must not crash after tapping the Shorts back button")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must not crash after tapping the Shorts back button")
     }
 
     // ── Direct-launch (stub) tests — no network, instant ────────────────────
@@ -189,10 +198,12 @@ final class ShortsPlayerUITests: XCTestCase {
     /// Verifies the index badge shows "1 / 3" when the player opens at index 0.
     func testIndexLabelShowsStartIndex() {
         launchWithStubs()
-        XCTAssertTrue(indexLabel.waitForExistence(timeout: 5),
-                      "shorts.indexLabel must appear immediately on direct launch")
-        XCTAssertEqual(indexLabel.label, "1 / 3",
-                       "Index badge should show '1 / 3' on launch with three stub Shorts")
+        XCTAssertTrue(
+            indexLabel.waitForExistence(timeout: 5),
+            "shorts.indexLabel must appear immediately on direct launch")
+        XCTAssertEqual(
+            indexLabel.label, "1 / 3",
+            "Index badge should show '1 / 3' on launch with three stub Shorts")
     }
 
     /// Verifies swipe-up advances the index from 1 to 2.
@@ -204,8 +215,9 @@ final class ShortsPlayerUITests: XCTestCase {
         swipeUp()
         Thread.sleep(forTimeInterval: 1.5)
 
-        XCTAssertEqual(indexLabel.label, "2 / 3",
-                       "Swipe up should advance the index from 1 to 2")
+        XCTAssertEqual(
+            indexLabel.label, "2 / 3",
+            "Swipe up should advance the index from 1 to 2")
     }
 
     /// Verifies swipe-down after swipe-up returns to index 1.
@@ -219,8 +231,9 @@ final class ShortsPlayerUITests: XCTestCase {
 
         swipeDown()
         Thread.sleep(forTimeInterval: 1.5)
-        XCTAssertEqual(indexLabel.label, "1 / 3",
-                       "Swipe down should return to index 1")
+        XCTAssertEqual(
+            indexLabel.label, "1 / 3",
+            "Swipe down should return to index 1")
     }
 
     /// Verifies that the controls overlay elements are accessible in XCTest
@@ -238,14 +251,16 @@ final class ShortsPlayerUITests: XCTestCase {
         app.launchArguments = ["--uitesting", "--uitesting-shorts", "--uitesting-show-controls"]
         app.launch()
 
-        XCTAssertTrue(indexLabel.waitForExistence(timeout: 5),
-                      "shorts.indexLabel must appear before testing the controls overlay")
+        XCTAssertTrue(
+            indexLabel.waitForExistence(timeout: 5),
+            "shorts.indexLabel must appear before testing the controls overlay")
 
         // Controls appear immediately after onAppear via --uitesting-show-controls.
         // Wait up to 5 s for the back button that lives inside the overlay.
         let backButton = app.buttons["shorts.backButton"]
-        XCTAssertTrue(backButton.waitForExistence(timeout: 5),
-                      "shorts.backButton should appear when --uitesting-show-controls is active")
+        XCTAssertTrue(
+            backButton.waitForExistence(timeout: 5),
+            "shorts.backButton should appear when --uitesting-show-controls is active")
     }
 
     // ── Direct-launch with real video — network required ─────────────────────
@@ -275,10 +290,9 @@ final class ShortsPlayerUITests: XCTestCase {
             lastError = banner.label
         }
         try captureAndSkip(
-            "All \(Self.knownGoodShortIDs.count) short IDs show errors — update knownGoodShortIDs in ShortsPlayerUITests.swift. " +
-            "Last error for '\(Self.knownGoodShortIDs.last ?? "")': '\(lastError)'",
+            "All \(Self.knownGoodShortIDs.count) short IDs show errors — update knownGoodShortIDs in ShortsPlayerUITests.swift. "
+                + "Last error for '\(Self.knownGoodShortIDs.last ?? "")': '\(lastError)'",
             in: app
         )
     }
 }
-

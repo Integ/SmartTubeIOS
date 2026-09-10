@@ -54,7 +54,8 @@ final class TVLibraryUITests: XCTestCase {
         remote.press(.select)
         Thread.sleep(forTimeInterval: 1.5)
         guard chipBar.waitForExistence(timeout: 12) else {
-            try captureAndSkip("library.chipBar not found — Library tab did not open (check right-press count)", in: app)
+            try captureAndSkip(
+                "library.chipBar not found — Library tab did not open (check right-press count)", in: app)
         }
     }
 
@@ -107,7 +108,8 @@ final class TVLibraryUITests: XCTestCase {
         // Either video cards appear, or the chip bar is still present (empty state still on Library screen).
         let hasCards = videoCardsPresent(timeout: 8)
         if !hasCards && !chipBar.exists {
-            try captureAndSkip("History section shows neither video cards nor the Library chip bar — unexpected state", in: app)
+            try captureAndSkip(
+                "History section shows neither video cards nor the Library chip bar — unexpected state", in: app)
         }
         // If we get here, at least one of the two conditions is true.
         XCTAssertTrue(hasCards || chipBar.exists, "History section must show content or remain on the Library screen")
@@ -137,7 +139,8 @@ final class TVLibraryUITests: XCTestCase {
         selectChip(rightPresses: 0)
         let hasCards = videoCardsPresent(timeout: 12)
         if !hasCards && !chipBar.exists {
-            try captureAndSkip("Subscriptions section shows neither cards nor Library screen — unexpected state", in: app)
+            try captureAndSkip(
+                "Subscriptions section shows neither cards nor Library screen — unexpected state", in: app)
         }
         XCTAssertTrue(hasCards || chipBar.exists)
     }

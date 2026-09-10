@@ -63,7 +63,8 @@ final class SIDScrubberUITests: XCTestCase {
     func testScrubBarShowsNonZeroDurationAndSeekWorks() throws {
         // 1. Wait for player to open (title label proves PlayerView is displayed).
         guard app.staticTexts["player.titleLabel"].firstMatch.waitForExistence(timeout: 30) else {
-            try captureAndSkip("player.titleLabel not found — video \(Self.targetVideoID) did not open (network?)", in: app)
+            try captureAndSkip(
+                "player.titleLabel not found — video \(Self.targetVideoID) did not open (network?)", in: app)
         }
 
         // 2. Let the stream play for 8 s to allow HLS playlist parse and deferred
@@ -83,8 +84,8 @@ final class SIDScrubberUITests: XCTestCase {
         let durationText = durationLabel.label
         XCTAssertFalse(
             durationText.isEmpty || durationText == "0:00",
-            "player.durationLabel shows '\(durationText)' — vm.duration is still 0 after 8 s; " +
-            "deferred KVO duration update (firstValidDurationStream) may not be working (#183)"
+            "player.durationLabel shows '\(durationText)' — vm.duration is still 0 after 8 s; "
+                + "deferred KVO duration update (firstValidDurationStream) may not be working (#183)"
         )
 
         // 5. Record currentTime before scrubbing.
@@ -101,11 +102,11 @@ final class SIDScrubberUITests: XCTestCase {
 
         let barFrame = progressBar.frame
         let startX = barFrame.minX + barFrame.width * 0.10
-        let endX   = barFrame.minX + barFrame.width * 0.70
-        let midY   = barFrame.midY
+        let endX = barFrame.minX + barFrame.width * 0.70
+        let midY = barFrame.midY
 
         let startCoord = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: startX, dy: midY))
-        let endCoord   = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: endX,   dy: midY))
+        let endCoord = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: endX, dy: midY))
         startCoord.press(forDuration: 0.1, thenDragTo: endCoord)
 
         // 7. Wait for the seek to complete and controls to still be visible.
@@ -117,8 +118,8 @@ final class SIDScrubberUITests: XCTestCase {
         let currentTimeAfterSeek = app.staticTexts["player.currentTimeLabel"].firstMatch.label
         XCTAssertFalse(
             currentTimeAfterSeek.isEmpty || currentTimeAfterSeek == "0:00",
-            "player.currentTimeLabel is '\(currentTimeAfterSeek)' after scrubbing to 70% — " +
-            "seek had no effect, which means vm.duration was 0 and the scrubber was greyed out (#183)"
+            "player.currentTimeLabel is '\(currentTimeAfterSeek)' after scrubbing to 70% — "
+                + "seek had no effect, which means vm.duration was 0 and the scrubber was greyed out (#183)"
         )
 
         UITestHelpers.assertNoPlayerErrorBanner(in: app, videoTitle: "SID (\(Self.targetVideoID))")

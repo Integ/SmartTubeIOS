@@ -211,8 +211,9 @@ final class WrongVideoRegressionUITests: XCTestCase {
         try tapAndPlay(videoId: videoId1, playNumber: 4)
 
         // Final state assertions.
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must remain in foreground throughout all play/dismiss cycles")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must remain in foreground throughout all play/dismiss cycles")
         UITestHelpers.assertNoPlayerErrorBanner(in: app)
     }
 }

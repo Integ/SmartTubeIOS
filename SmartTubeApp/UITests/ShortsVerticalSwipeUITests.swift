@@ -37,7 +37,7 @@ final class ShortsVerticalSwipeUITests: XCTestCase {
     /// Swipes up in the Shorts player to advance to the next Short.
     private func swipePlayerUp() {
         let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
-        let end   = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
         start.press(forDuration: 0.05, thenDragTo: end)
         Thread.sleep(forTimeInterval: 0.6)
     }

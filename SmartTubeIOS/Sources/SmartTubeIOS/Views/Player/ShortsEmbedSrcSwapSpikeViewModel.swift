@@ -85,18 +85,20 @@ final class ShortsEmbedSrcSwapSpikeViewModel: NSObject {
         let proxyHandler = SpikeScriptMessageProxy()
         contentController.add(proxyHandler, contentWorld: .page, name: "ytCallback")
 
-        contentController.addUserScript(WKUserScript(
-            source: ShortsEmbedJS.webkitHiderJS,
-            injectionTime: .atDocumentStart,
-            forMainFrameOnly: false,
-            in: .page
-        ))
-        contentController.addUserScript(WKUserScript(
-            source: ShortsEmbedJS.stateDetectionJS,
-            injectionTime: .atDocumentEnd,
-            forMainFrameOnly: false,
-            in: .page
-        ))
+        contentController.addUserScript(
+            WKUserScript(
+                source: ShortsEmbedJS.webkitHiderJS,
+                injectionTime: .atDocumentStart,
+                forMainFrameOnly: false,
+                in: .page
+            ))
+        contentController.addUserScript(
+            WKUserScript(
+                source: ShortsEmbedJS.stateDetectionJS,
+                injectionTime: .atDocumentEnd,
+                forMainFrameOnly: false,
+                in: .page
+            ))
         config.userContentController = contentController
 
         self.webView = WKWebView(frame: .zero, configuration: config)
@@ -138,7 +140,8 @@ final class ShortsEmbedSrcSwapSpikeViewModel: NSObject {
         currentIndex += 1
         embedFrameInfo = nil
         let url = ShortsEmbedJS.embedURL(videoId: Self.testVideoIds[currentIndex])
-        spikeLog.notice("[spike] swap → video[\(self.currentIndex)]=\(Self.testVideoIds[self.currentIndex], privacy: .public)")
+        spikeLog.notice(
+            "[spike] swap → video[\(self.currentIndex)]=\(Self.testVideoIds[self.currentIndex], privacy: .public)")
         eval("swap", "document.getElementById('yt').src = '\(url.absoluteString)';")
     }
 
@@ -146,8 +149,8 @@ final class ShortsEmbedSrcSwapSpikeViewModel: NSObject {
 
     func handleScriptMessage(_ body: String, frameInfo: WKFrameInfo) {
         guard let data = body.data(using: .utf8),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let type = json["type"] as? String
+            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            let type = json["type"] as? String
         else { return }
 
         switch type {
@@ -206,9 +209,11 @@ final class ShortsEmbedSrcSwapSpikeViewModel: NSObject {
         webView.evaluateJavaScript(js, in: embedFrameInfo, in: .page) { result in
             switch result {
             case .success(let value):
-                spikeLog.notice("[spike-eval] \(label, privacy: .public) result: \(String(describing: value), privacy: .public)")
+                spikeLog.notice(
+                    "[spike-eval] \(label, privacy: .public) result: \(String(describing: value), privacy: .public)")
             case .failure(let error):
-                spikeLog.notice("[spike-eval] \(label, privacy: .public) ERROR: \(String(describing: error), privacy: .public)")
+                spikeLog.notice(
+                    "[spike-eval] \(label, privacy: .public) ERROR: \(String(describing: error), privacy: .public)")
             }
         }
     }

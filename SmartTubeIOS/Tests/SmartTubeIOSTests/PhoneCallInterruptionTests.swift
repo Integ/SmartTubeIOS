@@ -1,11 +1,13 @@
+import AVFoundation
 import Foundation
 import Testing
+
+@testable import SmartTubeIOS
+@testable import SmartTubeIOSCore
+
 #if canImport(UIKit)
 import UIKit
 #endif
-import AVFoundation
-@testable import SmartTubeIOS
-@testable import SmartTubeIOSCore
 
 // MARK: - PhoneCallInterruptionTests
 //
@@ -74,7 +76,10 @@ struct PhoneCallInterruptionNotificationTests {
             try? await Task.sleep(for: .milliseconds(10))
         }
 
-        #expect(observed, "Expected isHandlingAudioInterruption=true, wasPlayingBeforeInterruption=true, isPlaying=false after .began")
+        #expect(
+            observed,
+            "Expected isHandlingAudioInterruption=true, wasPlayingBeforeInterruption=true, isPlaying=false after .began"
+        )
     }
 
     @Test("Interruption .ended with shouldResume resumes playback")
@@ -98,7 +103,7 @@ struct PhoneCallInterruptionNotificationTests {
             object: AVAudioSession.sharedInstance(),
             userInfo: [
                 AVAudioSessionInterruptionTypeKey: AVAudioSession.InterruptionType.ended.rawValue,
-                AVAudioSessionInterruptionOptionKey: AVAudioSession.InterruptionOptions.shouldResume.rawValue
+                AVAudioSessionInterruptionOptionKey: AVAudioSession.InterruptionOptions.shouldResume.rawValue,
             ]
         )
 

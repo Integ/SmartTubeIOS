@@ -1,5 +1,5 @@
-import SwiftUI
 import SmartTubeIOSCore
+import SwiftUI
 
 // MARK: - ManageRSSFeedsView
 
@@ -32,9 +32,9 @@ struct ManageRSSFeedsView: View {
                 }
             }
             .navigationTitle("Manage RSS Feeds")
-#if !os(macOS) && !os(tvOS)
+            #if !os(macOS) && !os(tvOS)
             .navigationBarTitleDisplayMode(.inline)
-#endif
+            #endif
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
@@ -59,15 +59,18 @@ struct ManageRSSFeedsView: View {
                     .truncationMode(.middle)
             }
             Spacer()
-            Toggle("", isOn: Binding(
-                get: { feed.isActive },
-                set: { newValue in
-                    Task {
-                        await RSSFeedStore.shared.setActive(feed.id, newValue)
-                        await reloadFeeds()
+            Toggle(
+                "",
+                isOn: Binding(
+                    get: { feed.isActive },
+                    set: { newValue in
+                        Task {
+                            await RSSFeedStore.shared.setActive(feed.id, newValue)
+                            await reloadFeeds()
+                        }
                     }
-                }
-            ))
+                )
+            )
             .labelsHidden()
         }
         .padding(.vertical, 2)

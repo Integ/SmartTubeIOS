@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - WrongVideoStatsOverlayTests
@@ -61,24 +62,27 @@ struct WrongVideoStatsOverlayTests {
     func nilPlayerInfoResolvesToCurrentVideo() {
         let newVideo = makeVideo(id: "wyBkLyGWZyU")
         let result = resolvedVideoId(playerInfo: nil, currentVideo: newVideo)
-        #expect(result == "wyBkLyGWZyU",
-                "With playerInfo=nil, stats overlay must show the current video's ID")
+        #expect(
+            result == "wyBkLyGWZyU",
+            "With playerInfo=nil, stats overlay must show the current video's ID")
     }
 
     /// Pre-fix regression scenario: stale playerInfo for a DIFFERENT video would
     /// have caused the wrong video ID to appear in the overlay.
     @Test("stale playerInfo for old video would have returned wrong ID (pre-fix behaviour)")
     func stalePlayerInfoProducesWrongId() {
-        let oldPlayerInfo = makePlayerInfo(videoId: "1B7yg7LWiik") // previously playing
-        let newCurrentVideo = makeVideo(id: "wyBkLyGWZyU")         // newly selected
+        let oldPlayerInfo = makePlayerInfo(videoId: "1B7yg7LWiik")  // previously playing
+        let newCurrentVideo = makeVideo(id: "wyBkLyGWZyU")  // newly selected
 
         // Simulate the pre-fix state: playerInfo still holds the old video
         let result = resolvedVideoId(playerInfo: oldPlayerInfo, currentVideo: newCurrentVideo)
         // This SHOULD be wrong — and was the bug.
-        #expect(result == "1B7yg7LWiik",
-                "Pre-fix: stale playerInfo.video.id takes priority over currentVideo.id — confirming the bug existed")
-        #expect(result != "wyBkLyGWZyU",
-                "Pre-fix: stats overlay would show wrong video (old video, not new one)")
+        #expect(
+            result == "1B7yg7LWiik",
+            "Pre-fix: stale playerInfo.video.id takes priority over currentVideo.id — confirming the bug existed")
+        #expect(
+            result != "wyBkLyGWZyU",
+            "Pre-fix: stats overlay would show wrong video (old video, not new one)")
     }
 
     /// Post-fix, steady-state: playerInfo is non-nil and matches currentVideo.
@@ -90,8 +94,9 @@ struct WrongVideoStatsOverlayTests {
         let video = makeVideo(id: videoId)
 
         let result = resolvedVideoId(playerInfo: info, currentVideo: video)
-        #expect(result == videoId,
-                "When playerInfo and currentVideo match, stats overlay shows the correct ID")
+        #expect(
+            result == videoId,
+            "When playerInfo and currentVideo match, stats overlay shows the correct ID")
     }
 
     /// Edge case: both playerInfo and currentVideo are nil → empty string fallback.

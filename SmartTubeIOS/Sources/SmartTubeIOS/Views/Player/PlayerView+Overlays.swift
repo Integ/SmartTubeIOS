@@ -1,6 +1,7 @@
-import SwiftUI
 import SmartTubeIOSCore
+import SwiftUI
 import os
+
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -85,7 +86,9 @@ extension PlayerView {
     /// fires onDisappear and teardowns the action sheet mid-animation.
     var moreMenuOverlay: some View {
         let currentVideo = vm.playerInfo?.video ?? video
-        menuLog.notice("[moreMenu] rendering — video=\(currentVideo.id) availableFormats=\(vm.availableFormats.count) isSignedIn=\(authService.isSignedIn)")
+        menuLog.notice(
+            "[moreMenu] rendering — video=\(currentVideo.id) availableFormats=\(vm.availableFormats.count) isSignedIn=\(authService.isSignedIn)"
+        )
         return ZStack(alignment: .bottom) {
             Color.black.opacity(0.5)
                 .ignoresSafeArea()
@@ -120,7 +123,10 @@ extension PlayerView {
             // Height = natural content height capped at moreMenuMaxHeight.
             // Falls back to moreMenuMaxHeight on the first render (before the
             // preference arrives), then snaps to the correct size on the next pass.
-            .frame(maxWidth: moreMenuPortraitWidth, maxHeight: moreMenuContentHeight > 0 ? min(moreMenuContentHeight, moreMenuMaxHeight) : moreMenuMaxHeight)
+            .frame(
+                maxWidth: moreMenuPortraitWidth,
+                maxHeight: moreMenuContentHeight > 0 ? min(moreMenuContentHeight, moreMenuMaxHeight) : moreMenuMaxHeight
+            )
             #if os(tvOS)
             // Native SwiftUI focus handles D-pad navigation via the .focused() bindings
             // on each row button. onMoveCommand was removed because it caused a double-step
@@ -230,7 +236,9 @@ extension PlayerView {
 
             VStack(spacing: 0) {
                 HStack {
-                    Button { showDescriptionSheet = false } label: {
+                    Button {
+                        showDescriptionSheet = false
+                    } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 16, weight: .semibold))
                             .padding(12)
@@ -289,8 +297,9 @@ extension PlayerView {
         let matches = detector.matches(in: string, range: NSRange(location: 0, length: nsString.length))
         for match in matches {
             guard let range = Range(match.range, in: string),
-                  let url = match.url,
-                  let attrRange = Range(range, in: attributed) else { continue }
+                let url = match.url,
+                let attrRange = Range(range, in: attributed)
+            else { continue }
             attributed[attrRange].link = url
         }
         // Timestamp linkification: add smarttube://seek/<seconds> links for MM:SS / HH:MM:SS spans.
@@ -344,9 +353,12 @@ extension PlayerView {
             HStack {
                 Label("Playback Speed", systemImage: "speedometer")
                 Spacer()
-                Text(store.settings.playbackSpeed == 1.0 ? "Normal"
-                     : "\(store.settings.playbackSpeed, specifier: "%.2g")×")
-                    .foregroundStyle(.secondary)
+                Text(
+                    store.settings.playbackSpeed == 1.0
+                        ? "Normal"
+                        : "\(store.settings.playbackSpeed, specifier: "%.2g")×"
+                )
+                .foregroundStyle(.secondary)
             }
             .padding()
             .contentShape(Rectangle())
@@ -374,9 +386,11 @@ extension PlayerView {
                 HStack {
                     Label("Quality", systemImage: "film.stack")
                     Spacer()
-                    Text(vm.selectedFormat?.qualityLabel
-                         ?? (vm.pendingQualityLabel.isEmpty ? "Auto" : vm.pendingQualityLabel))
-                        .foregroundStyle(.secondary)
+                    Text(
+                        vm.selectedFormat?.qualityLabel
+                            ?? (vm.pendingQualityLabel.isEmpty ? "Auto" : vm.pendingQualityLabel)
+                    )
+                    .foregroundStyle(.secondary)
                 }
                 .padding()
                 .contentShape(Rectangle())
@@ -503,7 +517,9 @@ extension PlayerView {
 
     @ViewBuilder private var moreMenuAudioOnlyRow: some View {
         Button {
-            menuLog.notice("[moreMenu] Audio-Only row tapped — toggling audioOnlyMode: \(store.settings.audioOnlyMode) → \(!store.settings.audioOnlyMode)")
+            menuLog.notice(
+                "[moreMenu] Audio-Only row tapped — toggling audioOnlyMode: \(store.settings.audioOnlyMode) → \(!store.settings.audioOnlyMode)"
+            )
             vm.toggleAudioOnlyLive()
             store.settings.audioOnlyMode = vm.isAudioOnlyMode
             showMoreMenu = false
@@ -538,7 +554,9 @@ extension PlayerView {
     @ViewBuilder private var moreMenuQueueShuffleRow: some View {
         if (vm.playerInfo?.video ?? video).playlistId == CurrentQueueStore.playlistID {
             Button {
-                menuLog.notice("[moreMenu] Queue Shuffle row tapped — toggling queueShuffleEnabled: \(store.settings.queueShuffleEnabled) → \(!store.settings.queueShuffleEnabled)")
+                menuLog.notice(
+                    "[moreMenu] Queue Shuffle row tapped — toggling queueShuffleEnabled: \(store.settings.queueShuffleEnabled) → \(!store.settings.queueShuffleEnabled)"
+                )
                 store.settings.queueShuffleEnabled.toggle()
                 showMoreMenu = false
             } label: {
@@ -604,9 +622,11 @@ extension PlayerView {
                 HStack {
                     Label("Captions", systemImage: "captions.bubble")
                     Spacer()
-                    Text(vm.selectedCaption.map {
-                        $0.isAutoGenerated ? "\($0.name) (auto)" : $0.name
-                    } ?? "Off")
+                    Text(
+                        vm.selectedCaption.map {
+                            $0.isAutoGenerated ? "\($0.name) (auto)" : $0.name
+                        } ?? "Off"
+                    )
                     .foregroundStyle(.secondary)
                 }
                 .padding()
@@ -633,9 +653,11 @@ extension PlayerView {
                 HStack {
                     Label("Audio Track", systemImage: "waveform")
                     Spacer()
-                    Text(vm.selectedAudioTrack.map {
-                        $0.isOriginal ? "\($0.name) (Original)" : $0.name
-                    } ?? "Auto")
+                    Text(
+                        vm.selectedAudioTrack.map {
+                            $0.isOriginal ? "\($0.name) (Original)" : $0.name
+                        } ?? "Auto"
+                    )
                     .foregroundStyle(.secondary)
                 }
                 .padding()
@@ -728,7 +750,9 @@ extension PlayerView {
     }
 
     @ViewBuilder private var moreMenuCancelRow: some View {
-        Button { showMoreMenu = false } label: {
+        Button {
+            showMoreMenu = false
+        } label: {
             Text("Cancel")
                 .frame(maxWidth: .infinity)
                 .padding()

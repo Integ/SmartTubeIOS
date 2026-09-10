@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - SiriShortcutsIntentLogicTests
@@ -102,11 +103,11 @@ struct SiriShortcutsIntentLogicTests {
 
         // Simulate AppEntry.handleOpenURL extraction
         let scheme = deepLink.scheme?.lowercased() ?? ""
-        let host   = deepLink.host?.lowercased() ?? ""
+        let host = deepLink.host?.lowercased() ?? ""
         let pathID = deepLink.pathComponents.filter { $0 != "/" }.first ?? ""
 
         #expect(scheme == "smarttube")
-        #expect(host   == "video")
+        #expect(host == "video")
         #expect(pathID == "dQw4w9WgXcQ")
     }
 }

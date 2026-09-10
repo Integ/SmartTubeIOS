@@ -29,7 +29,7 @@ public struct AppSettings: Codable {
 
     /// Whether the video should fill the screen (cropping sides) or fit within bounds.
     public enum VideoGravityMode: String, Codable, CaseIterable, Sendable {
-        case fit  = "fit"   // resizeAspect — letterbox/pillarbox
+        case fit = "fit"  // resizeAspect — letterbox/pillarbox
         case fill = "fill"  // resizeAspectFill — crops to fill
     }
     public var videoGravityMode: VideoGravityMode
@@ -63,7 +63,7 @@ public struct AppSettings: Codable {
     /// Mirrors Android's `GeneralData.historyEnabled`.
     public enum HistoryState: String, Codable, CaseIterable, Sendable {
         /// Default — history is fetched from YouTube and local positions are saved.
-        case enabled  = "enabled"
+        case enabled = "enabled"
         /// History section shows nothing and local watch positions are not saved.
         case disabled = "disabled"
     }
@@ -75,11 +75,11 @@ public struct AppSettings: Codable {
     /// Mirrors Android's per-category action setting in `SponsorBlockData`.
     public enum SponsorBlockAction: String, Codable, CaseIterable, Sendable {
         /// Automatically skip the segment without user interaction.
-        case skip      = "skip"
+        case skip = "skip"
         /// Show a dismissible toast and let the user manually skip.
         case showToast = "showToast"
         /// Take no action — segment plays through normally.
-        case nothing   = "nothing"
+        case nothing = "nothing"
     }
 
     public var sponsorBlockEnabled: Bool
@@ -171,26 +171,26 @@ public struct AppSettings: Codable {
     public static let availableSeekOptions: [Int] = [5, 10, 15, 20, 30, 45, 60]
 
     public enum VideoQuality: String, Codable, CaseIterable, Sendable {
-        case auto  = "auto"
+        case auto = "auto"
         case q2160 = "2160p"
         case q1440 = "1440p"
         case q1080 = "1080p"
-        case q720  = "720p"
-        case q480  = "480p"
-        case q360  = "360p"
-        case q240  = "240p"
-        case q144  = "144p"
+        case q720 = "720p"
+        case q480 = "480p"
+        case q360 = "360p"
+        case q240 = "240p"
+        case q144 = "144p"
 
         /// The maximum pixel height corresponding to this quality level.
         /// Returns `nil` for `.auto` (no cap).
         public var maxHeight: Int? {
             switch self {
-            case .auto:  return nil
-            case .q144:  return 144
-            case .q240:  return 240
-            case .q360:  return 360
-            case .q480:  return 480
-            case .q720:  return 720
+            case .auto: return nil
+            case .q144: return 144
+            case .q240: return 240
+            case .q360: return 360
+            case .q480: return 480
+            case .q720: return 720
             case .q1080: return 1080
             case .q1440: return 1440
             case .q2160: return 2160
@@ -205,14 +205,14 @@ public struct AppSettings: Codable {
 
     public enum ThemeName: String, Codable, CaseIterable {
         case system = "System"
-        case dark   = "Dark"
-        case light  = "Light"
+        case dark = "Dark"
+        case light = "Light"
 
         public var colorScheme: ColorScheme? {
             switch self {
             case .system: return nil
-            case .dark:   return .dark
-            case .light:  return .light
+            case .dark: return .dark
+            case .light: return .light
             }
         }
     }
@@ -220,60 +220,60 @@ public struct AppSettings: Codable {
     // MARK: Defaults
 
     public init() {
-        preferredQuality     = .auto
-        playbackSpeed        = 1.0
-        autoplayEnabled      = true
-        subtitlesLanguage    = nil
+        preferredQuality = .auto
+        playbackSpeed = 1.0
+        autoplayEnabled = true
+        subtitlesLanguage = nil
         backgroundPlaybackEnabled = false
-        landscapeAlwaysPlay  = false
-        pipEnabled           = true
-        miniPlayerEnabled    = true
-        seekBackSeconds      = 10
-        seekForwardSeconds   = 30
-        controlsHideTimeout  = 4
-        videoGravityMode     = .fit
-        loopEnabled          = false
-        shuffleEnabled       = false
-        queueShuffleEnabled  = false
-        defaultSection       = BrowseSection.SectionType.home.rawValue
-        compactThumbnails    = false
-        hideShorts           = false
-        hideLiveShorts       = false
-        hideVideoPremieres   = false
+        landscapeAlwaysPlay = false
+        pipEnabled = true
+        miniPlayerEnabled = true
+        seekBackSeconds = 10
+        seekForwardSeconds = 30
+        controlsHideTimeout = 4
+        videoGravityMode = .fit
+        loopEnabled = false
+        shuffleEnabled = false
+        queueShuffleEnabled = false
+        defaultSection = BrowseSection.SectionType.home.rawValue
+        compactThumbnails = false
+        hideShorts = false
+        hideLiveShorts = false
+        hideVideoPremieres = false
         perDeviceRecommendationsEnabled = true
-        themeName            = .system
-        enabledSections      = BrowseSection.defaultSections.map(\.type)
-        historyState         = .enabled
-        sponsorBlockEnabled  = true
+        themeName = .system
+        enabledSections = BrowseSection.defaultSections.map(\.type)
+        historyState = .enabled
+        sponsorBlockEnabled = true
         // Default actions mirror Android's SponsorBlockData defaults:
         //   sponsor / selfPromo → auto-skip; interaction / intro / preview / musicOfftopic → show toast; others → nothing
         sponsorBlockActions = [
-            .sponsor:       .skip,
-            .selfPromo:     .skip,
-            .interaction:   .showToast,
-            .intro:         .showToast,
-            .outro:         .nothing,
-            .preview:       .showToast,
-            .filler:        .nothing,
+            .sponsor: .skip,
+            .selfPromo: .skip,
+            .interaction: .showToast,
+            .intro: .showToast,
+            .outro: .nothing,
+            .preview: .showToast,
+            .filler: .nothing,
             .musicOfftopic: .showToast,
-            .poiHighlight:  .nothing,
+            .poiHighlight: .nothing,
         ]
         sponsorBlockMinSegmentDuration = 0
-        sponsorBlockExcludedChannels   = [:]
-        blockedChannels                = [:]
+        sponsorBlockExcludedChannels = [:]
+        blockedChannels = [:]
         preferredAudioLanguage = nil
         preferredCaptionLanguage = nil
-        deArrowEnabled       = false
-        poTokenServiceURL    = nil
-        audioOnlyMode        = false
-        preferH264           = false
-        iCloudSyncEnabled    = false
+        deArrowEnabled = false
+        poTokenServiceURL = nil
+        audioOnlyMode = false
+        preferH264 = false
+        iCloudSyncEnabled = false
         #if os(macOS)
-        useTOSPlayerOnMac    = true
+        useTOSPlayerOnMac = true
         #else
-        useTOSPlayerOnMac    = false
+        useTOSPlayerOnMac = false
         #endif
-        settingsVersion      = 1
+        settingsVersion = 1
     }
 }
 
@@ -340,45 +340,54 @@ extension AppSettings {
     }
 
     public init(from decoder: Decoder) throws {
-        let d = AppSettings()   // defaults for any missing/mismatched field
+        let d = AppSettings()  // defaults for any missing/mismatched field
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        settingsVersion              = c.safeDecode(Int.self,               forKey: .settingsVersion,              default: 0)
-        preferredQuality             = c.safeDecode(VideoQuality.self,      forKey: .preferredQuality,             default: d.preferredQuality)
-        playbackSpeed                = c.safeDecode(Double.self,            forKey: .playbackSpeed,                default: d.playbackSpeed)
-        autoplayEnabled              = c.safeDecode(Bool.self,              forKey: .autoplayEnabled,              default: d.autoplayEnabled)
-        subtitlesLanguage            = c.safeDecode(String?.self,           forKey: .subtitlesLanguage,            default: d.subtitlesLanguage)
-        backgroundPlaybackEnabled    = c.safeDecode(Bool.self,              forKey: .backgroundPlaybackEnabled,    default: d.backgroundPlaybackEnabled)
-        landscapeAlwaysPlay          = c.safeDecode(Bool.self,              forKey: .landscapeAlwaysPlay,          default: d.landscapeAlwaysPlay)
-        pipEnabled                   = c.safeDecode(Bool.self,              forKey: .pipEnabled,                   default: d.pipEnabled)
-        miniPlayerEnabled            = c.safeDecode(Bool.self,              forKey: .miniPlayerEnabled,            default: d.miniPlayerEnabled)
-        seekBackSeconds              = c.safeDecode(Int.self,               forKey: .seekBackSeconds,              default: d.seekBackSeconds)
-        seekForwardSeconds           = c.safeDecode(Int.self,               forKey: .seekForwardSeconds,           default: d.seekForwardSeconds)
-        controlsHideTimeout          = c.safeDecode(Int.self,               forKey: .controlsHideTimeout,         default: d.controlsHideTimeout)
-        videoGravityMode             = c.safeDecode(VideoGravityMode.self,  forKey: .videoGravityMode,             default: d.videoGravityMode)
-        loopEnabled                  = c.safeDecode(Bool.self,              forKey: .loopEnabled,                  default: d.loopEnabled)
-        shuffleEnabled               = c.safeDecode(Bool.self,              forKey: .shuffleEnabled,               default: d.shuffleEnabled)
-        queueShuffleEnabled          = c.safeDecode(Bool.self,              forKey: .queueShuffleEnabled,          default: d.queueShuffleEnabled)
-        defaultSection               = c.safeDecode(String.self,            forKey: .defaultSection,               default: d.defaultSection)
-        compactThumbnails            = c.safeDecode(Bool.self,              forKey: .compactThumbnails,            default: d.compactThumbnails)
-        hideShorts                   = c.safeDecode(Bool.self,              forKey: .hideShorts,                   default: d.hideShorts)
-        hideLiveShorts               = c.safeDecode(Bool.self,              forKey: .hideLiveShorts,               default: d.hideLiveShorts)
-        hideVideoPremieres           = c.safeDecode(Bool.self,              forKey: .hideVideoPremieres,           default: d.hideVideoPremieres)
-        perDeviceRecommendationsEnabled = c.safeDecode(Bool.self,           forKey: .perDeviceRecommendationsEnabled, default: d.perDeviceRecommendationsEnabled)
-        themeName                    = c.safeDecode(ThemeName.self,         forKey: .themeName,                    default: d.themeName)
-        enabledSections              = c.safeDecode([BrowseSection.SectionType].self, forKey: .enabledSections,   default: d.enabledSections)
-        historyState                 = c.safeDecode(HistoryState.self,      forKey: .historyState,                 default: d.historyState)
-        sponsorBlockEnabled          = c.safeDecode(Bool.self,              forKey: .sponsorBlockEnabled,          default: d.sponsorBlockEnabled)
-        sponsorBlockActions          = c.safeDecode([SponsorSegment.Category: SponsorBlockAction].self, forKey: .sponsorBlockActions, default: d.sponsorBlockActions)
-        sponsorBlockMinSegmentDuration = c.safeDecode(Double.self,          forKey: .sponsorBlockMinSegmentDuration, default: d.sponsorBlockMinSegmentDuration)
-        sponsorBlockExcludedChannels = c.safeDecode([String: String].self,  forKey: .sponsorBlockExcludedChannels, default: d.sponsorBlockExcludedChannels)
-        blockedChannels              = c.safeDecode([String: String].self,  forKey: .blockedChannels,              default: d.blockedChannels)
-        preferredAudioLanguage       = c.safeDecode(String?.self,           forKey: .preferredAudioLanguage,       default: d.preferredAudioLanguage)
-        preferredCaptionLanguage     = c.safeDecode(String?.self,           forKey: .preferredCaptionLanguage,     default: d.preferredCaptionLanguage)
-        deArrowEnabled               = c.safeDecode(Bool.self,              forKey: .deArrowEnabled,               default: d.deArrowEnabled)
-        poTokenServiceURL            = c.safeDecode(URL?.self,              forKey: .poTokenServiceURL,            default: d.poTokenServiceURL)
-        audioOnlyMode                = c.safeDecode(Bool.self,              forKey: .audioOnlyMode,                default: d.audioOnlyMode)
-        preferH264                   = c.safeDecode(Bool.self,              forKey: .preferH264,                   default: d.preferH264)
-        iCloudSyncEnabled            = c.safeDecode(Bool.self,              forKey: .iCloudSyncEnabled,            default: d.iCloudSyncEnabled)
-        useTOSPlayerOnMac            = c.safeDecode(Bool.self,              forKey: .useTOSPlayerOnMac,            default: d.useTOSPlayerOnMac)
+        settingsVersion = c.safeDecode(Int.self, forKey: .settingsVersion, default: 0)
+        preferredQuality = c.safeDecode(VideoQuality.self, forKey: .preferredQuality, default: d.preferredQuality)
+        playbackSpeed = c.safeDecode(Double.self, forKey: .playbackSpeed, default: d.playbackSpeed)
+        autoplayEnabled = c.safeDecode(Bool.self, forKey: .autoplayEnabled, default: d.autoplayEnabled)
+        subtitlesLanguage = c.safeDecode(String?.self, forKey: .subtitlesLanguage, default: d.subtitlesLanguage)
+        backgroundPlaybackEnabled = c.safeDecode(
+            Bool.self, forKey: .backgroundPlaybackEnabled, default: d.backgroundPlaybackEnabled)
+        landscapeAlwaysPlay = c.safeDecode(Bool.self, forKey: .landscapeAlwaysPlay, default: d.landscapeAlwaysPlay)
+        pipEnabled = c.safeDecode(Bool.self, forKey: .pipEnabled, default: d.pipEnabled)
+        miniPlayerEnabled = c.safeDecode(Bool.self, forKey: .miniPlayerEnabled, default: d.miniPlayerEnabled)
+        seekBackSeconds = c.safeDecode(Int.self, forKey: .seekBackSeconds, default: d.seekBackSeconds)
+        seekForwardSeconds = c.safeDecode(Int.self, forKey: .seekForwardSeconds, default: d.seekForwardSeconds)
+        controlsHideTimeout = c.safeDecode(Int.self, forKey: .controlsHideTimeout, default: d.controlsHideTimeout)
+        videoGravityMode = c.safeDecode(VideoGravityMode.self, forKey: .videoGravityMode, default: d.videoGravityMode)
+        loopEnabled = c.safeDecode(Bool.self, forKey: .loopEnabled, default: d.loopEnabled)
+        shuffleEnabled = c.safeDecode(Bool.self, forKey: .shuffleEnabled, default: d.shuffleEnabled)
+        queueShuffleEnabled = c.safeDecode(Bool.self, forKey: .queueShuffleEnabled, default: d.queueShuffleEnabled)
+        defaultSection = c.safeDecode(String.self, forKey: .defaultSection, default: d.defaultSection)
+        compactThumbnails = c.safeDecode(Bool.self, forKey: .compactThumbnails, default: d.compactThumbnails)
+        hideShorts = c.safeDecode(Bool.self, forKey: .hideShorts, default: d.hideShorts)
+        hideLiveShorts = c.safeDecode(Bool.self, forKey: .hideLiveShorts, default: d.hideLiveShorts)
+        hideVideoPremieres = c.safeDecode(Bool.self, forKey: .hideVideoPremieres, default: d.hideVideoPremieres)
+        perDeviceRecommendationsEnabled = c.safeDecode(
+            Bool.self, forKey: .perDeviceRecommendationsEnabled, default: d.perDeviceRecommendationsEnabled)
+        themeName = c.safeDecode(ThemeName.self, forKey: .themeName, default: d.themeName)
+        enabledSections = c.safeDecode(
+            [BrowseSection.SectionType].self, forKey: .enabledSections, default: d.enabledSections)
+        historyState = c.safeDecode(HistoryState.self, forKey: .historyState, default: d.historyState)
+        sponsorBlockEnabled = c.safeDecode(Bool.self, forKey: .sponsorBlockEnabled, default: d.sponsorBlockEnabled)
+        sponsorBlockActions = c.safeDecode(
+            [SponsorSegment.Category: SponsorBlockAction].self, forKey: .sponsorBlockActions,
+            default: d.sponsorBlockActions)
+        sponsorBlockMinSegmentDuration = c.safeDecode(
+            Double.self, forKey: .sponsorBlockMinSegmentDuration, default: d.sponsorBlockMinSegmentDuration)
+        sponsorBlockExcludedChannels = c.safeDecode(
+            [String: String].self, forKey: .sponsorBlockExcludedChannels, default: d.sponsorBlockExcludedChannels)
+        blockedChannels = c.safeDecode([String: String].self, forKey: .blockedChannels, default: d.blockedChannels)
+        preferredAudioLanguage = c.safeDecode(
+            String?.self, forKey: .preferredAudioLanguage, default: d.preferredAudioLanguage)
+        preferredCaptionLanguage = c.safeDecode(
+            String?.self, forKey: .preferredCaptionLanguage, default: d.preferredCaptionLanguage)
+        deArrowEnabled = c.safeDecode(Bool.self, forKey: .deArrowEnabled, default: d.deArrowEnabled)
+        poTokenServiceURL = c.safeDecode(URL?.self, forKey: .poTokenServiceURL, default: d.poTokenServiceURL)
+        audioOnlyMode = c.safeDecode(Bool.self, forKey: .audioOnlyMode, default: d.audioOnlyMode)
+        preferH264 = c.safeDecode(Bool.self, forKey: .preferH264, default: d.preferH264)
+        iCloudSyncEnabled = c.safeDecode(Bool.self, forKey: .iCloudSyncEnabled, default: d.iCloudSyncEnabled)
+        useTOSPlayerOnMac = c.safeDecode(Bool.self, forKey: .useTOSPlayerOnMac, default: d.useTOSPlayerOnMac)
     }
 }

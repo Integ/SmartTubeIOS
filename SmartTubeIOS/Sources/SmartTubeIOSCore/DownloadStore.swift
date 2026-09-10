@@ -114,7 +114,8 @@ public final class DownloadStore {
 
     private func loadManifest() {
         guard let data = try? Data(contentsOf: manifestURL),
-              let decoded = try? JSONDecoder().decode([DownloadedVideo].self, from: data) else {
+            let decoded = try? JSONDecoder().decode([DownloadedVideo].self, from: data)
+        else {
             return
         }
         // Migrate entries whose stored fileURL no longer exists on disk.

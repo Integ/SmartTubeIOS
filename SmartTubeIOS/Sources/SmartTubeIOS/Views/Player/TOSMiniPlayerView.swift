@@ -142,4 +142,4 @@ private struct TOSMiniPlayerLayerView: UIViewRepresentable {
         ])
     }
 }
-#endif // os(iOS)
+#endif  // os(iOS)

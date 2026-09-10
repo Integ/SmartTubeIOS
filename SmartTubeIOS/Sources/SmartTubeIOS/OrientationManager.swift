@@ -34,7 +34,8 @@ public final class OrientationManager {
     public var playerIsActive = false {
         didSet {
             guard oldValue != playerIsActive else {
-                orientationLog.notice("[OrientationManager] playerIsActive set to \(self.playerIsActive) — no change, skipping")
+                orientationLog.notice(
+                    "[OrientationManager] playerIsActive set to \(self.playerIsActive) — no change, skipping")
                 return
             }
             orientationLog.notice("[OrientationManager] playerIsActive: \(oldValue) → \(self.playerIsActive)")
@@ -47,20 +48,25 @@ public final class OrientationManager {
     // MARK: - Private helpers
 
     private func invalidateOrientationCache() {
-        guard let scene = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene }).first else {
+        guard
+            let scene = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene }).first
+        else {
             orientationLog.error("[OrientationManager] invalidateOrientationCache — no UIWindowScene found")
             return
         }
-        let window = scene.windows.first(where: { $0.rootViewController != nil })
-                   ?? scene.windows.first
+        let window =
+            scene.windows.first(where: { $0.rootViewController != nil })
+            ?? scene.windows.first
         let rootVC = window?.rootViewController
-        orientationLog.notice("[OrientationManager] invalidateOrientationCache — rootVC=\(rootVC.map { "\(type(of: $0))" } ?? "nil")")
+        orientationLog.notice(
+            "[OrientationManager] invalidateOrientationCache — rootVC=\(rootVC.map { "\(type(of: $0))" } ?? "nil")")
         rootVC?.setNeedsUpdateOfSupportedInterfaceOrientations()
         var topVC = rootVC
         while let presented = topVC?.presentedViewController { topVC = presented }
         if topVC !== rootVC {
-            orientationLog.notice("[OrientationManager] invalidateOrientationCache — also invalidating topVC=\(type(of: topVC!))")
+            orientationLog.notice(
+                "[OrientationManager] invalidateOrientationCache — also invalidating topVC=\(type(of: topVC!))")
             topVC?.setNeedsUpdateOfSupportedInterfaceOrientations()
         }
     }
@@ -68,8 +74,10 @@ public final class OrientationManager {
     private func requestGeometryUpdate(_ mask: UIInterfaceOrientationMask) {
         Task { @MainActor [weak self] in
             guard self != nil else { return }
-            guard let scene = UIApplication.shared.connectedScenes
-                .compactMap({ $0 as? UIWindowScene }).first else {
+            guard
+                let scene = UIApplication.shared.connectedScenes
+                    .compactMap({ $0 as? UIWindowScene }).first
+            else {
                 orientationLog.error("[OrientationManager] requestGeometryUpdate — no UIWindowScene found")
                 return
             }
@@ -77,7 +85,8 @@ public final class OrientationManager {
             // before requestGeometryUpdate consults the updated mask.
             try? await Task.sleep(for: .milliseconds(50))
             let pref = UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: mask)
-            orientationLog.notice("[OrientationManager] requestGeometryUpdate — requesting mask=\(mask.rawValue) on scene")
+            orientationLog.notice(
+                "[OrientationManager] requestGeometryUpdate — requesting mask=\(mask.rawValue) on scene")
             scene.requestGeometryUpdate(pref, errorHandler: geometryUpdateErrorHandler)
         }
     }

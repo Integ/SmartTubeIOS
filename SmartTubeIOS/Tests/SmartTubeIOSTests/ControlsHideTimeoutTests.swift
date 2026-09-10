@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - ControlsHideTimeoutTests (Fix #125)
@@ -31,8 +32,9 @@ struct ControlsHideTimeoutTests {
     @Test("Default controlsHideTimeout is 4 seconds")
     func defaultTimeoutIsFourSeconds() {
         let settings = AppSettings()
-        #expect(settings.controlsHideTimeout == 4,
-                "Default controlsHideTimeout must be 4 s (mirrors Android PlayerData.controlsHideTimeoutMs)")
+        #expect(
+            settings.controlsHideTimeout == 4,
+            "Default controlsHideTimeout must be 4 s (mirrors Android PlayerData.controlsHideTimeoutMs)")
     }
 
     // MARK: - Portrait (unchanged)
@@ -41,8 +43,9 @@ struct ControlsHideTimeoutTests {
     func portraitTimeoutEqualsConfiguredValue() {
         let settings = AppSettings()
         let timeout = effectiveTimeout(controlsHideTimeout: settings.controlsHideTimeout, isLandscape: false)
-        #expect(timeout == 4.0,
-                "Portrait timeout must be exactly 4 s (unchanged by Fix #125)")
+        #expect(
+            timeout == 4.0,
+            "Portrait timeout must be exactly 4 s (unchanged by Fix #125)")
     }
 
     @Test("Portrait: custom timeout 7 s stays 7 s")
@@ -57,8 +60,9 @@ struct ControlsHideTimeoutTests {
     func landscapeDefaultTimeoutBecomsSixSeconds() {
         let settings = AppSettings()
         let timeout = effectiveTimeout(controlsHideTimeout: settings.controlsHideTimeout, isLandscape: true)
-        #expect(timeout == 6.0,
-                "Fix #125: landscape timeout must be 6 s (default 4 s × 1.5)")
+        #expect(
+            timeout == 6.0,
+            "Fix #125: landscape timeout must be 6 s (default 4 s × 1.5)")
     }
 
     @Test("Landscape: custom 2 s timeout becomes 3 s")
@@ -78,21 +82,23 @@ struct ControlsHideTimeoutTests {
     @Test("Landscape timeout is always longer than portrait for the same setting")
     func landscapeTimeoutAlwaysLongerThanPortrait() {
         for base in [2, 4, 6, 8, 10] {
-            let portrait  = effectiveTimeout(controlsHideTimeout: base, isLandscape: false)
+            let portrait = effectiveTimeout(controlsHideTimeout: base, isLandscape: false)
             let landscape = effectiveTimeout(controlsHideTimeout: base, isLandscape: true)
-            #expect(landscape > portrait,
-                    "Landscape (\(landscape) s) must exceed portrait (\(portrait) s) for base \(base) s")
+            #expect(
+                landscape > portrait,
+                "Landscape (\(landscape) s) must exceed portrait (\(portrait) s) for base \(base) s")
         }
     }
 
     @Test("Multiplier is exactly 1.5 (landscape / portrait ratio)")
     func multiplierIsExactlyOnePointFive() {
         for base in [2, 4, 6] {
-            let portrait  = effectiveTimeout(controlsHideTimeout: base, isLandscape: false)
+            let portrait = effectiveTimeout(controlsHideTimeout: base, isLandscape: false)
             let landscape = effectiveTimeout(controlsHideTimeout: base, isLandscape: true)
             let ratio = landscape / portrait
-            #expect(abs(ratio - 1.5) < 0.0001,
-                    "Ratio must be exactly 1.5 — got \(ratio) for base \(base) s")
+            #expect(
+                abs(ratio - 1.5) < 0.0001,
+                "Ratio must be exactly 1.5 — got \(ratio) for base \(base) s")
         }
     }
 }

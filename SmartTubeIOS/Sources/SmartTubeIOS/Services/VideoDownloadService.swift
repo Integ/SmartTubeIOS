@@ -1,11 +1,12 @@
-import Foundation
 import AVFoundation
+import Foundation
+import Observation
+import SmartTubeIOSCore
+import os
+
 #if os(iOS)
 import Photos
 #endif
-import Observation
-import os
-import SmartTubeIOSCore
 #if os(iOS)
 @preconcurrency import ActivityKit
 #endif
@@ -62,7 +63,9 @@ public final class VideoDownloadService {
     ///   initial probe chunk. Without it, adaptive-stream URLs often return 403.
     /// - `userAgent` must match the client that signed the URL (`c=` parameter):
     ///   Web → desktop Chrome, TV-auth → Cobalt, iOS → native iOS app UA.
-    nonisolated private static func cdnRequest(for url: URL, userAgent: String = InnerTubeClients.iOS.userAgent) -> URLRequest {
+    nonisolated private static func cdnRequest(
+        for url: URL, userAgent: String = InnerTubeClients.iOS.userAgent
+    ) -> URLRequest {
         var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
         var queryItems = components?.queryItems ?? []
         if !queryItems.contains(where: { $0.name == "alr" }) {
@@ -122,8 +125,10 @@ public final class VideoDownloadService {
     }
 
     @available(iOS 16.1, *)
-    private func updateLiveActivity(phase: DownloadActivityAttributes.DownloadContentState.Phase,
-                                    progress: Double = 0) async {
+    private func updateLiveActivity(
+        phase: DownloadActivityAttributes.DownloadContentState.Phase,
+        progress: Double = 0
+    ) async {
         guard let activity = liveActivity else { return }
         let newState = DownloadActivityAttributes.DownloadContentState(progress: progress, phase: phase)
         // Activity<T> is a Sendable struct; dispatch the await via a nonisolated helper to
@@ -197,10 +202,13 @@ public final class VideoDownloadService {
             let androidInfo = try await api.fetchPlayerInfoAndroid(videoId: video.id)
             downloadLog.notice("[download] adaptive fallback formats=\(androidInfo.formats.count)")
             for (i, fmt) in androidInfo.formats.enumerated() {
-                downloadLog.notice("[download]   [\(i)] mime=\(fmt.mimeType) label=\(fmt.label) hasURL=\(fmt.url != nil) bitrate=\(fmt.bitrate ?? 0)")
+                downloadLog.notice(
+                    "[download]   [\(i)] mime=\(fmt.mimeType) label=\(fmt.label) hasURL=\(fmt.url != nil) bitrate=\(fmt.bitrate ?? 0)"
+                )
             }
             guard let videoURL = androidInfo.bestAdaptiveVideoURL,
-                  let audioURL = androidInfo.bestAdaptiveAudioURL else {
+                let audioURL = androidInfo.bestAdaptiveAudioURL
+            else {
                 downloadLog.error("[download] ❌ no adaptive video/audio streams found")
                 state = .failed("No downloadable stream found for this video")
                 #if os(iOS)
@@ -211,8 +219,9 @@ public final class VideoDownloadService {
             downloadLog.notice("[download] merging adaptive videoURL prefix=\(videoURL.absoluteString.prefix(60))")
             downloadLog.notice("[download] merging adaptive audioURL prefix=\(audioURL.absoluteString.prefix(60))")
             state = .downloading(progress: 0)
-            let mergedURL = try await mergeAdaptiveStreams(videoURL: videoURL, audioURL: audioURL, videoId: video.id,
-                                                          userAgent: InnerTubeClients.Android.userAgent)
+            let mergedURL = try await mergeAdaptiveStreams(
+                videoURL: videoURL, audioURL: audioURL, videoId: video.id,
+                userAgent: InnerTubeClients.Android.userAgent)
             state = .saving
             #if os(iOS)
             if #available(iOS 16.1, *) { await updateLiveActivity(phase: .saving, progress: 1) }
@@ -232,10 +241,12 @@ public final class VideoDownloadService {
             #endif
         } catch {
             let nsErr = error as NSError
-            downloadLog.error("[download] ❌ failed: domain=\(nsErr.domain) code=\(nsErr.code) desc=\(nsErr.localizedDescription)")
+            downloadLog.error(
+                "[download] ❌ failed: domain=\(nsErr.domain) code=\(nsErr.code) desc=\(nsErr.localizedDescription)")
             let userMessage: String
             if nsErr.domain == "PHPhotosErrorDomain" {
-                userMessage = "Could not save to Photos. Please check Settings → Privacy & Security → Photos and allow SmartTube to add photos."
+                userMessage =
+                    "Could not save to Photos. Please check Settings → Privacy & Security → Photos and allow SmartTube to add photos."
             } else if let urlErr = error as? URLError, urlErr.code == .fileDoesNotExist {
                 userMessage = "Download failed — the video file was removed before saving. Please try again."
             } else {
@@ -254,10 +265,14 @@ public final class VideoDownloadService {
     /// so the Android client (c=ANDROID URLs) is used as the reliable fallback.
     private func tryDirectDownload(videoId: String) async -> URL? {
         let candidates: [(String, String, () async throws -> PlayerInfo)] = [
-            ("Web", InnerTubeClients.Web.userAgent,
-             { [self] in try await api.fetchPlayerInfoForDownload(videoId: videoId) }),
-            ("Android", InnerTubeClients.Android.userAgent,
-             { [self] in try await api.fetchPlayerInfoAndroid(videoId: videoId) }),
+            (
+                "Web", InnerTubeClients.Web.userAgent,
+                { [self] in try await api.fetchPlayerInfoForDownload(videoId: videoId) }
+            ),
+            (
+                "Android", InnerTubeClients.Android.userAgent,
+                { [self] in try await api.fetchPlayerInfoAndroid(videoId: videoId) }
+            ),
         ]
         for (label, clientUA, fetch) in candidates {
             guard let info = try? await fetch() else {
@@ -266,7 +281,9 @@ public final class VideoDownloadService {
             }
             downloadLog.notice("[download] \(label) formats=\(info.formats.count) hlsURL=\(info.hlsURL != nil)")
             for (i, fmt) in info.formats.enumerated() {
-                downloadLog.notice("[download]   [\(i)] mime=\(fmt.mimeType) label=\(fmt.label) hasURL=\(fmt.url != nil) bitrate=\(fmt.bitrate ?? 0)")
+                downloadLog.notice(
+                    "[download]   [\(i)] mime=\(fmt.mimeType) label=\(fmt.label) hasURL=\(fmt.url != nil) bitrate=\(fmt.bitrate ?? 0)"
+                )
             }
             guard let muxedURL = info.bestMuxedDownloadURL else {
                 downloadLog.notice("[download] \(label) — no muxed MP4, trying next")
@@ -316,8 +333,10 @@ public final class VideoDownloadService {
     /// Downloads best adaptive video-only and audio-only MP4 streams concurrently,
     /// then merges them into a single MP4 using AVAssetWriter for true passthrough
     /// (sample-level copy, no re-encode of codec data).
-    private nonisolated func mergeAdaptiveStreams(videoURL: URL, audioURL: URL, videoId: String,
-                                                  userAgent: String = InnerTubeClients.iOS.userAgent) async throws -> URL {
+    private nonisolated func mergeAdaptiveStreams(
+        videoURL: URL, audioURL: URL, videoId: String,
+        userAgent: String = InnerTubeClients.iOS.userAgent
+    ) async throws -> URL {
         // Download both streams concurrently with explicit UA per-request
         let videoReq = VideoDownloadService.cdnRequest(for: videoURL, userAgent: userAgent)
         let audioReq = VideoDownloadService.cdnRequest(for: audioURL, userAgent: userAgent)
@@ -336,7 +355,9 @@ public final class VideoDownloadService {
 
         let videoSize = (try? FileManager.default.attributesOfItem(atPath: videoFile.path)[.size] as? Int) ?? 0
         let audioSize = (try? FileManager.default.attributesOfItem(atPath: audioFile.path)[.size] as? Int) ?? 0
-        downloadLog.notice("[download] adaptive downloaded videoStatus=\(videoStatus) video=\(videoSize)B audioStatus=\(audioStatus) audio=\(audioSize)B")
+        downloadLog.notice(
+            "[download] adaptive downloaded videoStatus=\(videoStatus) video=\(videoSize)B audioStatus=\(audioStatus) audio=\(audioSize)B"
+        )
 
         defer {
             try? FileManager.default.removeItem(at: videoFile)
@@ -363,7 +384,7 @@ public final class VideoDownloadService {
 
         let videoFmt = try await videoTrackSrc.load(.formatDescriptions).first!
         let audioFmt = try await audioTrackSrc.load(.formatDescriptions).first!
-        let duration  = try await videoAsset.load(.duration)
+        let duration = try await videoAsset.load(.duration)
 
         let writer = try AVAssetWriter(outputURL: destURL, fileType: .mp4)
         let videoInput = AVAssetWriterInput(mediaType: .video, outputSettings: nil, sourceFormatHint: videoFmt)
@@ -375,8 +396,8 @@ public final class VideoDownloadService {
 
         let videoReader = try AVAssetReader(asset: videoAsset)
         let audioReader = try AVAssetReader(asset: audioAsset)
-        let videoOut  = AVAssetReaderTrackOutput(track: videoTrackSrc, outputSettings: nil)
-        let audioOut  = AVAssetReaderTrackOutput(track: audioTrackSrc, outputSettings: nil)
+        let videoOut = AVAssetReaderTrackOutput(track: videoTrackSrc, outputSettings: nil)
+        let audioOut = AVAssetReaderTrackOutput(track: audioTrackSrc, outputSettings: nil)
         videoOut.alwaysCopiesSampleData = false
         audioOut.alwaysCopiesSampleData = false
         videoReader.add(videoOut)
@@ -435,7 +456,7 @@ public final class VideoDownloadService {
 
         let mergedSize = (try? FileManager.default.attributesOfItem(atPath: destURL.path)[.size] as? Int) ?? 0
         downloadLog.notice("[download] adaptive merge done bytes=\(mergedSize)")
-        _ = duration // suppress unused warning
+        _ = duration  // suppress unused warning
         return destURL
     }
 
@@ -453,7 +474,8 @@ public final class VideoDownloadService {
             downloadLog.notice("[download] Photos permission result: \(result ? "granted" : "denied")")
             return result
         case .denied:
-            downloadLog.error("[download] ❌ Photos access denied — user must enable in Settings → Privacy & Security → Photos")
+            downloadLog.error(
+                "[download] ❌ Photos access denied — user must enable in Settings → Privacy & Security → Photos")
             return false
         case .restricted:
             downloadLog.error("[download] ❌ Photos access restricted by device policy")
@@ -481,19 +503,22 @@ public final class VideoDownloadService {
             downloadLog.notice("[download] DownloadStore copy failed for \(video.id): \(error.localizedDescription)")
             return
         }
-        DownloadStore.shared.add(DownloadedVideo(
-            videoId: video.id,
-            title: video.title,
-            channelTitle: video.channelTitle,
-            thumbnailURL: video.thumbnailURL,
-            duration: video.duration ?? 0,
-            fileURL: destURL,
-            downloadedAt: Date()
-        ))
+        DownloadStore.shared.add(
+            DownloadedVideo(
+                videoId: video.id,
+                title: video.title,
+                channelTitle: video.channelTitle,
+                thumbnailURL: video.thumbnailURL,
+                duration: video.duration ?? 0,
+                fileURL: destURL,
+                downloadedAt: Date()
+            ))
         downloadLog.notice("[download] registered in DownloadStore \(video.id)")
     }
 
-    private func downloadToTemp(url: URL, videoId: String, userAgent: String = InnerTubeClients.iOS.userAgent) async throws -> URL {
+    private func downloadToTemp(
+        url: URL, videoId: String, userAgent: String = InnerTubeClients.iOS.userAgent
+    ) async throws -> URL {
         let req = VideoDownloadService.cdnRequest(for: url, userAgent: userAgent)
         let (tempURL, response) = try await VideoDownloadService.cdnSession.download(for: req)
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
@@ -517,27 +542,34 @@ public final class VideoDownloadService {
             throw URLError(.fileDoesNotExist, userInfo: [NSLocalizedDescriptionKey: desc])
         }
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            PHPhotoLibrary.shared().performChanges({
-                PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: fileURL)
-            }, completionHandler: { success, error in
-                if let error {
-                    let nsErr = error as NSError
-                    downloadLog.error("[download] ❌ PHPhotoLibrary save error: domain=\(nsErr.domain) code=\(nsErr.code) desc=\(nsErr.localizedDescription)")
-                    continuation.resume(throwing: error)
-                } else if success {
-                    continuation.resume()
-                } else {
-                    // success=false, error=nil means permission was denied or restricted at save time
-                    let desc = "Could not save to Photos. Please check Settings → Privacy & Security → Photos and allow SmartTube to add photos."
-                    downloadLog.error("[download] ❌ PHPhotoLibrary performChanges returned success=false with no error — likely permission denied")
-                    let permissionError = NSError(
-                        domain: "PHPhotosErrorDomain",
-                        code: PHPhotosError.accessRestricted.rawValue,
-                        userInfo: [NSLocalizedDescriptionKey: desc]
-                    )
-                    continuation.resume(throwing: permissionError)
-                }
-            })
+            PHPhotoLibrary.shared().performChanges(
+                {
+                    PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: fileURL)
+                },
+                completionHandler: { success, error in
+                    if let error {
+                        let nsErr = error as NSError
+                        downloadLog.error(
+                            "[download] ❌ PHPhotoLibrary save error: domain=\(nsErr.domain) code=\(nsErr.code) desc=\(nsErr.localizedDescription)"
+                        )
+                        continuation.resume(throwing: error)
+                    } else if success {
+                        continuation.resume()
+                    } else {
+                        // success=false, error=nil means permission was denied or restricted at save time
+                        let desc =
+                            "Could not save to Photos. Please check Settings → Privacy & Security → Photos and allow SmartTube to add photos."
+                        downloadLog.error(
+                            "[download] ❌ PHPhotoLibrary performChanges returned success=false with no error — likely permission denied"
+                        )
+                        let permissionError = NSError(
+                            domain: "PHPhotosErrorDomain",
+                            code: PHPhotosError.accessRestricted.rawValue,
+                            userInfo: [NSLocalizedDescriptionKey: desc]
+                        )
+                        continuation.resume(throwing: permissionError)
+                    }
+                })
         }
         #else
         throw URLError(.unsupportedURL)

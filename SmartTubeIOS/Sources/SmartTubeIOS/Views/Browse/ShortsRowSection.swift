@@ -1,5 +1,5 @@
-import SwiftUI
 import SmartTubeIOSCore
+import SwiftUI
 
 // MARK: - ShortsRowSection
 
@@ -52,7 +52,9 @@ struct ShortsRowSection: View {
         // shortsCardMaxTVCount cards instead.
         HStack(alignment: .top, spacing: videoGridRowSpacing) {
             ForEach(Array(videos.prefix(shortsCardMaxTVCount))) { video in
-                Button { onSelect(video) } label: {
+                Button {
+                    onSelect(video)
+                } label: {
                     ShortsCardView(video: video, onTap: { onSelect(video) })
                         .frame(width: cardWidth, height: cardWidth * 16 / 9)
                 }
@@ -118,7 +120,9 @@ struct ShortsRowSection: View {
         // to avoid trapping Siri remote directional events.
         LazyVStack(alignment: .leading, spacing: videoGridRowSpacing) {
             ForEach(Array(videos.prefix(shortsCardMaxTVCount))) { video in
-                Button { onSelect(video) } label: {
+                Button {
+                    onSelect(video)
+                } label: {
                     ShortsCardView(video: video, onTap: { onSelect(video) })
                         .frame(maxWidth: .infinity)
                         .aspectRatio(9 / 16, contentMode: .fit)

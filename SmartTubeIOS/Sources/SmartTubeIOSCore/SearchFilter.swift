@@ -22,81 +22,81 @@ public struct SearchFilter: Sendable, Equatable {
     // MARK: - Nested enums (mirror Android Constants)
 
     public enum SortOrder: Int, CaseIterable, Sendable {
-        case relevance  = 0   // default — no param emitted
-        case rating     = 1
+        case relevance = 0  // default — no param emitted
+        case rating = 1
         case uploadDate = 2
-        case viewCount  = 3
+        case viewCount = 3
 
         public var label: String {
             switch self {
-            case .relevance:  return "Relevance"
-            case .rating:     return "Rating"
+            case .relevance: return "Relevance"
+            case .rating: return "Rating"
             case .uploadDate: return "Upload date"
-            case .viewCount:  return "View count"
+            case .viewCount: return "View count"
             }
         }
     }
 
     public enum UploadDate: Int, CaseIterable, Sendable {
-        case anytime   = 0   // default — no param emitted
-        case lastHour  = 1
-        case today     = 2
-        case thisWeek  = 3
+        case anytime = 0  // default — no param emitted
+        case lastHour = 1
+        case today = 2
+        case thisWeek = 3
         case thisMonth = 4
-        case thisYear  = 5
+        case thisYear = 5
 
         public var label: String {
             switch self {
-            case .anytime:   return "Anytime"
-            case .lastHour:  return "Last hour"
-            case .today:     return "Today"
-            case .thisWeek:  return "This week"
+            case .anytime: return "Anytime"
+            case .lastHour: return "Last hour"
+            case .today: return "Today"
+            case .thisWeek: return "This week"
             case .thisMonth: return "This month"
-            case .thisYear:  return "This year"
+            case .thisYear: return "This year"
             }
         }
     }
 
     public enum VideoType: Int, CaseIterable, Sendable {
-        case any      = 0   // default — no param emitted
-        case video    = 1
-        case channel  = 2
+        case any = 0  // default — no param emitted
+        case video = 1
+        case channel = 2
         case playlist = 3
-        case movie    = 4
+        case movie = 4
 
         public var label: String {
             switch self {
-            case .any:      return "Any type"
-            case .video:    return "Video"
-            case .channel:  return "Channel"
+            case .any: return "Any type"
+            case .video: return "Video"
+            case .channel: return "Channel"
             case .playlist: return "Playlist"
-            case .movie:    return "Movie"
+            case .movie: return "Movie"
             }
         }
     }
 
     public enum Duration: Int, CaseIterable, Sendable {
-        case any    = 0   // default — no param emitted
-        case short  = 1   // < 4 min
-        case medium = 2   // 4 – 20 min
-        case long   = 3   // > 20 min
+        case any = 0  // default — no param emitted
+        case short = 1  // < 4 min
+        case medium = 2  // 4 – 20 min
+        case long = 3  // > 20 min
 
         public var label: String {
             switch self {
-            case .any:    return "Any duration"
-            case .short:  return "Under 4 minutes"
+            case .any: return "Any duration"
+            case .short: return "Under 4 minutes"
             case .medium: return "4 – 20 minutes"
-            case .long:   return "Over 20 minutes"
+            case .long: return "Over 20 minutes"
             }
         }
     }
 
     // MARK: - Properties
 
-    public var sortOrder: SortOrder  = .relevance
+    public var sortOrder: SortOrder = .relevance
     public var uploadDate: UploadDate = .anytime
-    public var type: VideoType       = .any
-    public var duration: Duration    = .any
+    public var type: VideoType = .any
+    public var duration: Duration = .any
 
     public static let `default` = SearchFilter()
 
@@ -107,15 +107,15 @@ public struct SearchFilter: Sendable, Equatable {
     // MARK: - Init
 
     public init(
-        sortOrder: SortOrder  = .relevance,
+        sortOrder: SortOrder = .relevance,
         uploadDate: UploadDate = .anytime,
-        type: VideoType       = .any,
-        duration: Duration    = .any
+        type: VideoType = .any,
+        duration: Duration = .any
     ) {
-        self.sortOrder  = sortOrder
+        self.sortOrder = sortOrder
         self.uploadDate = uploadDate
-        self.type       = type
-        self.duration   = duration
+        self.type = type
+        self.duration = duration
     }
 
     // MARK: - Params encoding

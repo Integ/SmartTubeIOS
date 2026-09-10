@@ -1,5 +1,5 @@
-import SwiftUI
 import SmartTubeIOSCore
+import SwiftUI
 
 // MARK: - BrowseView
 //
@@ -174,10 +174,13 @@ public struct BrowseView: View {
     @ToolbarContentBuilder
     private var sectionPicker: some ToolbarContent {
         ToolbarItem(placement: .principal) {
-            Picker("Section", selection: Binding(
-                get: { vm.currentSection },
-                set: { vm.select(section: $0) }
-            )) {
+            Picker(
+                "Section",
+                selection: Binding(
+                    get: { vm.currentSection },
+                    set: { vm.select(section: $0) }
+                )
+            ) {
                 ForEach(vm.sections) { section in
                     Text(section.title).tag(section)
                 }
@@ -325,4 +328,3 @@ struct VideoRowSection: View {
         #endif
     }
 }
-

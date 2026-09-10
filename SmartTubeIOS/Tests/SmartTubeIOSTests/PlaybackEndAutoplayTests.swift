@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOS
 @testable import SmartTubeIOSCore
 
@@ -48,7 +49,9 @@ struct PlaybackEndAutoplayTests {
             try? await Task.sleep(for: .milliseconds(10))
         }
 
-        #expect(loadedRecommended, "Expected autoplay to fall through to the first related video after the queue was exhausted")
+        #expect(
+            loadedRecommended,
+            "Expected autoplay to fall through to the first related video after the queue was exhausted")
         #expect(vm.videoEnded == false, "videoEnded must not be set when a recommendation was loaded")
     }
 

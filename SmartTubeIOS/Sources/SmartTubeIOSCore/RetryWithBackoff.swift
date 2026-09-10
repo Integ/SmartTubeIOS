@@ -31,9 +31,12 @@ func retryWithBackoff<T>(
         do {
             return try await operation()
         } catch let urlError as URLError
-                where transientCodes.contains(urlError.code) && attempt < maxAttempts {
+            where transientCodes.contains(urlError.code) && attempt < maxAttempts
+        {
             let tag = label.isEmpty ? "" : "[\(label)] "
-            retryLog.notice("\(tag)attempt \(attempt)/\(maxAttempts) failed (\(urlError.code.rawValue)), retrying in \(Int(delay))s")
+            retryLog.notice(
+                "\(tag)attempt \(attempt)/\(maxAttempts) failed (\(urlError.code.rawValue)), retrying in \(Int(delay))s"
+            )
             lastError = urlError
             try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
             delay = min(delay * 2, maxDelay)

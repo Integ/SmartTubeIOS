@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import SmartTubeIOSCore
 
 // MARK: - YouTubeRSSParserTests
@@ -10,59 +11,59 @@ struct YouTubeRSSParserTests {
     // MARK: - Sample feeds
 
     private static let nominalFeed = """
-    <?xml version="1.0" encoding="UTF-8"?>
-    <feed xmlns:yt="http://www.youtube.com/xml/schemas/2015"
-          xmlns:media="http://search.yahoo.com/mrss/"
-          xmlns="http://www.w3.org/2005/Atom">
-      <title>Test Channel</title>
-      <author>
-        <name>Test Channel</name>
-      </author>
-      <entry>
-        <id>yt:video:abc1234ABCD</id>
-        <yt:videoId>abc1234ABCD</yt:videoId>
-        <title>First Video Title</title>
-        <published>2024-03-15T18:00:00+00:00</published>
-        <author>
-          <name>Test Channel</name>
-        </author>
-        <media:group>
-          <media:thumbnail url="https://i.ytimg.com/vi/abc1234ABCD/hqdefault.jpg" width="480" height="360"/>
-          <media:statistics views="12345"/>
-        </media:group>
-      </entry>
-      <entry>
-        <id>yt:video:xyz9876WXYZ</id>
-        <yt:videoId>xyz9876WXYZ</yt:videoId>
-        <title>Second Video Title</title>
-        <published>2024-03-10T12:00:00+00:00</published>
-        <author>
-          <name>Test Channel</name>
-        </author>
-        <media:group>
-          <media:thumbnail url="https://i.ytimg.com/vi/xyz9876WXYZ/hqdefault.jpg" width="480" height="360"/>
-          <media:statistics views="999"/>
-        </media:group>
-      </entry>
-    </feed>
-    """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <feed xmlns:yt="http://www.youtube.com/xml/schemas/2015"
+              xmlns:media="http://search.yahoo.com/mrss/"
+              xmlns="http://www.w3.org/2005/Atom">
+          <title>Test Channel</title>
+          <author>
+            <name>Test Channel</name>
+          </author>
+          <entry>
+            <id>yt:video:abc1234ABCD</id>
+            <yt:videoId>abc1234ABCD</yt:videoId>
+            <title>First Video Title</title>
+            <published>2024-03-15T18:00:00+00:00</published>
+            <author>
+              <name>Test Channel</name>
+            </author>
+            <media:group>
+              <media:thumbnail url="https://i.ytimg.com/vi/abc1234ABCD/hqdefault.jpg" width="480" height="360"/>
+              <media:statistics views="12345"/>
+            </media:group>
+          </entry>
+          <entry>
+            <id>yt:video:xyz9876WXYZ</id>
+            <yt:videoId>xyz9876WXYZ</yt:videoId>
+            <title>Second Video Title</title>
+            <published>2024-03-10T12:00:00+00:00</published>
+            <author>
+              <name>Test Channel</name>
+            </author>
+            <media:group>
+              <media:thumbnail url="https://i.ytimg.com/vi/xyz9876WXYZ/hqdefault.jpg" width="480" height="360"/>
+              <media:statistics views="999"/>
+            </media:group>
+          </entry>
+        </feed>
+        """
 
     private static let emptyFeed = """
-    <?xml version="1.0" encoding="UTF-8"?>
-    <feed xmlns:yt="http://www.youtube.com/xml/schemas/2015"
-          xmlns="http://www.w3.org/2005/Atom">
-      <title>Empty Channel</title>
-      <author><name>Empty Channel</name></author>
-    </feed>
-    """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <feed xmlns:yt="http://www.youtube.com/xml/schemas/2015"
+              xmlns="http://www.w3.org/2005/Atom">
+          <title>Empty Channel</title>
+          <author><name>Empty Channel</name></author>
+        </feed>
+        """
 
     private static let malformedFeed = """
-    <?xml version="1.0"?>
-    <feed>
-      <entry>
-        <yt:videoId>partial001</yt:videoId>
-        <title>Partial video
-    """  // intentionally truncated / malformed
+        <?xml version="1.0"?>
+        <feed>
+          <entry>
+            <yt:videoId>partial001</yt:videoId>
+            <title>Partial video
+        """  // intentionally truncated / malformed
 
     // MARK: - Nominal parsing
 
@@ -139,7 +140,7 @@ struct YouTubeRSSParserTests {
         let data = Self.malformedFeed.data(using: .utf8)!
         // Should not crash — may return partial or empty
         let result = parseYouTubeRSS(data, channelId: "UCbad")
-        #expect(result.videos.count >= 0)   // any count is acceptable
+        #expect(result.videos.count >= 0)  // any count is acceptable
     }
 
     // MARK: - YouTubeRSS URL helpers

@@ -73,12 +73,14 @@ final class HideShortsHomeUITests: XCTestCase {
         // We want to catch Shorts that slip through the filter, not just miss them
         // because the grid hasn't finished rendering yet.
         _ = XCTWaiter().wait(
-            for: [XCTNSPredicateExpectation(
-                predicate: NSPredicate(format: "count > 5"),
-                object: app.descendants(matching: .any).matching(
-                    NSPredicate(format: "identifier BEGINSWITH 'video.card.'")
+            for: [
+                XCTNSPredicateExpectation(
+                    predicate: NSPredicate(format: "count > 5"),
+                    object: app.descendants(matching: .any).matching(
+                        NSPredicate(format: "identifier BEGINSWITH 'video.card.'")
+                    )
                 )
-            )],
+            ],
             timeout: 10
         )
 
@@ -86,9 +88,9 @@ final class HideShortsHomeUITests: XCTestCase {
         let shorts = shortCardsInGrid()
         XCTAssertEqual(
             shorts.count, 0,
-            "hideShorts=true: found \(shorts.count) Short card(s) in the home grid — " +
-            "isShort detection or hideShorts filter is broken. IDs: " +
-            (0..<shorts.count).map { shorts.element(boundBy: $0).identifier }.joined(separator: ", ")
+            "hideShorts=true: found \(shorts.count) Short card(s) in the home grid — "
+                + "isShort detection or hideShorts filter is broken. IDs: "
+                + (0..<shorts.count).map { shorts.element(boundBy: $0).identifier }.joined(separator: ", ")
         )
 
         // 2. Shorts row must be hidden.
@@ -121,12 +123,14 @@ final class HideShortsHomeUITests: XCTestCase {
 
         // Wait for at least a couple of cards to render before inspecting.
         _ = XCTWaiter().wait(
-            for: [XCTNSPredicateExpectation(
-                predicate: NSPredicate(format: "count > 3"),
-                object: app.descendants(matching: .any).matching(
-                    NSPredicate(format: "identifier BEGINSWITH 'video.card.'")
+            for: [
+                XCTNSPredicateExpectation(
+                    predicate: NSPredicate(format: "count > 3"),
+                    object: app.descendants(matching: .any).matching(
+                        NSPredicate(format: "identifier BEGINSWITH 'video.card.'")
+                    )
                 )
-            )],
+            ],
             timeout: 10
         )
 
@@ -135,9 +139,9 @@ final class HideShortsHomeUITests: XCTestCase {
         let shorts = shortCardsInGrid()
         XCTAssertEqual(
             shorts.count, 0,
-            "hideShorts=false: found \(shorts.count) Short card(s) in the home grid — " +
-            "homeRegularVideos must never contain Shorts. IDs: " +
-            (0..<shorts.count).map { shorts.element(boundBy: $0).identifier }.joined(separator: ", ")
+            "hideShorts=false: found \(shorts.count) Short card(s) in the home grid — "
+                + "homeRegularVideos must never contain Shorts. IDs: "
+                + (0..<shorts.count).map { shorts.element(boundBy: $0).identifier }.joined(separator: ", ")
         )
 
         // 2. Shorts chip must be visible when hideShorts is off.

@@ -96,8 +96,9 @@ final class PlayerGhostStreamRegressionUITests: XCTestCase {
     // END AGENT-POST-RUN-CHECK
     func testOpenSecondVideoAfterFirstNoErrorBanner() throws {
         let firstTitle = try openPlayerFromHome()
-        XCTAssertTrue(backButton.waitForExistence(timeout: 5),
-                      "player.backButton must appear after opening first video")
+        XCTAssertTrue(
+            backButton.waitForExistence(timeout: 5),
+            "player.backButton must appear after opening first video")
         backButton.tap()
 
         // Navigate back to Home and open a second video card.
@@ -118,8 +119,9 @@ final class PlayerGhostStreamRegressionUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 5)
 
         UITestHelpers.assertNoPlayerErrorBanner(in: app, videoTitle: firstTitle)
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must still be running after opening two sequential videos")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must still be running after opening two sequential videos")
     }
 
     /// Opening two videos back-to-back must not produce an error on the second video,
@@ -137,11 +139,14 @@ final class PlayerGhostStreamRegressionUITests: XCTestCase {
             app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
             Thread.sleep(forTimeInterval: 1.0)
             if nextButton.waitForExistence(timeout: 3), nextButton.isEnabled {
-                nextEnabled = true; break
+                nextEnabled = true
+                break
             }
         }
         guard nextEnabled else {
-            try captureAndSkip("player.nextBtn did not become enabled within 20 s — related videos may not have loaded (network flakiness)", in: app)
+            try captureAndSkip(
+                "player.nextBtn did not become enabled within 20 s — related videos may not have loaded (network flakiness)",
+                in: app)
         }
         nextButton.tap()
 
@@ -154,8 +159,9 @@ final class PlayerGhostStreamRegressionUITests: XCTestCase {
 
         Thread.sleep(forTimeInterval: 5)
         UITestHelpers.assertNoPlayerErrorBanner(in: app)
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must still be running after next-video navigation")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must still be running after next-video navigation")
     }
 
     /// After opening a video and returning to Home via the back button, the app must
@@ -169,10 +175,12 @@ final class PlayerGhostStreamRegressionUITests: XCTestCase {
 
         // Home chip bar should be visible — player fully dismissed.
         let chipBar = app.scrollViews["home.chipBar"]
-        XCTAssertTrue(chipBar.waitForExistence(timeout: 5),
-                      "home.chipBar should reappear after dismissing the player")
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must still be running after dismissing the player")
+        XCTAssertTrue(
+            chipBar.waitForExistence(timeout: 5),
+            "home.chipBar should reappear after dismissing the player")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must still be running after dismissing the player")
     }
 }
 
@@ -269,7 +277,8 @@ final class ShortsGhostStreamRegressionUITests: XCTestCase {
         let channelButton = app.descendants(matching: .any).matching(channelPred).firstMatch
 
         guard channelButton.waitForExistence(timeout: 10), channelButton.isEnabled else {
-            try captureAndSkip("shorts.channelButton not found or disabled — channelId unavailable for this Short", in: app)
+            try captureAndSkip(
+                "shorts.channelButton not found or disabled — channelId unavailable for this Short", in: app)
         }
         channelButton.tap()
 
@@ -283,7 +292,8 @@ final class ShortsGhostStreamRegressionUITests: XCTestCase {
         let indexGoneExp = XCTNSPredicateExpectation(predicate: indexGonePred, object: indexLabel)
         let pushResult = XCTWaiter().wait(for: [indexGoneExp], timeout: 15)
         guard pushResult == .completed else {
-            try captureAndSkip("ChannelView did not push within 15 s — channel may not be available on stub network", in: app)
+            try captureAndSkip(
+                "ChannelView did not push within 15 s — channel may not be available on stub network", in: app)
         }
 
         // Navigate back. Since navigationBarHidden(true) propagates from ShortsPlayerView,
@@ -291,10 +301,13 @@ final class ShortsGhostStreamRegressionUITests: XCTestCase {
         app.swipeRight()
 
         // ShortsPlayerView should be back; index must be unchanged.
-        XCTAssertTrue(indexLabel.waitForExistence(timeout: 5),
-                      "shorts.indexLabel must reappear after returning from ChannelView")
-        XCTAssertEqual(indexLabel.label, indexBefore,
-                       "Index label must not change after returning from ChannelView — spurious onAppear must not restart the video")
+        XCTAssertTrue(
+            indexLabel.waitForExistence(timeout: 5),
+            "shorts.indexLabel must reappear after returning from ChannelView")
+        XCTAssertEqual(
+            indexLabel.label, indexBefore,
+            "Index label must not change after returning from ChannelView — spurious onAppear must not restart the video"
+        )
     }
 
     /// Regression for root cause 3 — simpler variant that doesn't require a live
@@ -306,12 +319,14 @@ final class ShortsGhostStreamRegressionUITests: XCTestCase {
 
         // Toggle controls on then wait for them to auto-hide.
         showControls()
-        Thread.sleep(forTimeInterval: 5) // controls auto-hide after ~4 s
+        Thread.sleep(forTimeInterval: 5)  // controls auto-hide after ~4 s
 
-        XCTAssertTrue(indexLabel.waitForExistence(timeout: 5),
-                      "shorts.indexLabel must remain after controls auto-hide")
-        XCTAssertEqual(indexLabel.label, indexBefore,
-                       "Index must not change after showing/hiding controls overlay")
+        XCTAssertTrue(
+            indexLabel.waitForExistence(timeout: 5),
+            "shorts.indexLabel must remain after controls auto-hide")
+        XCTAssertEqual(
+            indexLabel.label, indexBefore,
+            "Index must not change after showing/hiding controls overlay")
     }
 
     /// Regression for root cause 2 (missing scenePhase handler).
@@ -340,12 +355,15 @@ final class ShortsGhostStreamRegressionUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 1)
 
         // Player must still be visible and on the same Short.
-        XCTAssertTrue(indexLabel.waitForExistence(timeout: 5),
-                      "shorts.indexLabel must still be visible after returning from background")
-        XCTAssertEqual(indexLabel.label, indexBefore,
-                       "Index must not change when returning from background — no spurious reload")
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must be running in the foreground after reactivation")
+        XCTAssertTrue(
+            indexLabel.waitForExistence(timeout: 5),
+            "shorts.indexLabel must still be visible after returning from background")
+        XCTAssertEqual(
+            indexLabel.label, indexBefore,
+            "Index must not change when returning from background — no spurious reload")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must be running in the foreground after reactivation")
     }
 
     /// Opening two shorts sequentially (swipe-up then swipe-down) must leave the
@@ -356,12 +374,12 @@ final class ShortsGhostStreamRegressionUITests: XCTestCase {
 
         let swipeUp: () -> Void = {
             let start = self.app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
-            let end   = self.app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
+            let end = self.app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
             start.press(forDuration: 0.05, thenDragTo: end)
         }
         let swipeDown: () -> Void = {
             let start = self.app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
-            let end   = self.app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+            let end = self.app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
             start.press(forDuration: 0.05, thenDragTo: end)
         }
 
@@ -371,7 +389,8 @@ final class ShortsGhostStreamRegressionUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 2)
 
         UITestHelpers.assertNoPlayerErrorBanner(in: app)
-        XCTAssertEqual(app.state, .runningForeground,
-                       "App must still be running after swipe-up then swipe-down")
+        XCTAssertEqual(
+            app.state, .runningForeground,
+            "App must still be running after swipe-up then swipe-down")
     }
 }

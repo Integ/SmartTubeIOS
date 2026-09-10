@@ -1,10 +1,11 @@
 import Foundation
 import Observation
+import SmartTubeIOSCore
 import os
+
 #if canImport(WebKit)
 import WebKit
 #endif
-import SmartTubeIOSCore
 
 let authLog = CrashlyticsLogger(category: "Auth")
 
@@ -76,7 +77,8 @@ public final class AuthService {
     // `accounts.reauth` scope was tested (Decision 15/16) and confirmed NOT grantable by the
     // YouTube TV device-code client — Google returns non-2xx on the /device/code request and
     // sign-in fails entirely. Removed. The Multilogin path remains blocked.
-    var scope = "openid http://gdata.youtube.com https://www.googleapis.com/auth/youtube-paid-content https://www.googleapis.com/auth/youtube"
+    var scope =
+        "openid http://gdata.youtube.com https://www.googleapis.com/auth/youtube-paid-content https://www.googleapis.com/auth/youtube"
     private var tokenRefreshTask: Task<Void, Never>?
 
     // State persisted across foreground/background transitions so that the
@@ -90,8 +92,8 @@ public final class AuthService {
 
     // MARK: - Static endpoint URLs (known-valid literals)
 
-    static let deviceCodeURL   = URL(string: "https://oauth2.googleapis.com/device/code")!
-    static let tokenURL        = URL(string: "https://oauth2.googleapis.com/token")!
+    static let deviceCodeURL = URL(string: "https://oauth2.googleapis.com/device/code")!
+    static let tokenURL = URL(string: "https://oauth2.googleapis.com/token")!
     static let accountsListURL = URL(string: "https://www.youtube.com/youtubei/v1/account/accounts_list")!
 
     public init() {
@@ -107,8 +109,9 @@ public final class AuthService {
         // fetchUserInfo fix), refresh it silently in the background.
         if isSignedIn && accountName == nil {
             Task {
-                do { try await fetchUserInfo() }
-                catch { authLog.error("fetchUserInfo on init failed: \(String(describing: error))") }
+                do { try await fetchUserInfo() } catch {
+                    authLog.error("fetchUserInfo on init failed: \(String(describing: error))")
+                }
             }
         }
         // UI-testing override: wipe all auth state (in-memory + keychain +
@@ -149,7 +152,9 @@ public final class AuthService {
             let deviceResponse = try await retryWithBackoff { [self] in
                 try await requestDeviceCode(creds: creds)
             }
-            authLog.notice("✅ Got device code. userCode=\(deviceResponse.userCode) expiresIn=\(deviceResponse.expiresIn)s interval=\(deviceResponse.interval)s")
+            authLog.notice(
+                "✅ Got device code. userCode=\(deviceResponse.userCode) expiresIn=\(deviceResponse.expiresIn)s interval=\(deviceResponse.interval)s"
+            )
             let expiresAt = Date().addingTimeInterval(TimeInterval(deviceResponse.expiresIn))
             let fallbackURL = URL(string: "https://yt.be/activate") ?? URL(string: "https://youtube.com/activate")!
             let verURL = URL(string: deviceResponse.verificationURL) ?? fallbackURL
@@ -163,12 +168,13 @@ public final class AuthService {
             // Step 2 – start polling in the background
             let interval = max(TimeInterval(deviceResponse.interval), 5)
             currentDeviceCode = deviceResponse.deviceCode
-            currentInterval   = interval
-            currentCreds      = creds
+            currentInterval = interval
+            currentCreds = creds
             pollTask = Task { [weak self] in
-                await self?.pollForToken(deviceCode: deviceResponse.deviceCode,
-                                         interval: interval,
-                                         creds: creds)
+                await self?.pollForToken(
+                    deviceCode: deviceResponse.deviceCode,
+                    interval: interval,
+                    creds: creds)
             }
         } catch {
             authLog.error("❌ beginSignIn error: \(String(describing: error))")
@@ -182,7 +188,7 @@ public final class AuthService {
         pollTask = nil
         pendingActivation = nil
         currentDeviceCode = nil
-        currentCreds      = nil
+        currentCreds = nil
     }
 
     /// Call when the app returns to the foreground while a sign-in is in progress.
@@ -194,10 +200,11 @@ public final class AuthService {
         pollTask?.cancel()
         let interval = currentInterval
         pollTask = Task { [weak self] in
-            await self?.pollForToken(deviceCode: deviceCode,
-                                     interval: interval,
-                                     creds: creds,
-                                     pollImmediately: true)
+            await self?.pollForToken(
+                deviceCode: deviceCode,
+                interval: interval,
+                creds: creds,
+                pollImmediately: true)
         }
     }
 
@@ -221,13 +228,13 @@ public final class AuthService {
         pollTask = nil
         tokenRefreshTask?.cancel()
         tokenRefreshTask = nil
-        accessToken      = nil
-        sapisid          = nil
-        refreshToken     = nil
-        tokenExpiry      = nil
-        accountName      = nil
+        accessToken = nil
+        sapisid = nil
+        refreshToken = nil
+        tokenExpiry = nil
+        accountName = nil
         accountAvatarURL = nil
-        isSignedIn       = false
+        isSignedIn = false
         pendingActivation = nil
         clearKeychain()
     }
@@ -240,13 +247,13 @@ public final class AuthService {
         pollTask = nil
         tokenRefreshTask?.cancel()
         tokenRefreshTask = nil
-        accessToken      = nil
-        sapisid          = nil
-        refreshToken     = nil
-        tokenExpiry      = nil
-        accountName      = nil
+        accessToken = nil
+        sapisid = nil
+        refreshToken = nil
+        tokenExpiry = nil
+        accountName = nil
         accountAvatarURL = nil
-        isSignedIn       = false
+        isSignedIn = false
         pendingActivation = nil
     }
 
@@ -277,7 +284,8 @@ public final class AuthService {
         }
         authLog.notice("[clearAllForTest] cleared in-memory + keychain + HTTPCookieStorage + WKWebsiteDataStore")
         #else
-        authLog.notice("[clearAllForTest] cleared in-memory + keychain + HTTPCookieStorage (no WebKit on this platform)")
+        authLog.notice(
+            "[clearAllForTest] cleared in-memory + keychain + HTTPCookieStorage (no WebKit on this platform)")
         #endif
     }
 

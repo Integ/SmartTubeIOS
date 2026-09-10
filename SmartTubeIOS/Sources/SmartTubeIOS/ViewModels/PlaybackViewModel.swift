@@ -1,12 +1,13 @@
-import Foundation
 import AVFoundation
+import Foundation
 import Observation
+import SmartTubeIOSCore
 import os
+
 #if canImport(UIKit)
 import UIKit
 import MediaPlayer
 #endif
-import SmartTubeIOSCore
 
 private let playerLog = CrashlyticsLogger(category: "Player")
 
@@ -160,16 +161,18 @@ public final class PlaybackViewModel {
                 if case .unavailable = apiError { return }
                 if case .ipBlocked = apiError { return }
             }
-            playerLog.recordNonFatal(error, userInfo: [
-                "video_id":          currentVideo?.id    ?? "unknown",
-                "video_title":       currentVideo?.title ?? "unknown",
-                "stream_url":        lastAttemptedStreamURL?.absoluteString ?? "none",
-                "error_message":     error.localizedDescription,
-                "error_domain":      nsError.domain,
-                "error_code":        "\(nsError.code)",
-                "retry_attempts":    "\(retryAttempts)",
-                "current_time":      "\(Int(currentTime))s",
-            ])
+            playerLog.recordNonFatal(
+                error,
+                userInfo: [
+                    "video_id": currentVideo?.id ?? "unknown",
+                    "video_title": currentVideo?.title ?? "unknown",
+                    "stream_url": lastAttemptedStreamURL?.absoluteString ?? "none",
+                    "error_message": error.localizedDescription,
+                    "error_domain": nsError.domain,
+                    "error_code": "\(nsError.code)",
+                    "retry_attempts": "\(retryAttempts)",
+                    "current_time": "\(Int(currentTime))s",
+                ])
             CrashlyticsLogger.sendAutoPlaybackDiagnostic()
         }
     }
@@ -546,7 +549,8 @@ extension PlaybackViewModel: QualityEventHandler {
         // Either way, currentTime is the authoritative target; `time` is the fallback
         // when currentTime is 0 (e.g. video is at the very start).
         let seekTarget = currentTime > 0 ? currentTime : time
-        playerLog.notice("[quality] readyToPlay — seekTarget=\(seekTarget)s (currentTime=\(currentTime)s savedTime=\(time)s)")
+        playerLog.notice(
+            "[quality] readyToPlay — seekTarget=\(seekTarget)s (currentTime=\(currentTime)s savedTime=\(time)s)")
         if seekTarget > 0 { seek(to: seekTarget) }
         isPlaying = true
         loadAudioTracks(from: item)
@@ -597,8 +601,9 @@ extension PlaybackViewModel: QualityEventHandler {
         guard pendingWrongVideoCheck else { return }
         pendingWrongVideoCheck = false
         guard let intended = intendedVideoId,
-              let active = currentVideo,
-              active.id != intended else { return }
+            let active = currentVideo,
+            active.id != intended
+        else { return }
         playerLog.error("[WrongVideo] MISMATCH at readyToPlay — intended=\(intended) active=\(active.id)")
         CrashlyticsLogger.sendWrongVideoReport(
             intendedId: intended,

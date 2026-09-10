@@ -55,8 +55,9 @@ public final class RSSFeedsViewModel {
                 let channelId = RSSFeedInfo.channelId(from: feedURL) ?? "unknown"
                 group.addTask {
                     guard let (data, response) = try? await sessionCopy.data(from: feedURL),
-                          let http = response as? HTTPURLResponse,
-                          (200..<300).contains(http.statusCode) else { return [] }
+                        let http = response as? HTTPURLResponse,
+                        (200..<300).contains(http.statusCode)
+                    else { return [] }
                     return parseYouTubeRSS(data, channelId: channelId).videos
                 }
             }
@@ -66,7 +67,8 @@ public final class RSSFeedsViewModel {
         }
 
         var seen = Set<String>()
-        videos = allVideos
+        videos =
+            allVideos
             .sorted { ($0.publishedAt ?? .distantPast) > ($1.publishedAt ?? .distantPast) }
             .filter { seen.insert($0.id).inserted }
     }

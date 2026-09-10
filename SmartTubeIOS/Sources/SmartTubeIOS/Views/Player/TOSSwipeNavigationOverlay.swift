@@ -1,5 +1,6 @@
 import SwiftUI
 import os
+
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -67,8 +68,10 @@ struct TOSSwipeNavigationOverlay: UIViewRepresentable {
             self.parent = parent
         }
 
-        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
-                                shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        func gestureRecognizer(
+            _ gestureRecognizer: UIGestureRecognizer,
+            shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+        ) -> Bool {
             true
         }
 
@@ -81,7 +84,9 @@ struct TOSSwipeNavigationOverlay: UIViewRepresentable {
             let y = touch.location(in: window).y
             let fraction = parent.verticalActivationFraction
             let accept = y <= window.bounds.height * fraction
-            swipeLog.debug("[shouldReceive] y=\(Int(y)) height=\(Int(window.bounds.height)) fraction=\(fraction, format: .fixed(precision: 2)) → \(accept ? "accept" : "reject")")
+            swipeLog.debug(
+                "[shouldReceive] y=\(Int(y)) height=\(Int(window.bounds.height)) fraction=\(fraction, format: .fixed(precision: 2)) → \(accept ? "accept" : "reject")"
+            )
             return accept
         }
 
@@ -94,7 +99,8 @@ struct TOSSwipeNavigationOverlay: UIViewRepresentable {
             swipeLog.notice("[handlePan] state=\(gr.state.rawValue) tx=\(Int(t.x)) ty=\(Int(t.y))")
             guard gr.state == .ended else { return }
             guard abs(t.x) > minDistance, abs(t.x) > abs(t.y) else {
-                swipeLog.notice("[handlePan] ended — ignored (tx=\(Int(t.x)) ty=\(Int(t.y)) minDist=\(Int(self.minDistance)))")
+                swipeLog.notice(
+                    "[handlePan] ended — ignored (tx=\(Int(t.x)) ty=\(Int(t.y)) minDist=\(Int(self.minDistance)))")
                 return
             }
             let dir = t.x < 0 ? "LEFT" : "RIGHT"
