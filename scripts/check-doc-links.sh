@@ -29,7 +29,7 @@ for f in "${files[@]}"; do
             echo "BROKEN LINK: $f -> $target" >&2
             fail=1
         fi
-    done < <(grep -oE '\]\([^)]+\)' "$f" | sed -E 's/^\]\((.*)\)$/\1/')
+    done < <(sed -E 's/`[^`]*`//g' "$f" | grep -oE '\]\([^)]+\)' | sed -E 's/^\]\((.*)\)$/\1/')
 done
 
 if [ "$fail" -ne 0 ]; then
