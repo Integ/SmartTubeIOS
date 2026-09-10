@@ -29,6 +29,9 @@ lint-baseline:
 secrets-check:
     cd {{root}} && scripts/check-no-secrets.sh
 
+doc-links:
+    cd {{root}} && scripts/check-doc-links.sh
+
 # --- build & test ------------------------------------------------------------
 build:
     xcodebuild build -workspace {{workspace}} -scheme SmartTube -destination "platform=iOS Simulator,name={{sim}}" -derivedDataPath {{derived}} CODE_SIGNING_ALLOWED=NO -quiet
@@ -57,7 +60,7 @@ test-ui:
 test-ui-one id:
     xcodebuild test -workspace {{workspace}} -scheme SmartTube -destination "platform=iOS Simulator,name={{sim}}" -derivedDataPath {{derived}} -only-testing:{{id}} 2>&1 | grep -E "Test Case|TEST SUCCEEDED|TEST FAILED|error:" | tail -20
 
-ci: secrets-check format-check lint test-unit
+ci: secrets-check doc-links format-check lint test-unit
     @echo "CI gate passed"
 
 # regenerate the Unreleased section of CHANGELOG.md from Conventional Commits since the last tag
