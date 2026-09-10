@@ -23,6 +23,9 @@ undiscoverable until it is. Keep this under 100 lines; anything that doesn't fit
 | [explanation/changelog-unreleased.md](explanation/changelog-unreleased.md) | Unreleased-changes draft notes | unverified | 2026-09-11 |
 | [explanation/task-89-short-detection-issue.md](explanation/task-89-short-detection-issue.md) | Shorts-detection issue investigation | unverified | 2026-09-11 |
 | [how-to/localization.md](how-to/localization.md) | Localization how-to | current | 2026-09-11 |
+| [how-to/run-tests.md](how-to/run-tests.md) | How to run tests, target simulator, one-time setup | current | 2026-09-11 |
+| [how-to/device-logs.md](how-to/device-logs.md) | How to capture device/app logs (simulator + physical device) | current | 2026-09-11 |
+| [how-to/release.md](how-to/release.md) | How to cut a release | partial | 2026-09-11 |
 | [research/playing-methods.md](research/playing-methods.md) | All known video-ID→AVPlayer paths | research reference | 2026-09-11 |
 | [research/BotGuard.md](research/BotGuard.md) | BotGuard/PoToken state and migration notes | research reference | 2026-09-11 |
 | [research/yt-dlp.md](research/yt-dlp.md) | yt-dlp knowledge reference | research reference | 2026-09-11 |
@@ -34,7 +37,7 @@ undiscoverable until it is. Keep this under 100 lines; anything that doesn't fit
 ## Not yet written
 
 These are named in the modernization plan but don't exist yet — don't link to them until their task lands:
-`docs/how-to/run-tests.md`, `docs/how-to/release.md`, `docs/how-to/device-logs.md` (WS2-T2.7).
+`docs/how-to/add-a-stream-source.md` (WS4-T4.7).
 
 ## Deliberately not moved from the private repo (WS2-T2.6)
 
