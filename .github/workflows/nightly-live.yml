@@ -1,0 +1,22 @@
+name: Nightly Live
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *'
+jobs:
+  live:
+    # No self-hosted runner is registered yet (verify with the maintainer / repo
+    # Settings > Actions > Runners before flipping this on). Until one exists,
+    # this job is disabled and Live UI runs stay manual — see docs/running-tests.md.
+    if: false
+    runs-on: [self-hosted, macOS, smarttube]
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Live UI suite
+        run: just test-ui
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-xcresult
+          path: /Volumes/External/tmp/smarttube-live.xcresult
