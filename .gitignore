@@ -43,10 +43,11 @@ fastlane/test_output
 AuthKey_*.p8
 
 # Private signing config (copy from SmartTubeIOSPrivate via setup.sh)
-SmartTubeApp/Config/Secrets.xcconfig
-
+**/Secrets.xcconfig
+!**/Secrets.xcconfig.example
 # Firebase config (copy from SmartTubeIOSPrivate via setup.sh)
-SmartTubeApp/SmartTubeApp/GoogleService-Info.plist
+**/GoogleService-Info.plist
+!**/GoogleService-Info.plist.example
 
 # Simulator
 *.app

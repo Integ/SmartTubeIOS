@@ -110,8 +110,8 @@ DEVELOPMENT_TEAM = YOUR_TEAM_ID
 SMARTTUBE_TV_TEAM = YOUR_TEAM_ID
 ```
 
-Add your own `GoogleService-Info.plist` to `SmartTubeApp/SmartTubeApp/` (create a free Firebase project at [console.firebase.google.com](https://console.firebase.google.com) — only Analytics and Crashlytics are used).  
-Both files are gitignored and will never be committed.
+Add your own `GoogleService-Info.plist` to both `SmartTubeApp/SmartTubeApp/` (iOS) and `SmartTubeApp/Smart Tube/` (tvOS) (create a free Firebase project at [console.firebase.google.com](https://console.firebase.google.com) — only Analytics and Crashlytics are used).  
+All of these files are gitignored (via glob rules matching any `GoogleService-Info.plist` or `Secrets.xcconfig`) and will never be committed; `setup.sh` installs them for you if you have access to the private config repo.
 
 ---
 
