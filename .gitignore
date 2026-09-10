@@ -20,14 +20,15 @@ DerivedData/
 # Swift Package Manager
 .build/
 .swiftpm/xcode/
-*.resolved
-# Keep Package.resolved when using SPM directly:
-# !Package.resolved
 
 # CocoaPods
 Pods/
-*.xcworkspace/
+*.xcworkspace/*
 !*.xcworkspace/contents.xcworkspacedata
+!*.xcworkspace/xcshareddata
+!*.xcworkspace/xcshareddata/*
+!*.xcworkspace/xcshareddata/swiftpm
+!*.xcworkspace/xcshareddata/swiftpm/Package.resolved
 
 # Fastlane
 fastlane/report.xml
