@@ -1,3 +1,5 @@
+> status: implemented (2026-06)
+
 # TOS Player — Development Worklog
 
 macOS-only YouTube IFrame embed player (`TOSPlayerView` / `TOSPlayerViewModel`).

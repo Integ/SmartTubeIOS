@@ -1,3 +1,5 @@
+> status: implemented (2026-06)
+
 # TOS Player → iOS — Deep Analysis & Implementation Plan
 
 Porting the TOS-compliant YouTube IFrame player (`TOSPlayerView` / `TOSPlayerViewModel`)
