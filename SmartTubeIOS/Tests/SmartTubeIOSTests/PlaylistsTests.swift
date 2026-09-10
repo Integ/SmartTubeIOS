@@ -82,10 +82,10 @@ private nonisolated(unsafe) let mockLibraryResponse: [String: Any] = [
     ]
 ]
 
-// MARK: - PlaylistsUITests
+// MARK: - PlaylistsTests
 
 @Suite("Playlists UI")
-struct PlaylistsUITests {
+struct PlaylistsTests {
 
     // MARK: - Renders correct playlist rows
 

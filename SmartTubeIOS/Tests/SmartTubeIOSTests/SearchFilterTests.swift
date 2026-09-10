@@ -3,7 +3,7 @@ import Testing
 
 @testable import SmartTubeIOSCore
 
-// MARK: - SearchFilterUITests
+// MARK: - SearchFilterTests
 //
 // Tests the SearchFilter model that directly drives the search filter sheet UI:
 //   • The filter badge (active indicator) shows when !filter.isDefault
@@ -12,7 +12,7 @@ import Testing
 //   • Active filters produce a non-nil encodedParams() sent with the request
 
 @Suite("Search Filter UI")
-struct SearchFilterUITests {
+struct SearchFilterTests {
 
     // MARK: Badge visibility
 
