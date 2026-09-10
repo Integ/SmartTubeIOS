@@ -1,0 +1,40 @@
+[changelog]
+header = """
+# Changelog
+
+All notable changes to this project are documented here (Keep a Changelog format).
+"""
+body = """
+{% if version %}\
+    ## [{{ version | trim_start_matches(pat="v") }}]{% if timestamp %} - {{ timestamp | date(format="%Y-%m-%d") }}{% endif %}
+{% else %}\
+    ## [Unreleased]
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+    ### {{ group | striptags | trim | upper_first }}
+    {% for commit in commits %}
+        - {{ commit.message | upper_first }}\
+    {% endfor %}
+{% endfor %}\n
+"""
+trim = true
+
+[git]
+conventional_commits = true
+filter_unconventional = false
+require_conventional = false  # flip to true once history is clean
+commit_parsers = [
+  { message = "^feat", group = "Features" },
+  { message = "^fix", group = "Bug Fixes" },
+  { message = "^refactor", group = "Refactoring" },
+  { message = "^docs", group = "Documentation" },
+  { message = "^build", group = "Build" },
+  { message = "^ci", group = "CI" },
+  { message = "^test", group = "Testing" },
+  { message = "^chore", group = "Chore" },
+  { message = "^perf", group = "Performance" },
+  { message = "^style", group = "Style" },
+  { message = ".*", group = "Other" },
+]
+filter_commits = false
+tag_pattern = "v[0-9]*"

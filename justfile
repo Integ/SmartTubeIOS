@@ -60,6 +60,10 @@ test-ui-one id:
 ci: secrets-check format-check lint test-unit
     @echo "CI gate passed"
 
+# regenerate the Unreleased section of CHANGELOG.md from Conventional Commits since the last tag
+changelog:
+    git-cliff --config {{root}}/cliff.toml --unreleased --prepend {{root}}/CHANGELOG.md
+
 # --- metrics (ratchet, see docs/adr/0001) -------------------------------------
 metrics:
     @echo "largest files:"; find {{package}}/Sources -name '*.swift' -exec wc -l {} + | sort -rn | head -11
