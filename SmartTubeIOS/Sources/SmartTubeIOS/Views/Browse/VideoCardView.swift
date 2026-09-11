@@ -52,6 +52,14 @@ public struct VideoCardView: View {
         localProgress ?? video.watchProgress
     }
 
+    /// #125: falls back to `video.playlistId` when the caller doesn't explicitly pass
+    /// `currentPlaylistId` (e.g. the "Watch Later" home tab, which renders through the
+    /// generic BrowseView grid that has no per-card playlist context of its own) — lets
+    /// Remove/Move-to-Playlist actions work there too, not just from PlaylistView.
+    private var effectivePlaylistId: String? {
+        currentPlaylistId ?? video.playlistId
+    }
+
     public init(video: Video, compact: Bool = false, currentPlaylistId: String? = nil, onSelect: (() -> Void)? = nil) {
         self.video = video
         self.compact = compact
@@ -159,7 +167,7 @@ public struct VideoCardView: View {
                 }
             }
             if authService.isSignedIn {
-                if currentPlaylistId == "WL" {
+                if effectivePlaylistId == "WL" {
                     Button(role: .destructive) {
                         // Removal is keyed by setVideoId (the playlist-entry token), not the
                         // video ID — see InnerTubeAPI+Social.swift's removeFromWatchLater (#122).
@@ -222,7 +230,7 @@ public struct VideoCardView: View {
                 } label: {
                     Label("Copy to Playlist", systemImage: "rectangle.stack.badge.plus")
                 }
-                if currentPlaylistId != nil {
+                if effectivePlaylistId != nil {
                     Button {
                         playlistPickerMode = .move
                     } label: {
@@ -358,7 +366,7 @@ public struct VideoCardView: View {
             }
             .sheet(item: $playlistPickerMode) { mode in
                 PlaylistPickerSheet(
-                    mode: mode, video: video, sourcePlaylistId: currentPlaylistId, api: api,
+                    mode: mode, video: video, sourcePlaylistId: effectivePlaylistId, api: api,
                     onFinished: handlePlaylistPickerResult
                 )
             }
@@ -370,7 +378,7 @@ public struct VideoCardView: View {
             }
             .sheet(item: $playlistPickerMode) { mode in
                 PlaylistPickerSheet(
-                    mode: mode, video: video, sourcePlaylistId: currentPlaylistId, api: api,
+                    mode: mode, video: video, sourcePlaylistId: effectivePlaylistId, api: api,
                     onFinished: handlePlaylistPickerResult
                 )
             }

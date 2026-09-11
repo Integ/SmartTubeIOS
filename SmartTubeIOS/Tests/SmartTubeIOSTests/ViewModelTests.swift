@@ -635,6 +635,39 @@ struct BrowseViewModelTests {
 
         #expect(!vm.isLoading)
     }
+
+    @Test("loadContent for .watchLater (signed in) calls fetchPlaylistVideos(WL) and stamps playlistId")
+    func loadWatchLaterPopulatesGroupsAndStampsPlaylistId() async {
+        let mock = MockInnerTubeAPI()
+        mock.playlistVideosResult = VideoGroup(title: "Watch Later", videos: [makeVideo("wlvid_AAAA")])
+
+        let section = BrowseSection(id: "watchLater", title: "Watch Later", type: .watchLater)
+        let vm = BrowseViewModel(api: mock, initialSection: section)
+        await vm.updateAuthToken("fake-token")
+        vm.loadContent(for: section, refresh: true, source: "test")
+        await waitForTasks(until: { !vm.videoGroups.isEmpty })
+
+        #expect(mock.calls.contains { $0.method == "fetchPlaylistVideos" && $0.args.first == "WL" })
+        #expect(vm.videoGroups.first?.videos.first?.id == "wlvid_AAAA")
+        #expect(
+            vm.videoGroups.first?.videos.first?.playlistId == "WL",
+            "videos must be stamped with playlistId=WL so VideoCardView's Remove/Move-to-Playlist actions work from this tab"
+        )
+    }
+
+    @Test("loadContent for .watchLater (signed out) requires auth without calling the API")
+    func loadWatchLaterSignedOutRequiresAuth() async {
+        let mock = MockInnerTubeAPI()
+        // No auth token set.
+
+        let section = BrowseSection(id: "watchLater", title: "Watch Later", type: .watchLater)
+        let vm = BrowseViewModel(api: mock, initialSection: section)
+        vm.loadContent(for: section, refresh: true, source: "test")
+        await waitForTasks()
+
+        #expect(vm.isAuthRequired)
+        #expect(!mock.calls.contains { $0.method == "fetchPlaylistVideos" })
+    }
 }
 
 // MARK: - SearchViewModelTests

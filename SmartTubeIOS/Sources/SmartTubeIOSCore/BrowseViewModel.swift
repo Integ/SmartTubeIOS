@@ -491,6 +491,32 @@ public final class BrowseViewModel {
             let group = try await api.fetchSports()
             if !Task.isCancelled { videoGroups = [group] }
 
+        case .watchLater:
+            // #125: direct "Watch Later" home tab, easier access than Library > Playlists >
+            // Watch Later. Stamps playlistId = "WL" on each video (parsePlaylistVideoRenderer
+            // doesn't set it) so VideoCardView's Remove/Move-to-Playlist actions work here too
+            // (VideoCardView falls back to video.playlistId when its explicit currentPlaylistId
+            // parameter isn't passed — this section renders through the generic BrowseView
+            // grid, which doesn't thread section context per-card).
+            if !hasAuthToken {
+                if !Task.isCancelled {
+                    isAuthRequired = true
+                    videoGroups = []
+                }
+            } else {
+                let group = try await api.fetchPlaylistVideos(playlistId: "WL", continuationToken: nil)
+                if !Task.isCancelled {
+                    isAuthRequired = false
+                    var stamped = group
+                    stamped.videos = group.videos.map { video -> Video in
+                        var video = video
+                        video.playlistId = "WL"
+                        return video
+                    }
+                    videoGroups = stamped.videos.isEmpty ? [] : [stamped]
+                }
+            }
+
         case .settings:
             break
         }

@@ -64,6 +64,7 @@ public struct BrowseSection: Identifiable, Hashable, Sendable {
         case gaming = "gaming"
         case live = "live"
         case sports = "sports"
+        case watchLater = "watchLater"
         case settings = "settings"
 
         /// Canonical display title — single source of truth used by defaultSections,
@@ -82,6 +83,7 @@ public struct BrowseSection: Identifiable, Hashable, Sendable {
             case .gaming: return "Gaming"
             case .live: return "Live"
             case .sports: return "Sports"
+            case .watchLater: return "Watch Later"
             case .settings: return "Settings"
             }
         }
@@ -118,6 +120,7 @@ public struct BrowseSection: Identifiable, Hashable, Sendable {
             BrowseSection(type: .news),
             BrowseSection(type: .live),
             BrowseSection(type: .sports),
+            BrowseSection(type: .watchLater),
         ]
 }
 
