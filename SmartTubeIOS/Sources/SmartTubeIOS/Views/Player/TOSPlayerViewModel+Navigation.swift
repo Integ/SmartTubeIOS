@@ -117,8 +117,9 @@ extension TOSPlayerViewModel {
         if let cachedNextInfo = cached.nextInfo {
             let isStale = cached.staleFields.contains(.nextInfo)
             relatedVideos = filter(cachedNextInfo.relatedVideos, videoId: videoId)
+            chapters = cachedNextInfo.chapters
             tosLog.notice(
-                "[navigation] cache \(isStale ? "STALE" : "HIT") — \(self.relatedVideos.count) related video(s) for \(videoId)"
+                "[navigation] cache \(isStale ? "STALE" : "HIT") — \(self.relatedVideos.count) related video(s), \(self.chapters.count) chapter(s) for \(videoId)"
             )
             if relatedVideos.isEmpty { await searchFallback() }
             guard isStale else { return }
@@ -130,6 +131,7 @@ extension TOSPlayerViewModel {
                     let updated = self.filter(fresh.relatedVideos, videoId: videoId)
                     tosLog.notice("[navigation] revalidated — \(updated.count) related video(s) for \(videoId)")
                     if !updated.isEmpty { self.relatedVideos = updated }
+                    self.chapters = fresh.chapters
                 }
             }
             return
@@ -142,7 +144,10 @@ extension TOSPlayerViewModel {
         }
         await VideoPreloadCache.shared.store(nextInfo: fresh, for: videoId)
         relatedVideos = filter(fresh.relatedVideos, videoId: videoId)
-        tosLog.notice("[navigation] cache MISS — fetched \(self.relatedVideos.count) related video(s) for \(videoId)")
+        chapters = fresh.chapters
+        tosLog.notice(
+            "[navigation] cache MISS — fetched \(self.relatedVideos.count) related video(s), \(self.chapters.count) chapter(s) for \(videoId)"
+        )
         if relatedVideos.isEmpty { await searchFallback() }
     }
 

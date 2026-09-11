@@ -114,6 +114,9 @@ final class TOSPlayerViewModel: NSObject {
 
     /// Populated by `fetchRelatedVideos()` once the "ready" bridge message fires.
     var relatedVideos: [Video] = []
+    /// Populated alongside `relatedVideos` — same `fetchNextInfo`/cache round trip
+    /// already fetches chapters, so there's no extra network cost to also keep them (#10).
+    var chapters: [Chapter] = []
     /// Set by `TOSPlayerStateStore.play(video:api:)` via `setNavigationContext(hasPrevious:)`
     /// based on whether a navigation history exists.
     var hasPrevious: Bool = false

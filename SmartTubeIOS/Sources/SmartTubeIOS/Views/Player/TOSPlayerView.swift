@@ -67,6 +67,9 @@ public struct TOSPlayerView: View {
     /// mirrors PlayerView.showCommentsSheet, but doesn't need to survive
     /// minimize-to-mini-player like the vm-owned properties above.
     @State private var showCommentsSheet = false
+    /// Drives `chaptersOverlay` (see moreButton's Chapters row) — same rationale as
+    /// showCommentsSheet above (#10).
+    @State private var showChaptersSheet = false
 
     #if os(iOS)
     /// Controls (back button, speed, more) are hidden on initial load and auto-hide
@@ -251,6 +254,13 @@ public struct TOSPlayerView: View {
                         commentsOverlay(vm: vm)
                             .transition(.move(edge: .bottom).combined(with: .opacity))
                             .animation(.easeOut(duration: 0.2), value: showCommentsSheet)
+                    }
+
+                    // MARK: Chapters overlay (triggered from moreButton)
+                    if showChaptersSheet {
+                        chaptersOverlay(vm: vm)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                            .animation(.easeOut(duration: 0.2), value: showChaptersSheet)
                     }
                 }
             }
@@ -624,6 +634,15 @@ public struct TOSPlayerView: View {
                 Label("Comments", systemImage: "bubble.left.and.bubble.right")
             }
             .accessibilityIdentifier("tosPlayer.moreMenu.commentsRow")
+
+            if !vm.chapters.isEmpty {
+                Button {
+                    showChaptersSheet = true
+                } label: {
+                    Label("Chapters", systemImage: "list.bullet.rectangle")
+                }
+                .accessibilityIdentifier("tosPlayer.moreMenu.chaptersRow")
+            }
         } label: {
             Image(systemName: "ellipsis")
                 .font(.system(size: 14, weight: .semibold))
@@ -653,6 +672,25 @@ public struct TOSPlayerView: View {
             isLoading: vm.comments.isLoading,
             onDismiss: { showCommentsSheet = false },
             accessibilityId: "tosPlayer.commentsOverlay"
+        )
+    }
+
+    // MARK: - Chapters overlay
+    //
+    // #10 (closes #68, #105): the TOS player embeds YouTube's own IFrame page
+    // directly rather than the IFrame JS API, so SmartTube has no control over —
+    // and can't add markers to — the embed's own scrub bar. This overlay is the
+    // native equivalent: a tap-to-jump list, seeking via vm.seekTo (a plain
+    // `video.currentTime = X` JS assignment, not a user-activation-gated API).
+    private func chaptersOverlay(vm: TOSPlayerViewModel) -> some View {
+        ChaptersOverlayView(
+            chapters: vm.chapters,
+            onSelect: { chapter in
+                vm.seekTo(chapter.startTime)
+                showChaptersSheet = false
+            },
+            onDismiss: { showChaptersSheet = false },
+            accessibilityId: "tosPlayer.chaptersOverlay"
         )
     }
 
