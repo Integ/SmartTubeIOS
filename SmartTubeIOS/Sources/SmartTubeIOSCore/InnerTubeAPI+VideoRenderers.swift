@@ -1057,6 +1057,9 @@ extension InnerTubeAPI {
     // ownerText/viewCountText which parseVideoRenderer expects.
     private func parsePlaylistVideoRenderer(_ r: [String: Any]) -> Video? {
         guard let videoId = r["videoId"] as? String else { return nil }
+        // The playlist-entry token needed to remove this exact item via ACTION_REMOVE_VIDEO
+        // (see InnerTubeAPI+Social.swift's removeFromWatchLater — #122).
+        let setVideoId = r["setVideoId"] as? String
         let title = (r["title"] as? [String: Any]).flatMap { extractText($0) } ?? ""
 
         // channelTitle: shortBylineText preferred; ownerText as fallback
@@ -1149,6 +1152,7 @@ extension InnerTubeAPI {
             isLive: false,
             isShort: isShort,
             watchProgress: watchProgress,
+            setVideoId: setVideoId,
             badges: []
         )
     }

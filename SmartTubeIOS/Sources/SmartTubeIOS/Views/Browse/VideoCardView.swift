@@ -160,9 +160,22 @@ public struct VideoCardView: View {
             if authService.isSignedIn {
                 if currentPlaylistId == "WL" {
                     Button(role: .destructive) {
+                        // Removal is keyed by setVideoId (the playlist-entry token), not the
+                        // video ID — see InnerTubeAPI+Social.swift's removeFromWatchLater (#122).
+                        // It's only populated when this card came from browsing the WL playlist
+                        // itself, which is the only place this button is shown.
+                        guard let setVideoId = video.setVideoId else {
+                            watchLaterAlert = DownloadAlertItem(
+                                title: String(localized: "Could Not Remove", bundle: .module),
+                                message: String(
+                                    localized: "Missing playlist entry information for \"\(video.title)\".",
+                                    bundle: .module)
+                            )
+                            return
+                        }
                         Task {
                             do {
-                                try await api.removeFromWatchLater(videoId: video.id)
+                                try await api.removeFromWatchLater(setVideoId: setVideoId)
                                 watchLaterAlert = DownloadAlertItem(
                                     title: String(localized: "Removed from Watch Later", bundle: .module),
                                     message: String(

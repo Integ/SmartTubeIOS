@@ -46,14 +46,21 @@ extension InnerTubeAPI {
     }
 
     /// Removes a video from the authenticated user's Watch Later playlist (id \"WL\").
-    /// Mirrors `addToWatchLater` but uses `ACTION_REMOVE_VIDEO` + `removedVideoId`.
+    ///
+    /// Unlike `addToWatchLater` (which only needs the video ID), removal is keyed by
+    /// `setVideoId` — the playlist-entry token from that video's `playlistVideoRenderer`
+    /// (see `parsePlaylistVideoRenderer` in InnerTubeAPI+VideoRenderers.swift). A playlist
+    /// can hold the same video more than once, so InnerTube's `ACTION_REMOVE_VIDEO` removes
+    /// a specific *entry*, not "any entry with this video ID" — sending the raw video ID
+    /// under a `removedVideoId` key (the previous behavior, #122) is not a field this action
+    /// recognizes and the removal silently fails.
     /// Requires authentication.
-    public func removeFromWatchLater(videoId: String) async throws {
+    public func removeFromWatchLater(setVideoId: String) async throws {
         var body = makeBody(client: tvClientContext)
         body["playlistId"] = "WL"
-        body["actions"] = [["removedVideoId": videoId, "action": "ACTION_REMOVE_VIDEO"]]
+        body["actions"] = [["setVideoId": setVideoId, "action": "ACTION_REMOVE_VIDEO"]]
         _ = try await postTV(endpoint: "browse/edit_playlist", body: body)
-        tubeLog.notice("removeFromWatchLater videoId=\(videoId, privacy: .public)")
+        tubeLog.notice("removeFromWatchLater setVideoId=\(setVideoId, privacy: .public)")
     }
 
     /// Sends a feed feedback signal to YouTube.

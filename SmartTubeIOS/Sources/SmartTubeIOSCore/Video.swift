@@ -28,6 +28,12 @@ public struct Video: Identifiable, Hashable, Codable, Sendable {
     public var watchProgress: Double?  // 0.0 – 1.0
     public var playlistId: String?
     public var playlistIndex: Int?
+    /// The playlist-entry token for this video within the playlist it was fetched from
+    /// (InnerTube's `playlistVideoRenderer.setVideoId`). Distinct from `id` (the video ID) —
+    /// a playlist can hold the same video more than once, so removing an item from a playlist
+    /// (`ACTION_REMOVE_VIDEO`) is keyed by this token, not by video ID. `nil` when the video
+    /// wasn't fetched as part of a playlist listing.
+    public var setVideoId: String?
     public var badges: [String]
     // Feed feedback tokens (session-scoped, from InnerTube menuRenderer)
     public var notInterestedToken: String?  // "Not interested" — hide this video
@@ -46,7 +52,7 @@ public struct Video: Identifiable, Hashable, Codable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case id, title, channelTitle, channelId, description, thumbnailURL, duration
         case viewCount, publishedAt, publishedTimeText, isLive, isUpcoming, isShort, hasPortraitThumbnail
-        case watchProgress, playlistId, playlistIndex, badges
+        case watchProgress, playlistId, playlistIndex, setVideoId, badges
         case notInterestedToken, dontLikeToken, hideChannelToken
         case deArrowTitle, deArrowThumbnailTimestamp
         // localFileURL intentionally omitted — runtime only, never persisted to cache JSON
@@ -70,6 +76,7 @@ public struct Video: Identifiable, Hashable, Codable, Sendable {
         watchProgress: Double? = nil,
         playlistId: String? = nil,
         playlistIndex: Int? = nil,
+        setVideoId: String? = nil,
         badges: [String] = [],
         notInterestedToken: String? = nil,
         dontLikeToken: String? = nil,
@@ -92,6 +99,7 @@ public struct Video: Identifiable, Hashable, Codable, Sendable {
         self.watchProgress = watchProgress
         self.playlistId = playlistId
         self.playlistIndex = playlistIndex
+        self.setVideoId = setVideoId
         self.badges = badges
         self.notInterestedToken = notInterestedToken
         self.dontLikeToken = dontLikeToken
