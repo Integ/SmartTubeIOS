@@ -55,8 +55,13 @@ public struct AppSettings: Codable {
     /// #107: opts the app out of iOS 26's Liquid Glass tab bar via the
     /// `UIDesignRequiresCompatibility` UserDefaults/Info.plist key, which UIKit reads
     /// once at process launch — this setting is applied on the *next* app launch, not
-    /// live. See SmartTubeApp.swift's init for where it's actually written.
+    /// live. See AppEntry.swift's init for where it's actually written.
     public var disableLiquidGlass: Bool
+    /// #92: when `true`, AppEntry.swift's init() skips `FirebaseApp.configure()` entirely
+    /// so the SDK makes no network calls at launch (fixes a reported startup delay when
+    /// analytics domains are DNS-blocked). Read once at process launch like
+    /// `disableLiquidGlass` above — takes effect on the *next* launch, not live.
+    public var disableAnalytics: Bool
     public var hideShorts: Bool
     public var hideLiveShorts: Bool
     public var hideVideoPremieres: Bool
@@ -252,6 +257,7 @@ public struct AppSettings: Codable {
         hideWatchedVideos = false
         hideWatchedThreshold = 0.9
         disableLiquidGlass = false
+        disableAnalytics = false
         hideShorts = false
         hideLiveShorts = false
         hideVideoPremieres = false
@@ -335,6 +341,7 @@ extension AppSettings {
         case hideWatchedVideos
         case hideWatchedThreshold
         case disableLiquidGlass
+        case disableAnalytics
         case hideShorts
         case hideLiveShorts
         case hideVideoPremieres
@@ -383,6 +390,7 @@ extension AppSettings {
         hideWatchedThreshold = c.safeDecode(
             Double.self, forKey: .hideWatchedThreshold, default: d.hideWatchedThreshold)
         disableLiquidGlass = c.safeDecode(Bool.self, forKey: .disableLiquidGlass, default: d.disableLiquidGlass)
+        disableAnalytics = c.safeDecode(Bool.self, forKey: .disableAnalytics, default: d.disableAnalytics)
         hideShorts = c.safeDecode(Bool.self, forKey: .hideShorts, default: d.hideShorts)
         hideLiveShorts = c.safeDecode(Bool.self, forKey: .hideLiveShorts, default: d.hideLiveShorts)
         hideVideoPremieres = c.safeDecode(Bool.self, forKey: .hideVideoPremieres, default: d.hideVideoPremieres)

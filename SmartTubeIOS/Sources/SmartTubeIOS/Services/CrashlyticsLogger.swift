@@ -6,17 +6,23 @@ import os
 /// Logs to `os.Logger` and forwards `.notice` and `.error` entries to Firebase
 /// Crashlytics as breadcrumbs so they appear in crash reports.
 /// `.debug` entries are only written to `os.log` — too verbose for crash reports.
-struct CrashlyticsLogger: Sendable {
+public struct CrashlyticsLogger: Sendable {
 
-    /// Short identifier (8 hex chars) generated once per app session.
-    /// Stamped onto every sent diagnostic report as the `report_id` custom key
-    /// and displayed in the Stats for Nerds debug overlay so users can quote it
-    /// when describing an issue.
+    /// #92: set once from AppEntry.swift's init() (a different module, hence `public`),
+    /// before any logging can happen, from `AppSettings.disableAnalytics`. When `false`,
+    /// AppEntry skips `FirebaseApp.configure()` entirely (so the SDK makes no network calls
+    /// at all, fixing the startup delay some users saw when analytics domains are
+    /// DNS-blocked) — which means every method below must skip touching
+    /// `Crashlytics.crashlytics()` too, since calling it without a configured FirebaseApp
+    /// is a fatal error, not a silent no-op.
+    public nonisolated(unsafe) static var isEnabled = true
+
+    /// Short identifier (8 hex chars) generated once per app session, independent of
+    /// `isEnabled` — it's shown in the Stats for Nerds debug overlay purely as a local
+    /// reference number even when analytics reporting is off.
     static let sessionReportID: String = {
         let raw = UUID().uuidString.replacingOccurrences(of: "-", with: "")
-        let id = String(raw.prefix(8)).uppercased()
-        Crashlytics.crashlytics().setCustomValue(id, forKey: "report_id")
-        return id
+        return String(raw.prefix(8)).uppercased()
     }()
     private let logger: Logger
     private let category: String
@@ -29,12 +35,14 @@ struct CrashlyticsLogger: Sendable {
     func notice(_ message: @autoclosure () -> String) {
         let msg = message()
         logger.notice("\(msg, privacy: .public)")
+        guard Self.isEnabled else { return }
         Crashlytics.crashlytics().log("[\(category)] \(msg)")
     }
 
     func error(_ message: @autoclosure () -> String) {
         let msg = message()
         logger.error("\(msg, privacy: .public)")
+        guard Self.isEnabled else { return }
         Crashlytics.crashlytics().log("[ERR][\(category)] \(msg)")
     }
 
@@ -51,6 +59,7 @@ struct CrashlyticsLogger: Sendable {
         let nsError = error as NSError
         let msg = "[\(category)] \(nsError.domain)(\(nsError.code)): \(nsError.localizedDescription)"
         logger.error("\(msg, privacy: .public)")
+        guard Self.isEnabled else { return }
         let crashlytics = Crashlytics.crashlytics()
         crashlytics.log(msg)
         for (key, value) in userInfo {
@@ -63,6 +72,7 @@ struct CrashlyticsLogger: Sendable {
     /// Called once per `load(video:)` so that both crashes and non-fatals show which
     /// video was active at the time of the failure.
     static func setVideoContext(id: String, title: String) {
+        guard isEnabled else { return }
         let crashlytics = Crashlytics.crashlytics()
         crashlytics.setCustomValue(id, forKey: "active_video_id")
         crashlytics.setCustomValue(title.prefix(120).description, forKey: "active_video_title")
@@ -74,6 +84,7 @@ struct CrashlyticsLogger: Sendable {
     /// Comparing `intended_video_id` with `active_video_id` in a report reveals whether
     /// the wrong video was loaded (prefetch race / wrong-card tap / id mismatch).
     static func setIntendedVideo(id: String, title: String) {
+        guard isEnabled else { return }
         let crashlytics = Crashlytics.crashlytics()
         crashlytics.setCustomValue(id, forKey: "intended_video_id")
         crashlytics.setCustomValue(title.prefix(120).description, forKey: "intended_video_title")
@@ -87,6 +98,7 @@ struct CrashlyticsLogger: Sendable {
     /// debug overlay (two-finger tap in the player) so reports can be correlated
     /// with user-provided IDs from support conversations.
     static func sendDiagnosticReport() {
+        guard isEnabled else { return }
         let crashlytics = Crashlytics.crashlytics()
         crashlytics.setCustomValue(sessionReportID, forKey: "report_id")
         crashlytics.log(
@@ -111,6 +123,7 @@ struct CrashlyticsLogger: Sendable {
         hasError: Bool,
         errorDescription: String? = nil
     ) {
+        guard isEnabled else { return }
         let crashlytics = Crashlytics.crashlytics()
         crashlytics.setCustomValue(videoId, forKey: "slow_load_video_id")
         crashlytics.setCustomValue(elapsedMs, forKey: "slow_load_ttff_ms")
@@ -135,6 +148,7 @@ struct CrashlyticsLogger: Sendable {
     /// Custom keys set by `recordNonFatal` (stream_url, has_retried, etc.) are already
     /// stamped on the Crashlytics instance and are automatically attached to this event.
     static func sendAutoPlaybackDiagnostic() {
+        guard isEnabled else { return }
         let crashlytics = Crashlytics.crashlytics()
         crashlytics.log("[AutoDiagnostic] Playback failure — see custom keys and session breadcrumbs.")
         crashlytics.setCustomValue("auto", forKey: "trigger")
@@ -158,6 +172,7 @@ struct CrashlyticsLogger: Sendable {
         activeId: String,
         activeTitle: String
     ) {
+        guard isEnabled else { return }
         let crashlytics = Crashlytics.crashlytics()
         crashlytics.setCustomValue(intendedId, forKey: "wv_intended_id")
         crashlytics.setCustomValue(intendedTitle, forKey: "wv_intended_title")

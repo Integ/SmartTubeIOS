@@ -321,8 +321,14 @@ public struct SettingsView: View {
     // MARK: - About
 
     private var aboutSection: some View {
-        Section {
+        @Bindable var store = store
+        return Section {
             LabeledContent("Version", value: appVersion)
+            Toggle("Disable Analytics & Crash Reporting", isOn: $store.settings.disableAnalytics)
+                .accessibilityIdentifier("settings.disableAnalyticsToggle")
+            Text("Restart the app for this to take effect.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
             #if os(tvOS)
             Button {
                 showGithubQR = true
@@ -345,7 +351,7 @@ public struct SettingsView: View {
                     Label("Send Diagnostic Report", systemImage: "ladybug")
                 }
             }
-            .disabled(reportSent)
+            .disabled(reportSent || store.settings.disableAnalytics)
             .accessibilityIdentifier("settings.sendDiagnosticReportButton")
             Button("Reset All Settings", role: .destructive) { store.reset() }
                 .accessibilityIdentifier("settings.resetAllButton")

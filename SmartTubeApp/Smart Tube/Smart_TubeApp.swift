@@ -1,4 +1,5 @@
 import FirebaseCore
+import FirebaseCrashlytics
 import SmartTubeIOS
 import SmartTubeIOSCore
 import SwiftUI
@@ -21,8 +22,13 @@ struct SmartTubeTVApp: App {
     @State private var cardDownloadService: VideoDownloadService
 
     init() {
-        FirebaseApp.configure()
+        // #92: see AppEntry.swift's init() for why order matters here — settingsStore
+        // must exist before deciding whether to configure Firebase at all.
         let settingsStore = SettingsStore()
+        CrashlyticsLogger.isEnabled = !settingsStore.settings.disableAnalytics
+        if CrashlyticsLogger.isEnabled {
+            FirebaseApp.configure()
+        }
         let poTokenProvider: (any PoTokenProvider)? = {
             if let url = settingsStore.settings.poTokenServiceURL {
                 return ServerPoTokenProvider(serviceURL: url)

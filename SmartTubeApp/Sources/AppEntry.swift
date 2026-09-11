@@ -1,4 +1,5 @@
 import FirebaseCore
+import FirebaseCrashlytics
 import SmartTubeIOS
 import SmartTubeIOSCore
 import SwiftUI
@@ -46,8 +47,27 @@ struct AppEntry: App {
     private static let pendingRSSFeedKey = "pendingRSSFeedURL"
 
     init() {
-        FirebaseApp.configure()
+        // #92: read the setting before configuring Firebase (and before constructing
+        // anything below that might log through CrashlyticsLogger) so that when
+        // analytics are disabled, FirebaseApp.configure() is never called at all —
+        // no network calls at startup, fixing the delay some users saw when analytics
+        // domains are DNS-blocked. CrashlyticsLogger.isEnabled must be set first so its
+        // methods know to skip Crashlytics.crashlytics() instead of hitting the fatal
+        // "default app not configured" error.
         let settingsStore = SettingsStore()
+        CrashlyticsLogger.isEnabled = !settingsStore.settings.disableAnalytics
+        if CrashlyticsLogger.isEnabled {
+            FirebaseApp.configure()
+        }
+        #if os(iOS)
+        // #107: UIKit reads UIDesignRequiresCompatibility once at process launch to
+        // decide whether to render iOS 26's Liquid Glass tab bar or the pre-26 style —
+        // there's no live/runtime API to flip it, so this can only take effect on the
+        // *next* launch after the user toggles it in Settings (see SettingsView's
+        // "Restart the app for this to take effect" note next to the toggle).
+        UserDefaults.standard.set(
+            settingsStore.settings.disableLiquidGlass, forKey: "UIDesignRequiresCompatibility")
+        #endif
         let poTokenProvider: (any PoTokenProvider)? = {
             if let url = settingsStore.settings.poTokenServiceURL {
                 return ServerPoTokenProvider(serviceURL: url)
