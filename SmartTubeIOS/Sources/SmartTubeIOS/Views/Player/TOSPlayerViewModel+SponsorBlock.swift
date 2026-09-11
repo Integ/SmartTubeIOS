@@ -257,6 +257,23 @@ extension TOSPlayerViewModel {
         seekTo(segment.start)
     }
 
+    /// Reports a segment as incorrect to SponsorBlock (#67). Returns `false` without a
+    /// network call for segments with no `apiUUID` (e.g. UI-test-injected synthetic
+    /// segments, which don't exist on SponsorBlock's servers to vote on).
+    func reportIncorrectSegment(_ segment: SponsorSegment) async -> Bool {
+        guard let uuid = segment.apiUUID else {
+            tosLog.notice(
+                "[SponsorBlock] report-incorrect skipped — no apiUUID for category=\(segment.category.rawValue) segment=[\(segment.start, format: .fixed(precision: 1))s–\(segment.end, format: .fixed(precision: 1))s]"
+            )
+            return false
+        }
+        let ok = await sponsorService.reportIncorrect(uuid: uuid)
+        tosLog.notice(
+            "[SponsorBlock] report-incorrect \(ok ? "SUCCEEDED" : "FAILED") category=\(segment.category.rawValue) uuid=\(uuid, privacy: .private)"
+        )
+        return ok
+    }
+
     /// Watches for the landing of an in-flight auto-skip seek and logs the "after" side
     /// of the before/after pair once confirmed (or a timeout if it never lands).
     ///

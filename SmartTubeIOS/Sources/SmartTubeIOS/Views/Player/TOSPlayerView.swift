@@ -71,6 +71,8 @@ public struct TOSPlayerView: View {
     /// Drives `chaptersOverlay` (see moreButton's Chapters row) — same rationale as
     /// showCommentsSheet above (#10).
     @State private var showChaptersSheet = false
+    /// Feedback alert for "Report Incorrect Segment" (#67) on either SponsorBlock toast.
+    @State private var reportSegmentAlert: DownloadAlertItem?
 
     #if os(iOS)
     // MARK: - Brightness/volume drag gesture state (#19)
@@ -509,6 +511,9 @@ public struct TOSPlayerView: View {
                 vm.handleForeground()
             }
             #endif
+            .alert(item: $reportSegmentAlert) { item in
+                Alert(title: Text(item.title), message: Text(item.message), dismissButton: .default(Text("OK")))
+            }
         )
     }
 
@@ -785,8 +790,9 @@ public struct TOSPlayerView: View {
     private func sponsorToast(for segment: SponsorSegment, vm: TOSPlayerViewModel) -> some View {
         VStack {
             Spacer()
-            HStack {
+            HStack(spacing: 8) {
                 Spacer()
+                reportSegmentButton(segment, vm: vm)
                 Button {
                     vm.seekTo(segment.end)
                     vm.currentToastSegment = nil
@@ -799,9 +805,9 @@ public struct TOSPlayerView: View {
                         .background(.thinMaterial, in: Capsule())
                 }
                 .buttonStyle(.plain)
-                .padding(.trailing, 20)
-                .padding(.bottom, 60)
             }
+            .padding(.trailing, 20)
+            .padding(.bottom, 60)
         }
         .accessibilityIdentifier("tosPlayer.skipToast")
         .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -814,8 +820,9 @@ public struct TOSPlayerView: View {
     private func undoAutoSkipToast(for segment: SponsorSegment, vm: TOSPlayerViewModel) -> some View {
         VStack {
             Spacer()
-            HStack {
+            HStack(spacing: 8) {
                 Spacer()
+                reportSegmentButton(segment, vm: vm)
                 Button {
                     vm.undoAutoSkip()
                 } label: {
@@ -827,13 +834,43 @@ public struct TOSPlayerView: View {
                         .background(.thinMaterial, in: Capsule())
                 }
                 .buttonStyle(.plain)
-                .padding(.trailing, 20)
-                .padding(.bottom, 60)
             }
+            .padding(.trailing, 20)
+            .padding(.bottom, 60)
         }
         .accessibilityIdentifier("tosPlayer.undoAutoSkipToast")
         .transition(.move(edge: .bottom).combined(with: .opacity))
         .animation(.easeInOut(duration: 0.2), value: vm.recentAutoSkip?.start)
+    }
+
+    /// Small "flag" icon button shared by both SponsorBlock toasts (#67).
+    private func reportSegmentButton(_ segment: SponsorSegment, vm: TOSPlayerViewModel) -> some View {
+        Button {
+            reportSegment(segment, vm: vm)
+        } label: {
+            Image(systemName: "flag")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.white)
+                .padding(8)
+                .background(.thinMaterial, in: Circle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text("Report Incorrect Segment", bundle: .module))
+        .accessibilityIdentifier("tosPlayer.reportSegmentButton")
+    }
+
+    /// #67: submits a downvote to SponsorBlock for this segment and shows a brief
+    /// confirmation. Wired from both sponsorToast and undoAutoSkipToast's report button.
+    private func reportSegment(_ segment: SponsorSegment, vm: TOSPlayerViewModel) {
+        Task {
+            let ok = await vm.reportIncorrectSegment(segment)
+            reportSegmentAlert = DownloadAlertItem(
+                title: ok ? String(localized: "Reported", bundle: .module) : String(localized: "Could Not Report", bundle: .module),
+                message: ok
+                    ? String(localized: "Thanks for the feedback — this segment has been reported to SponsorBlock.", bundle: .module)
+                    : String(localized: "The report couldn't be sent. Please try again later.", bundle: .module)
+            )
+        }
     }
 
     private func skippedLabel(for category: SponsorSegment.Category) -> String {

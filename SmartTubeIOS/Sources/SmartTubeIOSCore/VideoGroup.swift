@@ -231,6 +231,13 @@ public struct SponsorSegment: Identifiable, Codable, Equatable, Sendable {
     public var start: TimeInterval
     public var end: TimeInterval
     public var category: Category
+    /// The SponsorBlock API's own segment identifier (its `"UUID"` field) — an
+    /// arbitrary string, not a Swift `UUID`, so it's kept separate from `id` (which
+    /// is just a local SwiftUI-identity token, `Identifiable`-generated per fetch).
+    /// `nil` for segments not sourced from a live API response (e.g. UI-test-injected
+    /// synthetic segments). Required by `SponsorBlockService.reportIncorrect(uuid:)`
+    /// (#67) — voting on a segment needs the API's own identifier, not ours.
+    public var apiUUID: String?
 
     public enum Category: String, Codable, CaseIterable, Sendable {
         case sponsor = "sponsor"
@@ -244,10 +251,11 @@ public struct SponsorSegment: Identifiable, Codable, Equatable, Sendable {
         case poiHighlight = "poi_highlight"
     }
 
-    public init(id: UUID = UUID(), start: TimeInterval, end: TimeInterval, category: Category) {
+    public init(id: UUID = UUID(), start: TimeInterval, end: TimeInterval, category: Category, apiUUID: String? = nil) {
         self.id = id
         self.start = start
         self.end = end
         self.category = category
+        self.apiUUID = apiUUID
     }
 }

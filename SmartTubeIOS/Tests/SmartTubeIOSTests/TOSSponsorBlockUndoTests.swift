@@ -80,6 +80,18 @@ struct TOSSponsorBlockUndoTests {
         )
     }
 
+    @Test("reportIncorrectSegment returns false for a segment with no apiUUID")
+    func reportIncorrectSegmentSkipsWithoutApiUUID() async {
+        // No apiUUID (nil default) — e.g. a UI-test-injected synthetic segment that
+        // doesn't exist on SponsorBlock's servers to vote on.
+        let seg = SponsorSegment(start: 10, end: 30, category: .sponsor)
+        let vm = makeVM(segments: [seg])
+
+        let ok = await vm.reportIncorrectSegment(seg)
+
+        #expect(!ok)
+    }
+
     @Test("checkSponsorSkip does nothing when SponsorBlock is disabled")
     func disabledSponsorBlockDoesNotSetRecentAutoSkip() {
         let seg = SponsorSegment(start: 10, end: 30, category: .sponsor)
