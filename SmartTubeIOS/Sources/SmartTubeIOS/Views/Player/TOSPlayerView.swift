@@ -5,6 +5,7 @@ import SmartTubeIOSCore
 import os
 #if os(iOS)
 import UIKit
+import AVFoundation
 #endif
 
 private let tosViewLog = Logger(subsystem: "com.void.smarttube.app", category: "TOSPlayer")
@@ -72,6 +73,22 @@ public struct TOSPlayerView: View {
     @State private var showChaptersSheet = false
 
     #if os(iOS)
+    // MARK: - Brightness/volume drag gesture state (#19)
+    /// Screen brightness (left half) captured once at the start of a vertical drag,
+    /// so the drag adjusts *relative* to where it began rather than jumping to an
+    /// absolute value on the first touch. Reset to nil when the drag ends.
+    @State private var brightnessDragStart: CGFloat?
+    /// Same idea for volume (right half) — captured from AVAudioSession.outputVolume.
+    @State private var volumeDragStart: Float?
+    /// One-shot request consumed by SystemVolumeControl's hidden MPVolumeView slider.
+    @State private var pendingVolume: Float?
+    /// Drives GestureAdjustmentHUD — nil hides it. Cleared shortly after the drag ends
+    /// rather than immediately, so the final value is visible for a moment.
+    @State private var gestureHUD: GestureAdjustmentInfo?
+    @State private var hudDismissTask: Task<Void, Never>?
+    #endif
+
+    #if os(iOS)
     /// Controls (back button, speed, more) are hidden on initial load and auto-hide
     /// after `controlsHideDelay` seconds when shown. A tap anywhere on the player
     /// reveals them; they auto-hide again after the delay.
@@ -89,6 +106,45 @@ public struct TOSPlayerView: View {
             try? await Task.sleep(for: .seconds(controlsHideDelay))
             guard !Task.isCancelled else { return }
             withAnimation(.easeInOut(duration: 0.3)) { controlsVisible = false }
+        }
+    }
+
+    // MARK: - Brightness/volume gesture (#19)
+    //
+    // Left half of the screen adjusts brightness (UIScreen.main.brightness — a
+    // direct, app-settable property, no special API needed); right half adjusts
+    // system volume (via SystemVolumeControl's hidden MPVolumeView, the only
+    // sanctioned mechanism). Both are relative to a value captured once per
+    // gesture (brightnessDragStart/volumeDragStart) so a drag adjusts from
+    // wherever the value currently is, rather than snapping to an absolute
+    // position derived from touch coordinates.
+    private func handleVerticalDrag(isLeftHalf: Bool, translationY: CGFloat, viewHeight: CGFloat) {
+        // Dragging up (negative translationY) increases the value.
+        let delta = -translationY / viewHeight
+        if isLeftHalf {
+            let start = brightnessDragStart ?? UIScreen.main.brightness
+            if brightnessDragStart == nil { brightnessDragStart = start }
+            let newValue = min(1, max(0, start + delta))
+            UIScreen.main.brightness = newValue
+            gestureHUD = GestureAdjustmentInfo(kind: .brightness, value: Float(newValue))
+        } else {
+            let start = volumeDragStart ?? AVAudioSession.sharedInstance().outputVolume
+            if volumeDragStart == nil { volumeDragStart = start }
+            let newValue = min(1, max(0, start + Float(delta)))
+            pendingVolume = newValue
+            gestureHUD = GestureAdjustmentInfo(kind: .volume, value: newValue)
+        }
+        hudDismissTask?.cancel()
+    }
+
+    private func endVerticalDrag() {
+        brightnessDragStart = nil
+        volumeDragStart = nil
+        hudDismissTask?.cancel()
+        hudDismissTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(0.6))
+            guard !Task.isCancelled else { return }
+            withAnimation(.easeOut(duration: 0.2)) { gestureHUD = nil }
         }
     }
     #endif
@@ -228,10 +284,29 @@ public struct TOSPlayerView: View {
                             // YouTube's native tap = toggle-play/pause stand is the correct
                             // behaviour: it matches YouTube's own app and is what users expect.
                             showControls()
+                        },
+                        onVerticalDragChanged: { isLeftHalf, translationY, viewHeight in
+                            handleVerticalDrag(isLeftHalf: isLeftHalf, translationY: translationY, viewHeight: viewHeight)
+                        },
+                        onVerticalDragEnded: {
+                            endVerticalDrag()
                         }
                     )
                     .ignoresSafeArea()
                     .accessibilityHidden(true)
+
+                    // MARK: Brightness/volume adjustment HUD (#19)
+                    if let gestureHUD {
+                        GestureAdjustmentHUD(info: gestureHUD)
+                            .transition(.opacity)
+                    }
+
+                    // MARK: Hidden system-volume control (#19) — see SystemVolumeControl's
+                    // doc comment for why this indirection through a real MPVolumeView is
+                    // the only way to change the device's volume from an app.
+                    SystemVolumeControl(pendingVolume: $pendingVolume)
+                        .frame(width: 0, height: 0)
+                        .accessibilityHidden(true)
 
                     // MARK: Back button (iOS only)
                     // Safe here — full-screen modal has no OS chrome above it. Tapping

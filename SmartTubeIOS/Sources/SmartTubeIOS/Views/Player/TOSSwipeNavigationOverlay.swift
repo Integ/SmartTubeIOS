@@ -27,6 +27,16 @@ struct TOSSwipeNavigationOverlay: UIViewRepresentable {
     /// Called on any tap anywhere on the player. Receives window coordinates so
     /// the caller can distinguish tap zones (e.g. native controls area at bottom).
     var onTap: ((CGPoint) -> Void)? = nil
+    /// #19: continuous vertical-drag callback for brightness (left half of the screen)
+    /// / volume (right half), fired on every `.changed` update of a drag where vertical
+    /// movement dominates horizontal (so it never fires alongside a horizontal swipe-nav
+    /// gesture). `isLeftHalf` is fixed for the whole gesture from where the touch began.
+    /// `translationY`/`viewHeight` let the caller compute a delta-from-gesture-start value
+    /// itself (this view holds no brightness/volume state of its own).
+    var onVerticalDragChanged: ((_ isLeftHalf: Bool, _ translationY: CGFloat, _ viewHeight: CGFloat) -> Void)? = nil
+    /// Fired once when a vertical drag ends (or is cancelled) — lets the caller reset its
+    /// per-gesture start value and dismiss any on-screen brightness/volume indicator.
+    var onVerticalDragEnded: (() -> Void)? = nil
     var isEnabled: Bool = true
     /// Touches below this fraction of the screen height are ignored, leaving
     /// YouTube's bottom scrubber/control-bar free to handle horizontal drags.
@@ -63,6 +73,14 @@ struct TOSSwipeNavigationOverlay: UIViewRepresentable {
         weak var pan: UIPanGestureRecognizer?
         weak var tap: UITapGestureRecognizer?
         private let minDistance: CGFloat = 40
+        /// Fixed at gesture `.began` from the touch's initial x — which half of the
+        /// screen a vertical drag started in doesn't change mid-gesture even if the
+        /// finger crosses the midline.
+        private var verticalDragIsLeftHalf: Bool?
+        /// True once the gesture has committed to being a vertical (brightness/volume)
+        /// drag rather than a horizontal swipe — set on the first `.changed` where
+        /// vertical movement dominates, so a gesture can't flip categories mid-drag.
+        private var isVerticalDrag = false
 
         init(_ parent: TOSSwipeNavigationOverlay) {
             self.parent = parent
@@ -97,6 +115,39 @@ struct TOSSwipeNavigationOverlay: UIViewRepresentable {
         @MainActor @objc func handlePan(_ gr: UIPanGestureRecognizer) {
             let t = gr.translation(in: gr.view)
             swipeLog.notice("[handlePan] state=\(gr.state.rawValue) tx=\(Int(t.x)) ty=\(Int(t.y))")
+
+            if gr.state == .began {
+                verticalDragIsLeftHalf = nil
+                isVerticalDrag = false
+                return
+            }
+
+            if gr.state == .changed {
+                // Once a gesture commits to horizontal (a swipe-nav candidate), never
+                // switch it to vertical mid-drag — only the reverse (small initial
+                // wiggle before the real direction emerges) is allowed.
+                if !isVerticalDrag, abs(t.y) > abs(t.x), abs(t.y) > 8 {
+                    isVerticalDrag = true
+                    if let view = gr.view {
+                        let startX = gr.location(in: view).x - t.x
+                        verticalDragIsLeftHalf = startX < view.bounds.width / 2
+                    }
+                }
+                if isVerticalDrag, let isLeftHalf = verticalDragIsLeftHalf, let view = gr.view {
+                    parent.onVerticalDragChanged?(isLeftHalf, t.y, view.bounds.height)
+                }
+                return
+            }
+
+            defer {
+                verticalDragIsLeftHalf = nil
+                isVerticalDrag = false
+            }
+            guard gr.state == .ended || gr.state == .cancelled else { return }
+            if isVerticalDrag {
+                parent.onVerticalDragEnded?()
+                return
+            }
             guard gr.state == .ended else { return }
             guard abs(t.x) > minDistance, abs(t.x) > abs(t.y) else {
                 swipeLog.notice(
