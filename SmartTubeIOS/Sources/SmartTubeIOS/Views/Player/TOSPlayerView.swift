@@ -77,7 +77,7 @@ public struct TOSPlayerView: View {
     /// Screen brightness (left half) captured once at the start of a vertical drag,
     /// so the drag adjusts *relative* to where it began rather than jumping to an
     /// absolute value on the first touch. Reset to nil when the drag ends.
-    @State private var brightnessDragStart: CGFloat?
+    @State private var brightnessDragStart: Float?
     /// Same idea for volume (right half) — captured from AVAudioSession.outputVolume.
     @State private var volumeDragStart: Float?
     /// One-shot request consumed by SystemVolumeControl's hidden MPVolumeView slider.
@@ -119,18 +119,18 @@ public struct TOSPlayerView: View {
     // wherever the value currently is, rather than snapping to an absolute
     // position derived from touch coordinates.
     private func handleVerticalDrag(isLeftHalf: Bool, translationY: CGFloat, viewHeight: CGFloat) {
-        // Dragging up (negative translationY) increases the value.
-        let delta = -translationY / viewHeight
         if isLeftHalf {
-            let start = brightnessDragStart ?? UIScreen.main.brightness
+            let start = brightnessDragStart ?? Float(UIScreen.main.brightness)
             if brightnessDragStart == nil { brightnessDragStart = start }
-            let newValue = min(1, max(0, start + delta))
-            UIScreen.main.brightness = newValue
-            gestureHUD = GestureAdjustmentInfo(kind: .brightness, value: Float(newValue))
+            let newValue = GestureAdjustmentInfo.adjustedValue(
+                start: start, translationY: translationY, viewHeight: viewHeight)
+            UIScreen.main.brightness = CGFloat(newValue)
+            gestureHUD = GestureAdjustmentInfo(kind: .brightness, value: newValue)
         } else {
             let start = volumeDragStart ?? AVAudioSession.sharedInstance().outputVolume
             if volumeDragStart == nil { volumeDragStart = start }
-            let newValue = min(1, max(0, start + Float(delta)))
+            let newValue = GestureAdjustmentInfo.adjustedValue(
+                start: start, translationY: translationY, viewHeight: viewHeight)
             pendingVolume = newValue
             gestureHUD = GestureAdjustmentInfo(kind: .volume, value: newValue)
         }
