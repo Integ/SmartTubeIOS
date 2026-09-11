@@ -100,6 +100,16 @@
         }
       }
     },
+    "\"%@\" was added to \"%@\"." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "\"%1$@\" was added to \"%2$@\"."
+          }
+        }
+      }
+    },
     "\"%@\" was added to your Watch Later playlist." : {
       "localizations" : {
         "ar" : {
@@ -378,6 +388,19 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%.2g×"
+          }
+        }
+      }
+    },
+    "%@ — Undo" : {
+
+    },
+    "%@ %lld percent" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$lld percent"
           }
         }
       }
@@ -2582,6 +2605,9 @@
         }
       }
     },
+    "Added to Playlist" : {
+
+    },
     "Adding…" : {
       "localizations" : {
         "ar" : {
@@ -2771,6 +2797,9 @@
           }
         }
       }
+    },
+    "All Channels" : {
+
     },
     "Any duration" : {
       "comment" : "Duration search filter — no restriction",
@@ -4204,6 +4233,9 @@
         }
       }
     },
+    "Change PIN" : {
+
+    },
     "Channel" : {
       "comment" : "Navigation title fallback for channel view; also a video-type filter option",
       "extractionState" : "manual",
@@ -4299,6 +4331,9 @@
           }
         }
       }
+    },
+    "Chapters" : {
+
     },
     "Chinese (Simplified)" : {
       "localizations" : {
@@ -5254,6 +5289,12 @@
         }
       }
     },
+    "Copy to Playlist" : {
+
+    },
+    "Could Not Load Playlists" : {
+
+    },
     "Could Not Remove" : {
       "localizations" : {
         "ar" : {
@@ -5348,6 +5389,9 @@
         }
       }
     },
+    "Could Not Report" : {
+
+    },
     "Could Not Save" : {
       "localizations" : {
         "ar" : {
@@ -5441,6 +5485,9 @@
           }
         }
       }
+    },
+    "Could Not Update Playlist" : {
+
     },
     "Current Queue" : {
       "localizations" : {
@@ -6012,6 +6059,12 @@
           }
         }
       }
+    },
+    "Disable Analytics & Crash Reporting" : {
+
+    },
+    "Disable Liquid Glass" : {
+
     },
     "Disabled" : {
       "comment" : "Watch history picker option",
@@ -9910,6 +9963,9 @@
         }
       }
     },
+    "Hide Watched Videos" : {
+
+    },
     "Highlight" : {
       "comment" : "SponsorBlock category display name",
       "extractionState" : "manual",
@@ -11720,6 +11776,9 @@
         }
       }
     },
+    "Loop" : {
+
+    },
     "Loop Video" : {
       "comment" : "Settings toggle to loop the current video",
       "extractionState" : "manual",
@@ -12102,6 +12161,9 @@
         }
       }
     },
+    "Missing playlist entry information for \"%@\"." : {
+
+    },
     "More" : {
       "localizations" : {
         "ar" : {
@@ -12195,6 +12257,9 @@
           }
         }
       }
+    },
+    "Move to Playlist" : {
+
     },
     "Movie" : {
       "comment" : "Video type search filter option",
@@ -12387,6 +12452,9 @@
           }
         }
       }
+    },
+    "No chapters available." : {
+
     },
     "No comments available." : {
       "comment" : "Player comments sheet empty state",
@@ -12769,6 +12837,9 @@
           }
         }
       }
+    },
+    "No Playlists" : {
+
     },
     "No results for \"%@\"" : {
       "comment" : "Search empty state body. %@ = the query string.",
@@ -14774,6 +14845,9 @@
         }
       }
     },
+    "Parental Controls" : {
+
+    },
     "paused" : {
       "localizations" : {
         "ar" : {
@@ -15056,6 +15130,9 @@
           }
         }
       }
+    },
+    "Play Incognito" : {
+
     },
     "Play Next" : {
       "localizations" : {
@@ -16863,6 +16940,9 @@
         }
       }
     },
+    "Remove PIN" : {
+
+    },
     "Remove SponsorBlock Exclusion" : {
       "comment" : "Channel toolbar button — removes channel from SponsorBlock exclusion list",
       "extractionState" : "manual",
@@ -17149,6 +17229,9 @@
         }
       }
     },
+    "Report Incorrect Segment" : {
+
+    },
     "Report Sent" : {
       "comment" : "Settings label shown after diagnostic report was sent",
       "extractionState" : "manual",
@@ -17244,6 +17327,9 @@
           }
         }
       }
+    },
+    "Reported" : {
+
     },
     "Reset" : {
       "comment" : "Search filter sheet toolbar button — resets all filters to defaults",
@@ -17436,6 +17522,9 @@
           }
         }
       }
+    },
+    "Restart the app for this to take effect." : {
+
     },
     "Retry" : {
       "comment" : "Alert button to retry a failed network request",
@@ -19636,6 +19725,9 @@
           }
         }
       }
+    },
+    "Set PIN" : {
+
     },
     "Settings" : {
       "comment" : "Root tab bar label",
@@ -23361,6 +23453,12 @@
         }
       }
     },
+    "Thanks for the feedback — this segment has been reported to SponsorBlock." : {
+
+    },
+    "The report couldn't be sent. Please try again later." : {
+
+    },
     "Theme" : {
       "comment" : "Settings picker label for app colour scheme",
       "extractionState" : "manual",
@@ -25938,6 +26036,12 @@
           }
         }
       }
+    },
+    "Watched threshold: %lld%%" : {
+
+    },
+    "When a PIN is set, it must be entered every time this Settings screen is opened." : {
+
     },
     "Your Google account is required." : {
       "comment" : "Home feed section empty state subtitle when auth is required",
