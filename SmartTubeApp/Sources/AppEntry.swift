@@ -318,12 +318,11 @@ struct AppEntry: App {
 
     @MainActor
     private func handleOpenURL(_ url: URL) {
-        let scheme = url.scheme?.lowercased() ?? ""
-
-        // smarttube://video/VIDEO_ID — fired by the Share Extension
-        guard scheme == "smarttube", url.host?.lowercased() == "video" else { return }
-        let components = url.pathComponents.filter { $0 != "/" }
-        guard let videoID = components.first, !videoID.isEmpty else { return }
+        // Supports smarttube://video/VIDEO_ID (fired by the Share Extension) and
+        // smarttube://watch?v=VIDEO_ID (mirrors YouTube's own watch URL query param,
+        // for Shortcuts/browser-address-bar links built by hand) — see
+        // SmartTubeURLScheme.videoID(from:) for the parsing (#84).
+        guard let videoID = SmartTubeURLScheme.videoID(from: url) else { return }
         // Use video ID as placeholder title during UI testing so player.titleLabel
         // has non-empty text and is visible to XCTest in the AX tree from the moment
         // the player opens, before the API call returns the real title.
