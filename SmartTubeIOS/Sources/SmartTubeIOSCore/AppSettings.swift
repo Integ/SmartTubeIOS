@@ -45,6 +45,11 @@ public struct AppSettings: Codable {
     // MARK: UI
     public var defaultSection: String
     public var compactThumbnails: Bool
+    /// #107: opts the app out of iOS 26's Liquid Glass tab bar via the
+    /// `UIDesignRequiresCompatibility` UserDefaults/Info.plist key, which UIKit reads
+    /// once at process launch — this setting is applied on the *next* app launch, not
+    /// live. See SmartTubeApp.swift's init for where it's actually written.
+    public var disableLiquidGlass: Bool
     public var hideShorts: Bool
     public var hideLiveShorts: Bool
     public var hideVideoPremieres: Bool
@@ -237,6 +242,7 @@ public struct AppSettings: Codable {
         queueShuffleEnabled = false
         defaultSection = BrowseSection.SectionType.home.rawValue
         compactThumbnails = false
+        disableLiquidGlass = false
         hideShorts = false
         hideLiveShorts = false
         hideVideoPremieres = false
@@ -317,6 +323,7 @@ extension AppSettings {
         case queueShuffleEnabled
         case defaultSection
         case compactThumbnails
+        case disableLiquidGlass
         case hideShorts
         case hideLiveShorts
         case hideVideoPremieres
@@ -361,6 +368,7 @@ extension AppSettings {
         queueShuffleEnabled = c.safeDecode(Bool.self, forKey: .queueShuffleEnabled, default: d.queueShuffleEnabled)
         defaultSection = c.safeDecode(String.self, forKey: .defaultSection, default: d.defaultSection)
         compactThumbnails = c.safeDecode(Bool.self, forKey: .compactThumbnails, default: d.compactThumbnails)
+        disableLiquidGlass = c.safeDecode(Bool.self, forKey: .disableLiquidGlass, default: d.disableLiquidGlass)
         hideShorts = c.safeDecode(Bool.self, forKey: .hideShorts, default: d.hideShorts)
         hideLiveShorts = c.safeDecode(Bool.self, forKey: .hideLiveShorts, default: d.hideLiveShorts)
         hideVideoPremieres = c.safeDecode(Bool.self, forKey: .hideVideoPremieres, default: d.hideVideoPremieres)

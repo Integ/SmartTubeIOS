@@ -19,8 +19,19 @@ struct SmartTubeApp: App {
         _api = State(initialValue: api)
         _authService = State(initialValue: AuthService())
         _browseViewModel = State(initialValue: BrowseViewModel(api: api))
-        _settingsStore = State(initialValue: SettingsStore())
+        let settingsStore = SettingsStore()
+        _settingsStore = State(initialValue: settingsStore)
         _cardDownloadService = State(initialValue: VideoDownloadService(api: api))
+
+        #if os(iOS)
+        // #107: UIKit reads UIDesignRequiresCompatibility once at process launch to
+        // decide whether to render iOS 26's Liquid Glass tab bar or the pre-26 style —
+        // there's no live/runtime API to flip it, so this can only take effect on the
+        // *next* launch after the user toggles it in Settings (see SettingsView's
+        // "Restart the app for this to take effect" note next to the toggle).
+        UserDefaults.standard.set(
+            settingsStore.settings.disableLiquidGlass, forKey: "UIDesignRequiresCompatibility")
+        #endif
     }
 
     var body: some Scene {

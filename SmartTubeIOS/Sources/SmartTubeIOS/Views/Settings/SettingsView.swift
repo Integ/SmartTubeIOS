@@ -210,6 +210,15 @@ public struct SettingsView: View {
             Toggle("Per-Device Recommendations", isOn: $store.settings.perDeviceRecommendationsEnabled)
                 .accessibilityIdentifier("settings.perDeviceRecommendationsToggle")
             Toggle("Compact Thumbnails", isOn: $store.settings.compactThumbnails)
+            #if os(iOS)
+            if #available(iOS 26.0, *) {
+                Toggle("Disable Liquid Glass", isOn: $store.settings.disableLiquidGlass)
+                    .accessibilityIdentifier("settings.disableLiquidGlassToggle")
+                Text("Restart the app for this to take effect.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            #endif
             NavigationLink("Visible Sections") {
                 SectionsSettingsView()
                     .environment(store)
