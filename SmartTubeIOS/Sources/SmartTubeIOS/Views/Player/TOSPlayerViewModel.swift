@@ -169,6 +169,12 @@ final class TOSPlayerViewModel: NSObject {
     /// the same videos don't cycle back on repeated swipes.
     var seenVideoIds: Set<String> = []
     private let startTime: Double
+    /// #94: when true, this video plays without opening a WatchtimeTracker session —
+    /// no watch-history entry, no resume-position checkpoint. Set once at init from
+    /// the "Play Incognito" context-menu action; does not propagate to whatever plays
+    /// next via swipe navigation (a different video the user didn't explicitly mark
+    /// incognito reverts to normal recording).
+    let isIncognito: Bool
     /// Guards against re-triggering a skip within the same segment.
     /// Mutated by `checkSponsorSkip(at:)` in TOSPlayerViewModel+SponsorBlock.swift.
     var activeSkipEnd: Double? = nil
@@ -256,7 +262,7 @@ final class TOSPlayerViewModel: NSObject {
     init(
         videoId: String, title: String = "", channelId: String? = nil, channelTitle: String = "",
         thumbnailURL: URL? = nil, playlistId: String? = nil, playlistIndex: Int? = nil, startTime: Double = 0,
-        api: InnerTubeAPI
+        isIncognito: Bool = false, api: InnerTubeAPI
     ) {
         self.videoId = videoId
         self.videoTitle = title
@@ -266,6 +272,7 @@ final class TOSPlayerViewModel: NSObject {
         self.playlistId = playlistId
         self.playlistIndex = playlistIndex
         self.startTime = startTime
+        self.isIncognito = isIncognito
         self.api = api
         self.tracker = WatchtimeTracker(api: api)
         self.likeDislike = LikeDislikeController(

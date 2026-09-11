@@ -36,6 +36,9 @@ public struct VideoCardView: View {
     @Environment(AuthService.self) private var authService
     @Environment(SettingsStore.self) private var store
     @Environment(\.innerTubeAPI) private var api
+    #if os(iOS)
+    @Environment(PlayerRouter.self) private var playerRouter
+    #endif
     @State private var localProgress: Double?
     @State private var watchLaterAlert: DownloadAlertItem?
     @State private var playlistPickerMode: PlaylistPickerSheet.Mode?
@@ -251,6 +254,13 @@ public struct VideoCardView: View {
             } label: {
                 Label("Play Next", systemImage: "text.insert")
             }
+            #if os(iOS)
+            Button {
+                playerRouter.open(video: video, api: api, incognito: true)
+            } label: {
+                Label("Play Incognito", systemImage: "eyeglasses")
+            }
+            #endif
             if authService.isSignedIn {
                 Button(role: .destructive) {
                     Task {

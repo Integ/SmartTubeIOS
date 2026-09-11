@@ -35,10 +35,13 @@ public final class PlayerRouter {
     }
 
     /// Open `video` in whichever player pipeline is currently preferred.
-    public func open(video: Video, api: InnerTubeAPI) {
+    /// `incognito` (#94) skips recording this video to watch history / resume
+    /// position — currently only honored by the TOS pipeline (the iOS default);
+    /// the legacy AVPlayer pipeline's history recording isn't wired to it yet.
+    public func open(video: Video, api: InnerTubeAPI, incognito: Bool = false) {
         if settingsStore.useTOSPlayerOnIOS && tosState.fallbackVideoId != video.id {
             if playerState.presentation != .hidden { playerState.stop() }
-            tosState.play(video: video, api: api)
+            tosState.play(video: video, api: api, incognito: incognito)
             return
         }
         if tosState.presentation != .hidden { tosState.stop() }

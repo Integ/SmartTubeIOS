@@ -31,6 +31,10 @@ extension TOSPlayerViewModel {
     /// `PlaybackViewModel+Loading.swift`'s load()/prefetch path, collapsed into one
     /// step since this view model never switches videos in place.
     func beginWatchtimeTracking() {
+        guard !isIncognito else {
+            tosLog.debug("[watchtime] incognito — skipping tracker session for \(self.videoId)")
+            return
+        }
         guard settings.historyState == .enabled else {
             tosLog.debug("[watchtime] history disabled — skipping tracker session")
             return
@@ -87,7 +91,7 @@ extension TOSPlayerViewModel {
     /// only ever *read* a saved position once at startup (TOSPlayerView.task) and never
     /// wrote one back, so progress was lost on every close.
     func saveProgress() {
-        guard settings.historyState == .enabled, duration > 0 else {
+        guard !isIncognito, settings.historyState == .enabled, duration > 0 else {
             tosLog.debug(
                 "[watchtime] saveProgress skipped — historyState=\(self.settings.historyState.rawValue, privacy: .public) duration=\(self.duration, format: .fixed(precision: 1))s"
             )

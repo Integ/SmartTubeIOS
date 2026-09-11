@@ -149,7 +149,9 @@ public final class TOSPlayerStateStore {
 
     /// Load `video` and present the TOS player full-screen.
     /// If the same video is already loaded and playing, just expands.
-    public func play(video: Video, api: InnerTubeAPI) {
+    /// `incognito` (#94) is not honored when re-expanding an already-loaded video —
+    /// its vm was already created with whatever incognito value applied at that time.
+    public func play(video: Video, api: InnerTubeAPI, incognito: Bool = false) {
         tosStoreLog.notice(
             "[TOSPlayerStateStore] play — id=\(video.id) currentPresentation=\(String(describing: self.presentation))")
 
@@ -181,7 +183,7 @@ public final class TOSPlayerStateStore {
         let newVM = TOSPlayerViewModel(
             videoId: video.id, title: video.title, channelId: video.channelId, channelTitle: video.channelTitle,
             thumbnailURL: video.thumbnailURL, playlistId: video.playlistId, playlistIndex: video.playlistIndex,
-            startTime: 0, api: api)
+            startTime: 0, isIncognito: incognito, api: api)
         newVM.seenVideoIds = seenVideoIds
         newVM.setNavigationContext(hasPrevious: !history.isEmpty)
         // Wire swipe-navigation callbacks here (not in TOSPlayerView.onAppear) so
