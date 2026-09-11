@@ -28,6 +28,10 @@ public struct HomeView: View {
     @State private var selectedPlaylist: Video?
     @State private var shortsPresentation: ShortsPresentation?
     @State private var channelDestination: ChannelDestination?
+    /// #62: nil = show every subscribed channel's videos. Session-only (not persisted
+    /// to AppSettings) — reset when the Subscriptions videoGroups reload from scratch,
+    /// same lifetime as a search filter rather than a durable preference.
+    @State private var subscriptionsChannelFilter: String? = nil
     @State private var showSignIn = false
     @State private var queueVideosCount: Int = 0
     // Auto-retry tracking: record the type-specific video count at the moment a
@@ -131,6 +135,11 @@ public struct HomeView: View {
             // triggers from a previous section firing on the new section's content.
             needsMoreShorts = false
             needsMoreNonShorts = false
+            // #62: leaving Subscriptions (or a hard refresh landing back on it) drops
+            // any channel filter — a stale filter pointing at a channel that no longer
+            // has videos in a freshly reloaded feed would otherwise silently show "no
+            // videos" with no obvious explanation.
+            subscriptionsChannelFilter = nil
             if selectedSection.type == .playlists {
                 queueVideosCount = await CurrentQueueStore.shared.videos.count
             } else if selectedSection.type != .home {
@@ -354,6 +363,11 @@ public struct HomeView: View {
         // #121: History is the one place watched videos are the point — never filtered.
         let applyHideWatched = store.settings.hideWatchedVideos && selectedSection.type != .history
         let hideWatchedThreshold = store.settings.hideWatchedThreshold
+        // #62: channel filter only applies to (and is only shown for) Subscriptions —
+        // it wouldn't make sense for a single-source list like a specific Channel page,
+        // and Home mixes recommendations that don't necessarily come from a subscription.
+        let isSubscriptions = selectedSection.type == .subscriptions
+        let channelFilter = isSubscriptions ? subscriptionsChannelFilter : nil
 
         // Pinned shorts row: shown above the scrollable content for all chips
         // except the Shorts chip itself (which shows a full vertical list instead).
@@ -378,6 +392,7 @@ public struct HomeView: View {
             if hideLiveShorts { videos = videos.filter { !($0.isLive && $0.isShort) } }
             if hideVideoPremieres { videos = videos.filter { !$0.isUpcoming } }
             if applyHideWatched { videos = videos.filter { !$0.isWatched(threshold: hideWatchedThreshold) } }
+            if let channelFilter { videos = videos.filter { $0.channelId == channelFilter } }
             copy.videos = videos
             return copy
         }
@@ -393,7 +408,25 @@ public struct HomeView: View {
             .filter { !hideLiveShorts || !($0.isLive && $0.isShort) }
             .filter { !hideVideoPremieres || !$0.isUpcoming }
             .filter { !applyHideWatched || !$0.isWatched(threshold: hideWatchedThreshold) }
+            .filter { channelFilter == nil || $0.channelId == channelFilter }
             .filter { isShorts || !$0.isShort }
+
+        // #62: distinct (channelId, channelTitle) pairs across the currently loaded
+        // Subscriptions videos, for the channel-filter menu. Derived client-side from
+        // whatever's already loaded — no extra network call — so it only ever offers
+        // channels with at least one video in the feed right now, not literally every
+        // channel the user follows (a channel with zero recent uploads has nothing to
+        // filter to anyway).
+        let availableChannels: [(id: String, title: String)] = {
+            guard isSubscriptions else { return [] }
+            var seen = Set<String>()
+            var result: [(id: String, title: String)] = []
+            for video in sectionVM.videoGroups.flatMap(\.videos) {
+                guard let channelId = video.channelId, seen.insert(channelId).inserted else { continue }
+                result.append((id: channelId, title: video.channelTitle))
+            }
+            return result.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
+        }()
 
         // The raw last video of the last group is the canonical pagination trigger for
         // loadMoreIfNeeded — it checks membership in videoGroups.last, so passing a
@@ -404,6 +437,46 @@ public struct HomeView: View {
         let paginationTrigger: Video? = sectionVM.videoGroups.last?.videos.last
 
         return VStack(spacing: 0) {
+            // #62: channel filter, Subscriptions only. Hidden entirely when there's
+            // nothing to filter between (0 or 1 distinct channels loaded).
+            if isSubscriptions, availableChannels.count > 1 {
+                HStack {
+                    Menu {
+                        Button {
+                            subscriptionsChannelFilter = nil
+                        } label: {
+                            if subscriptionsChannelFilter == nil {
+                                Label("All Channels", systemImage: "checkmark")
+                            } else {
+                                Text("All Channels")
+                            }
+                        }
+                        Divider()
+                        ForEach(availableChannels, id: \.id) { channel in
+                            Button {
+                                subscriptionsChannelFilter = channel.id
+                            } label: {
+                                if subscriptionsChannelFilter == channel.id {
+                                    Label(channel.title, systemImage: "checkmark")
+                                } else {
+                                    Text(channel.title)
+                                }
+                            }
+                        }
+                    } label: {
+                        Label(
+                            availableChannels.first(where: { $0.id == subscriptionsChannelFilter })?.title
+                                ?? "All Channels",
+                            systemImage: "line.3.horizontal.decrease.circle"
+                        )
+                        .font(.subheadline)
+                    }
+                    .accessibilityIdentifier("home.subscriptionsChannelFilter")
+                    Spacer()
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 6)
+            }
             // Pinned ShortsRowSection — outside the ScrollView so it stays fixed
             // at the top while the video content below scrolls.
             if !pinnedShorts.isEmpty {
