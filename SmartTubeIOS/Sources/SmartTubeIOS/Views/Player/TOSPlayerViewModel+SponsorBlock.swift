@@ -166,6 +166,7 @@ extension TOSPlayerViewModel {
         case .skip(let target, let seg):
             activeSkipEnd = seg.end
             currentToastSegment = nil
+            showUndoAutoSkipToast(for: seg)
 
             // Full payload up front, "before" time included — this is the line to grep
             // for to correlate a skip with the segment that caused it. The "AFTER"/landing
@@ -220,6 +221,40 @@ extension TOSPlayerViewModel {
         case .none:
             break
         }
+    }
+
+    // MARK: - Undo auto-skip (#20)
+    //
+    // The `.skip` case above already sets `activeSkipEnd = seg.end`, which is exactly
+    // the flag `SponsorBlockDecisionEngine.decide` checks via `isSkipInProgress` to
+    // avoid re-triggering a skip on a segment already in flight. Seeking back into the
+    // segment via undo therefore does NOT need to touch `activeSkipEnd` at all — time
+    // is once again `< activeSkipEnd`, so `isSkipInProgress` stays true and the engine
+    // won't re-skip until playback naturally reaches the segment's end again (at which
+    // point `checkSponsorSkip`'s own `time >= end` check clears the flag, by when
+    // there's no longer a matching segment at the current time to skip).
+    private func showUndoAutoSkipToast(for segment: SponsorSegment) {
+        recentAutoSkip = segment
+        undoAutoSkipDismissTask?.cancel()
+        undoAutoSkipDismissTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(4))
+            guard !Task.isCancelled else { return }
+            guard let self, self.recentAutoSkip?.start == segment.start else { return }
+            self.recentAutoSkip = nil
+        }
+    }
+
+    /// Seeks back to the start of the most recently auto-skipped segment and dismisses
+    /// the "Skipped — Undo" toast. See this section's header comment for why this is
+    /// safe from an immediate re-skip.
+    func undoAutoSkip() {
+        guard let segment = recentAutoSkip else { return }
+        tosLog.notice(
+            "[SponsorBlock] undo AUTO-SKIP category=\(segment.category.rawValue) — seeking back to \(segment.start, format: .fixed(precision: 2))s"
+        )
+        undoAutoSkipDismissTask?.cancel()
+        recentAutoSkip = nil
+        seekTo(segment.start)
     }
 
     /// Watches for the landing of an in-flight auto-skip seek and logs the "after" side

@@ -330,6 +330,11 @@ public struct TOSPlayerView: View {
                         sponsorToast(for: seg, vm: vm)
                     }
 
+                    // MARK: SponsorBlock undo-auto-skip toast (#20)
+                    if let seg = vm.recentAutoSkip {
+                        undoAutoSkipToast(for: seg, vm: vm)
+                    }
+
                     // MARK: Comments overlay (triggered from moreButton)
                     if showCommentsSheet {
                         commentsOverlay(vm: vm)
@@ -801,6 +806,48 @@ public struct TOSPlayerView: View {
         .accessibilityIdentifier("tosPlayer.skipToast")
         .transition(.move(edge: .bottom).combined(with: .opacity))
         .animation(.easeInOut(duration: 0.2), value: vm.currentToastSegment?.start)
+    }
+
+    /// #20: shown briefly after an auto-skip (as opposed to `sponsorToast`, which is
+    /// the manual tap-to-skip prompt for showToast-configured categories). Tapping
+    /// seeks back into the segment via `vm.undoAutoSkip()`.
+    private func undoAutoSkipToast(for segment: SponsorSegment, vm: TOSPlayerViewModel) -> some View {
+        VStack {
+            Spacer()
+            HStack {
+                Spacer()
+                Button {
+                    vm.undoAutoSkip()
+                } label: {
+                    Label("\(skippedLabel(for: segment.category)) — Undo", systemImage: "arrow.uturn.backward")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(.thinMaterial, in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .padding(.trailing, 20)
+                .padding(.bottom, 60)
+            }
+        }
+        .accessibilityIdentifier("tosPlayer.undoAutoSkipToast")
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+        .animation(.easeInOut(duration: 0.2), value: vm.recentAutoSkip?.start)
+    }
+
+    private func skippedLabel(for category: SponsorSegment.Category) -> String {
+        switch category {
+        case .sponsor: return "Skipped Sponsor"
+        case .selfPromo: return "Skipped Self-Promo"
+        case .interaction: return "Skipped Interaction"
+        case .intro: return "Skipped Intro"
+        case .outro: return "Skipped Outro"
+        case .preview: return "Skipped Preview"
+        case .filler: return "Skipped Filler"
+        case .musicOfftopic: return "Skipped Music"
+        case .poiHighlight: return "Skipped to Highlight"
+        }
     }
 
     private func skipLabel(for category: SponsorSegment.Category) -> String {

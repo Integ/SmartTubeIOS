@@ -77,6 +77,13 @@ final class TOSPlayerViewModel: NSObject {
     var sponsorSegments: [SponsorSegment] = []
     /// The segment currently showing a skip toast, if any.
     var currentToastSegment: SponsorSegment? = nil
+    /// The segment an auto-skip most recently jumped past, while its "Skipped — Undo"
+    /// toast is still visible (#20). Cleared by `undoAutoSkipDismissTask` after a few
+    /// seconds, or immediately by `undoAutoSkip()`. Distinct from `currentToastSegment`
+    /// (the manual "tap to skip" toast for showToast-configured categories) — this one
+    /// is for the opposite direction: undoing a skip that already happened automatically.
+    var recentAutoSkip: SponsorSegment? = nil
+    var undoAutoSkipDismissTask: Task<Void, Never>? = nil
 
     // MARK: - Like / Dislike / Sleep Timer
     //
