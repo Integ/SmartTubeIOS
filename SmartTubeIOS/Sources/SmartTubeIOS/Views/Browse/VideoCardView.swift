@@ -177,6 +177,7 @@ public struct VideoCardView: View {
                         Task {
                             do {
                                 try await api.removeFromWatchLater(setVideoId: setVideoId)
+                                WatchLaterMembershipStore.shared.markRemoved(video.id)
                                 watchLaterAlert = DownloadAlertItem(
                                     title: String(localized: "Removed from Watch Later", bundle: .module),
                                     message: String(
@@ -198,6 +199,7 @@ public struct VideoCardView: View {
                         Task {
                             do {
                                 try await api.addToWatchLater(videoId: video.id)
+                                WatchLaterMembershipStore.shared.markSaved(video.id)
                                 watchLaterAlert = DownloadAlertItem(
                                     title: String(localized: "Saved to Watch Later", bundle: .module),
                                     message: String(
@@ -414,6 +416,9 @@ public struct VideoCardView: View {
                 .overlay(alignment: .topLeading) {
                     if video.isLive { liveBadge }
                 }
+                .overlay(alignment: .topTrailing) {
+                    if WatchLaterMembershipStore.shared.contains(video.id) { watchLaterSavedBadge }
+                }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(displayTitle)
@@ -462,6 +467,9 @@ public struct VideoCardView: View {
                 }
                 .overlay(alignment: .bottomLeading) {
                     if let label = uploadDateLabel { durationBadge(label) }
+                }
+                .overlay(alignment: .topTrailing) {
+                    if WatchLaterMembershipStore.shared.contains(video.id) { watchLaterSavedBadge }
                 }
             VStack(alignment: .leading, spacing: 3) {
                 Text(displayTitle)
@@ -653,6 +661,20 @@ public struct VideoCardView: View {
             .foregroundStyle(.white)
             .clipShape(RoundedRectangle(cornerRadius: 3))
             .padding(4)
+    }
+
+    /// #39: shown when this video was saved to Watch Later via this app. See
+    /// WatchLaterMembershipStore's doc comment for why this can't reflect Watch
+    /// Later state from other clients.
+    private var watchLaterSavedBadge: some View {
+        Image(systemName: "bookmark.fill")
+            .font(.caption2)
+            .padding(5)
+            .background(.black.opacity(0.75))
+            .foregroundStyle(.white)
+            .clipShape(Circle())
+            .padding(4)
+            .accessibilityLabel(Text("Saved to Watch Later", bundle: .module))
     }
 }
 
