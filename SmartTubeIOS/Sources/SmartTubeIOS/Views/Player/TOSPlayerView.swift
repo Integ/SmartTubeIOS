@@ -290,6 +290,12 @@ public struct TOSPlayerView: View {
                         },
                         onVerticalDragEnded: {
                             endVerticalDrag()
+                        },
+                        onEdgeSwipeExit: {
+                            // #328: distinct from the back button's minimize() — this
+                            // matches the mini-player's ✕ (tosState.stop()), fully
+                            // ending playback rather than continuing it in the background.
+                            tosState.stop()
                         }
                     )
                     .ignoresSafeArea()

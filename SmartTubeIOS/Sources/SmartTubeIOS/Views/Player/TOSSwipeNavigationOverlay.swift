@@ -37,10 +37,19 @@ struct TOSSwipeNavigationOverlay: UIViewRepresentable {
     /// Fired once when a vertical drag ends (or is cancelled) — lets the caller reset its
     /// per-gesture start value and dismiss any on-screen brightness/volume indicator.
     var onVerticalDragEnded: (() -> Void)? = nil
+    /// #328: fired instead of `onSwipeRight` when the confirmed rightward swipe's touch
+    /// began within `edgeSwipeActivationWidth` of the left screen edge — mirrors iOS's
+    /// own edge-swipe-back affordance. Distinguishing by start position (not just
+    /// direction) is what lets this coexist with the existing swipe-right = playPrevious
+    /// gesture instead of replacing it everywhere.
+    var onEdgeSwipeExit: (() -> Void)? = nil
     var isEnabled: Bool = true
     /// Touches below this fraction of the screen height are ignored, leaving
     /// YouTube's bottom scrubber/control-bar free to handle horizontal drags.
     var verticalActivationFraction: CGFloat = 0.75
+    /// Width of the left-edge strip (in points) that activates `onEdgeSwipeExit`
+    /// instead of `onSwipeRight` for a rightward swipe.
+    var edgeSwipeActivationWidth: CGFloat = 24
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -81,6 +90,9 @@ struct TOSSwipeNavigationOverlay: UIViewRepresentable {
         /// drag rather than a horizontal swipe — set on the first `.changed` where
         /// vertical movement dominates, so a gesture can't flip categories mid-drag.
         private var isVerticalDrag = false
+        /// Captured at `.began` — the touch's x-position in the gesture's view, used both
+        /// to decide vertical-drag left/right half and to detect an edge-swipe-right.
+        private var gestureStartX: CGFloat?
 
         init(_ parent: TOSSwipeNavigationOverlay) {
             self.parent = parent
@@ -119,6 +131,7 @@ struct TOSSwipeNavigationOverlay: UIViewRepresentable {
             if gr.state == .began {
                 verticalDragIsLeftHalf = nil
                 isVerticalDrag = false
+                gestureStartX = gr.location(in: gr.view).x
                 return
             }
 
@@ -129,7 +142,7 @@ struct TOSSwipeNavigationOverlay: UIViewRepresentable {
                 if !isVerticalDrag, abs(t.y) > abs(t.x), abs(t.y) > 8 {
                     isVerticalDrag = true
                     if let view = gr.view {
-                        let startX = gr.location(in: view).x - t.x
+                        let startX = gestureStartX ?? (gr.location(in: view).x - t.x)
                         verticalDragIsLeftHalf = startX < view.bounds.width / 2
                     }
                 }
@@ -142,6 +155,7 @@ struct TOSSwipeNavigationOverlay: UIViewRepresentable {
             defer {
                 verticalDragIsLeftHalf = nil
                 isVerticalDrag = false
+                gestureStartX = nil
             }
             guard gr.state == .ended || gr.state == .cancelled else { return }
             if isVerticalDrag {
@@ -158,6 +172,11 @@ struct TOSSwipeNavigationOverlay: UIViewRepresentable {
             swipeLog.notice("[handlePan] swipe \(dir) confirmed (tx=\(Int(t.x)))")
             if t.x < 0 {
                 parent.onSwipeLeft()
+            } else if let startX = gestureStartX, startX <= parent.edgeSwipeActivationWidth,
+                let onEdgeSwipeExit = parent.onEdgeSwipeExit
+            {
+                swipeLog.notice("[handlePan] edge-swipe-right confirmed (startX=\(Int(startX))) — exit")
+                onEdgeSwipeExit()
             } else {
                 parent.onSwipeRight()
             }
