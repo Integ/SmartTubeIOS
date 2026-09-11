@@ -15,10 +15,30 @@ public struct SettingsView: View {
     #if os(tvOS)
     @State private var showGithubQR = false
     #endif
+    /// #126: whether the current visit to this screen has already passed the PIN
+    /// check. Reset to `false` on `.onDisappear` (see body) so leaving and coming back
+    /// to Settings (e.g. switching tabs) re-locks it — a parental-control PIN that
+    /// only had to be entered once per app launch wouldn't stop a kid who's already
+    /// seen the tab switch away and back.
+    @State private var isUnlocked = false
+    @State private var parentalControlsSheetMode: ParentalControlsMode?
 
     public init() {}
 
     public var body: some View {
+        Group {
+            if let pinHash = store.settings.settingsPINHash, !isUnlocked {
+                SettingsPINLockView(expectedHash: pinHash) { isUnlocked = true }
+            } else {
+                settingsForm
+            }
+        }
+        .onDisappear {
+            if store.settings.settingsPINHash != nil { isUnlocked = false }
+        }
+    }
+
+    private var settingsForm: some View {
         Form {
             accountSection
             playerSection
@@ -26,6 +46,7 @@ public struct SettingsView: View {
             uiSection
             sponsorBlockSection
             deArrowSection
+            parentalControlsSection
             #if os(macOS)
             experimentalSection
             #endif
@@ -45,6 +66,29 @@ public struct SettingsView: View {
             GitHubQRView()
         }
         #endif
+        .sheet(item: $parentalControlsSheetMode) { mode in
+            ParentalControlsSheet(mode: mode)
+        }
+    }
+
+    // MARK: - Parental Controls
+
+    private var parentalControlsSection: some View {
+        Section {
+            if store.settings.settingsPINHash == nil {
+                Button("Set PIN") { parentalControlsSheetMode = .set }
+                    .accessibilityIdentifier("settings.setPINButton")
+            } else {
+                Button("Change PIN") { parentalControlsSheetMode = .change }
+                    .accessibilityIdentifier("settings.changePINButton")
+                Button("Remove PIN", role: .destructive) { parentalControlsSheetMode = .remove }
+                    .accessibilityIdentifier("settings.removePINButton")
+            }
+        } header: {
+            Text("Parental Controls")
+        } footer: {
+            Text("When a PIN is set, it must be entered every time this Settings screen is opened.")
+        }
     }
 
     // MARK: - Account

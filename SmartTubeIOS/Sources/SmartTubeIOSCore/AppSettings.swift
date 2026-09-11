@@ -62,6 +62,10 @@ public struct AppSettings: Codable {
     /// analytics domains are DNS-blocked). Read once at process launch like
     /// `disableLiquidGlass` above — takes effect on the *next* launch, not live.
     public var disableAnalytics: Bool
+    /// #126: SHA256 hex digest of the Settings-screen parental-control PIN (see
+    /// `SettingsPINHasher`). `nil` means no PIN is configured and Settings behaves as
+    /// today with no lock. Never stores the raw PIN.
+    public var settingsPINHash: String?
     public var hideShorts: Bool
     public var hideLiveShorts: Bool
     public var hideVideoPremieres: Bool
@@ -258,6 +262,7 @@ public struct AppSettings: Codable {
         hideWatchedThreshold = 0.9
         disableLiquidGlass = false
         disableAnalytics = false
+        settingsPINHash = nil
         hideShorts = false
         hideLiveShorts = false
         hideVideoPremieres = false
@@ -342,6 +347,7 @@ extension AppSettings {
         case hideWatchedThreshold
         case disableLiquidGlass
         case disableAnalytics
+        case settingsPINHash
         case hideShorts
         case hideLiveShorts
         case hideVideoPremieres
@@ -391,6 +397,7 @@ extension AppSettings {
             Double.self, forKey: .hideWatchedThreshold, default: d.hideWatchedThreshold)
         disableLiquidGlass = c.safeDecode(Bool.self, forKey: .disableLiquidGlass, default: d.disableLiquidGlass)
         disableAnalytics = c.safeDecode(Bool.self, forKey: .disableAnalytics, default: d.disableAnalytics)
+        settingsPINHash = c.safeDecode(String?.self, forKey: .settingsPINHash, default: d.settingsPINHash)
         hideShorts = c.safeDecode(Bool.self, forKey: .hideShorts, default: d.hideShorts)
         hideLiveShorts = c.safeDecode(Bool.self, forKey: .hideLiveShorts, default: d.hideLiveShorts)
         hideVideoPremieres = c.safeDecode(Bool.self, forKey: .hideVideoPremieres, default: d.hideVideoPremieres)
