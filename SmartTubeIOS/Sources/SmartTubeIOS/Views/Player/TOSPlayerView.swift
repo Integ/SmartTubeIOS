@@ -734,6 +734,17 @@ public struct TOSPlayerView: View {
                 }
                 .accessibilityIdentifier("tosPlayer.moreMenu.chaptersRow")
             }
+
+            Button {
+                store.settings.loopEnabled.toggle()
+            } label: {
+                if store.settings.loopEnabled {
+                    Label("Loop", systemImage: "checkmark")
+                } else {
+                    Text("Loop")
+                }
+            }
+            .accessibilityIdentifier("tosPlayer.moreMenu.loopRow")
         } label: {
             Image(systemName: "ellipsis")
                 .font(.system(size: 14, weight: .semibold))
