@@ -63,6 +63,31 @@ extension InnerTubeAPI {
         tubeLog.notice("removeFromWatchLater setVideoId=\(setVideoId, privacy: .public)")
     }
 
+    /// Adds a video to an arbitrary user playlist (#8). Same mechanics as `addToWatchLater`,
+    /// generalized to any `playlistId` from `fetchUserPlaylists()`.
+    /// Requires authentication.
+    public func addToPlaylist(playlistId: String, videoId: String) async throws {
+        var body = makeBody(client: tvClientContext)
+        body["playlistId"] = playlistId
+        body["actions"] = [["addedVideoId": videoId, "action": "ACTION_ADD_VIDEO"]]
+        _ = try await postTV(endpoint: "browse/edit_playlist", body: body)
+        tubeLog.notice("addToPlaylist playlistId=\(playlistId, privacy: .public) videoId=\(videoId, privacy: .public)")
+    }
+
+    /// Removes a video from an arbitrary user playlist (#8). Same mechanics as
+    /// `removeFromWatchLater` — keyed by `setVideoId`, not the raw video ID (see that
+    /// function's doc comment for why).
+    /// Requires authentication.
+    public func removeFromPlaylist(playlistId: String, setVideoId: String) async throws {
+        var body = makeBody(client: tvClientContext)
+        body["playlistId"] = playlistId
+        body["actions"] = [["setVideoId": setVideoId, "action": "ACTION_REMOVE_VIDEO"]]
+        _ = try await postTV(endpoint: "browse/edit_playlist", body: body)
+        tubeLog.notice(
+            "removeFromPlaylist playlistId=\(playlistId, privacy: .public) setVideoId=\(setVideoId, privacy: .public)"
+        )
+    }
+
     /// Sends a feed feedback signal to YouTube.
     /// Used for "Not interested", "Don't like this video", and "Don't recommend channel" —
     /// all three actions share this endpoint and differ only in their `feedbackToken`.

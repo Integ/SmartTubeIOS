@@ -38,6 +38,7 @@ public struct VideoCardView: View {
     @Environment(\.innerTubeAPI) private var api
     @State private var localProgress: Double?
     @State private var watchLaterAlert: DownloadAlertItem?
+    @State private var playlistPickerMode: PlaylistPickerSheet.Mode?
     /// Index into `video.thumbnailFallbackURLs`. -1 = use primary `thumbnailURL`.
     @State private var thumbnailFallbackIndex: Int = -1
     #if !os(tvOS)
@@ -214,6 +215,18 @@ public struct VideoCardView: View {
                         Label("Save to Watch Later", systemImage: AppSymbol.watchLater)
                     }
                 }
+                Button {
+                    playlistPickerMode = .copy
+                } label: {
+                    Label("Copy to Playlist", systemImage: "rectangle.stack.badge.plus")
+                }
+                if currentPlaylistId != nil {
+                    Button {
+                        playlistPickerMode = .move
+                    } label: {
+                        Label("Move to Playlist", systemImage: "arrow.right.circle")
+                    }
+                }
             }
             Button {
                 Task { await CurrentQueueStore.shared.append(video) }
@@ -341,13 +354,41 @@ public struct VideoCardView: View {
             .alert(item: $watchLaterAlert) { item in
                 Alert(title: Text(item.title), message: Text(item.message), dismissButton: .default(Text("OK")))
             }
+            .sheet(item: $playlistPickerMode) { mode in
+                PlaylistPickerSheet(
+                    mode: mode, video: video, sourcePlaylistId: currentPlaylistId, api: api,
+                    onFinished: handlePlaylistPickerResult
+                )
+            }
         #else
         cardContent
             .onAppear { feedLog.info("[feed] id=\(self.video.id) title=\(self.video.title)") }
             .alert(item: $watchLaterAlert) { item in
                 Alert(title: Text(item.title), message: Text(item.message), dismissButton: .default(Text("OK")))
             }
+            .sheet(item: $playlistPickerMode) { mode in
+                PlaylistPickerSheet(
+                    mode: mode, video: video, sourcePlaylistId: currentPlaylistId, api: api,
+                    onFinished: handlePlaylistPickerResult
+                )
+            }
         #endif
+    }
+
+    private func handlePlaylistPickerResult(_ result: Result<PlaylistInfo, Error>) {
+        switch result {
+        case .success(let playlist):
+            watchLaterAlert = DownloadAlertItem(
+                title: String(localized: "Added to Playlist", bundle: .module),
+                message: String(
+                    localized: "\"\(video.title)\" was added to \"\(playlist.title)\".", bundle: .module)
+            )
+        case .failure(let error):
+            watchLaterAlert = DownloadAlertItem(
+                title: String(localized: "Could Not Update Playlist", bundle: .module),
+                message: error.localizedDescription
+            )
+        }
     }
 
     // MARK: Grid layout (default)

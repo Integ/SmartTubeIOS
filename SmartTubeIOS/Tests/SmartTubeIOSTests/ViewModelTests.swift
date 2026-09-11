@@ -183,6 +183,16 @@ final class MockInnerTubeAPI: InnerTubeAPIProtocol {
         if let e = errorToThrow { throw e }
     }
 
+    func addToPlaylist(playlistId: String, videoId: String) async throws {
+        calls.append(Call(method: "addToPlaylist", args: [playlistId, videoId]))
+        if let e = errorToThrow { throw e }
+    }
+
+    func removeFromPlaylist(playlistId: String, setVideoId: String) async throws {
+        calls.append(Call(method: "removeFromPlaylist", args: [playlistId, setVideoId]))
+        if let e = errorToThrow { throw e }
+    }
+
     func sendFeedback(token: String) async throws {
         calls.append(Call(method: "sendFeedback", args: [token]))
         if let e = errorToThrow { throw e }
