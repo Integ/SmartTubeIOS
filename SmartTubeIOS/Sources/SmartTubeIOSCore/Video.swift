@@ -145,6 +145,16 @@ public extension Video {
         URL(string: "https://i.ytimg.com/vi/\(id)/hqdefault.jpg")
     }
 
+    /// The URL the app's own Share actions hand to ShareLink/UIActivityViewController
+    /// (#104). Deliberately just `watch?v=<id>` — no `si=` or other tracking query
+    /// parameters — so this is the single place to check/fix if that ever regresses,
+    /// instead of four separate `URL(string: "https://www.youtube.com/watch?v=...")`
+    /// literals across VideoCardView, ShortsCardView, TOSPlayerView, and
+    /// PlayerView+Overlays.
+    var shareURL: URL? {
+        URL(string: "https://www.youtube.com/watch?v=\(id)")
+    }
+
     /// Standard-definition thumbnail (640×480). Available for most videos.
     var sdThumbnailURL: URL? {
         URL(string: "https://i.ytimg.com/vi/\(id)/sddefault.jpg")

@@ -63,7 +63,7 @@ struct ShortsCardView: View {
         .onTapGesture(perform: onTap)
         .contextMenu {
             #if !os(tvOS)
-            if let shareURL = URL(string: "https://www.youtube.com/watch?v=\(video.id)") {
+            if let shareURL = video.shareURL {
                 ShareLink(item: shareURL) {
                     Label("Share", systemImage: AppSymbol.share)
                 }

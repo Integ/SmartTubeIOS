@@ -469,7 +469,7 @@ extension PlayerView {
         #if os(iOS)
         Button {
             showMoreMenu = false
-            if let url = URL(string: "https://www.youtube.com/watch?v=\((vm.playerInfo?.video ?? video).id)") {
+            if let url = (vm.playerInfo?.video ?? video).shareURL {
                 presentShareSheet(url: url)
             }
         } label: {

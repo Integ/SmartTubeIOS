@@ -711,7 +711,7 @@ public struct TOSPlayerView: View {
             }
             .accessibilityIdentifier("tosPlayer.moreMenu.sleepTimerRow")
 
-            if let url = URL(string: "https://www.youtube.com/watch?v=\(video.id)") {
+            if let url = video.shareURL {
                 ShareLink(item: url) {
                     Label("Share", systemImage: "square.and.arrow.up")
                 }
