@@ -412,6 +412,31 @@ extension InnerTubeAPI {
         return VideoGroup(title: title, videos: videos, nextPageToken: nextPageToken)
     }
 
+    // MARK: - Shared members-only detection (#63, originally #227 for parseTileRenderer only)
+    //
+    // Two of the three signals task #227 implemented for parseTileRenderer are generic
+    // InnerTube renderer shapes (`thumbnailOverlayMembershipBadgeRenderer`,
+    // `metadataBadgeRenderer`) shared across renderer types, not TV-tile-specific — shared
+    // here so parsePlaylistVideoRenderer (used for the same Home/Subscriptions/History
+    // feeds, just for videos that arrive in the WEB-shaped renderer instead) can drop
+    // members-only videos too, instead of only tileRenderer-shaped ones. The third signal
+    // (secondary tileMetadata line text) is TV-tile-specific layout and stays inline in
+    // parseTileRenderer since other renderers don't share that structure.
+    private func isMembersOnlyVideo(overlays: [[String: Any]]?, badges: [[String: Any]]?) -> Bool {
+        if overlays?.contains(where: { $0["thumbnailOverlayMembershipBadgeRenderer"] != nil }) == true {
+            return true
+        }
+        if let badges {
+            return badges.contains { badge in
+                guard let meta = badge["metadataBadgeRenderer"] as? [String: Any] else { return false }
+                let iconType = (meta["icon"] as? [String: Any])?["iconType"] as? String ?? ""
+                let label = meta["label"] as? String ?? ""
+                return iconType.hasPrefix("MEMBERS") || label.lowercased().contains("member")
+            }
+        }
+        return false
+    }
+
     // MARK: – TVHTML5 tileRenderer parser (Android TileItem methodology)
     // Mirrors: TileItem.getVideoId(), getTitle(), getThumbnails(), getBadgeText(), getChannelId()
     private func parseTileRenderer(_ tile: [String: Any]) -> Video? {
@@ -635,20 +660,8 @@ extension InnerTubeAPI {
         //  3. "Members only" text in any secondary tileMetadata line item (locale-aware fallback)
         // Signal 3 is a text fallback for locales that translate the badge label.
         let isMembersOnly: Bool = {
-            // Signal 1: membership badge overlay on the thumbnail
-            if overlays?.contains(where: { $0["thumbnailOverlayMembershipBadgeRenderer"] != nil }) == true {
+            if isMembersOnlyVideo(overlays: overlays, badges: tileMetadata?["badges"] as? [[String: Any]]) {
                 return true
-            }
-            // Signal 2: metadataBadgeRenderer with MEMBERS_ONLY icon type or "member" label
-            if let badges = tileMetadata?["badges"] as? [[String: Any]] {
-                if badges.contains(where: { badge in
-                    guard let meta = badge["metadataBadgeRenderer"] as? [String: Any] else { return false }
-                    let iconType = (meta["icon"] as? [String: Any])?["iconType"] as? String ?? ""
-                    let label = meta["label"] as? String ?? ""
-                    return iconType.hasPrefix("MEMBERS") || label.lowercased().contains("member")
-                }) {
-                    return true
-                }
             }
             // Signal 3: secondary metadata line text (badge text shown next to channel name/date)
             if let lines = tileMetadata?["lines"] as? [[String: Any]], lines.count > 1 {
@@ -1057,6 +1070,17 @@ extension InnerTubeAPI {
     // ownerText/viewCountText which parseVideoRenderer expects.
     private func parsePlaylistVideoRenderer(_ r: [String: Any]) -> Video? {
         guard let videoId = r["videoId"] as? String else { return nil }
+        // #63: drop members-only videos here too — this renderer serves the same
+        // Home/Subscriptions/History feeds parseTileRenderer does (see this function's
+        // own BUG-012 doc comment above), just for videos that arrive in the WEB-shaped
+        // renderer instead of the TV tile shape. Without this, a members-only video could
+        // still leak through whichever of the two shapes YouTube happened to use for it.
+        if isMembersOnlyVideo(
+            overlays: r["thumbnailOverlays"] as? [[String: Any]], badges: r["badges"] as? [[String: Any]]
+        ) {
+            tubeLog.notice("parsePlaylistVideoRenderer: dropping members-only video id=\(videoId, privacy: .public)")
+            return nil
+        }
         // The playlist-entry token needed to remove this exact item via ACTION_REMOVE_VIDEO
         // (see InnerTubeAPI+Social.swift's removeFromWatchLater — #122).
         let setVideoId = r["setVideoId"] as? String
