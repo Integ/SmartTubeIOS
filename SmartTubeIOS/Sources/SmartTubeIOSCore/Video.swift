@@ -145,6 +145,14 @@ public extension Video {
         URL(string: "https://i.ytimg.com/vi/\(id)/hqdefault.jpg")
     }
 
+    /// #121: true when `watchProgress` (YouTube's own resume-progress signal, not a
+    /// local-only tracker) is at or past `threshold`. `nil` watchProgress (never
+    /// started, or the API didn't report one) is never considered watched.
+    func isWatched(threshold: Double) -> Bool {
+        guard let watchProgress else { return false }
+        return watchProgress >= threshold
+    }
+
     /// The URL the app's own Share actions hand to ShareLink/UIActivityViewController
     /// (#104). Deliberately just `watch?v=<id>` — no `si=` or other tracking query
     /// parameters — so this is the single place to check/fix if that ever regresses,

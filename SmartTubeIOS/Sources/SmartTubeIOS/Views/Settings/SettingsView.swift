@@ -210,6 +210,15 @@ public struct SettingsView: View {
             Toggle("Per-Device Recommendations", isOn: $store.settings.perDeviceRecommendationsEnabled)
                 .accessibilityIdentifier("settings.perDeviceRecommendationsToggle")
             Toggle("Compact Thumbnails", isOn: $store.settings.compactThumbnails)
+            Toggle("Hide Watched Videos", isOn: $store.settings.hideWatchedVideos)
+                .accessibilityIdentifier("settings.hideWatchedVideosToggle")
+            if store.settings.hideWatchedVideos {
+                Stepper(
+                    "Watched threshold: \(Int(store.settings.hideWatchedThreshold * 100))%",
+                    value: $store.settings.hideWatchedThreshold, in: 0.5...1.0, step: 0.05
+                )
+                .accessibilityIdentifier("settings.hideWatchedThresholdStepper")
+            }
             #if os(iOS)
             if #available(iOS 26.0, *) {
                 Toggle("Disable Liquid Glass", isOn: $store.settings.disableLiquidGlass)

@@ -45,6 +45,13 @@ public struct AppSettings: Codable {
     // MARK: UI
     public var defaultSection: String
     public var compactThumbnails: Bool
+    /// #121: hides videos from Home/Subscriptions once their watched fraction
+    /// (`Video.watchProgress`, YouTube's own resume-progress signal) reaches
+    /// `hideWatchedThreshold`. History is deliberately never filtered by this —
+    /// watched videos are the entire point of that section.
+    public var hideWatchedVideos: Bool
+    /// 0.0...1.0 — how far into a video counts as "watched" for `hideWatchedVideos`.
+    public var hideWatchedThreshold: Double
     /// #107: opts the app out of iOS 26's Liquid Glass tab bar via the
     /// `UIDesignRequiresCompatibility` UserDefaults/Info.plist key, which UIKit reads
     /// once at process launch — this setting is applied on the *next* app launch, not
@@ -242,6 +249,8 @@ public struct AppSettings: Codable {
         queueShuffleEnabled = false
         defaultSection = BrowseSection.SectionType.home.rawValue
         compactThumbnails = false
+        hideWatchedVideos = false
+        hideWatchedThreshold = 0.9
         disableLiquidGlass = false
         hideShorts = false
         hideLiveShorts = false
@@ -323,6 +332,8 @@ extension AppSettings {
         case queueShuffleEnabled
         case defaultSection
         case compactThumbnails
+        case hideWatchedVideos
+        case hideWatchedThreshold
         case disableLiquidGlass
         case hideShorts
         case hideLiveShorts
@@ -368,6 +379,9 @@ extension AppSettings {
         queueShuffleEnabled = c.safeDecode(Bool.self, forKey: .queueShuffleEnabled, default: d.queueShuffleEnabled)
         defaultSection = c.safeDecode(String.self, forKey: .defaultSection, default: d.defaultSection)
         compactThumbnails = c.safeDecode(Bool.self, forKey: .compactThumbnails, default: d.compactThumbnails)
+        hideWatchedVideos = c.safeDecode(Bool.self, forKey: .hideWatchedVideos, default: d.hideWatchedVideos)
+        hideWatchedThreshold = c.safeDecode(
+            Double.self, forKey: .hideWatchedThreshold, default: d.hideWatchedThreshold)
         disableLiquidGlass = c.safeDecode(Bool.self, forKey: .disableLiquidGlass, default: d.disableLiquidGlass)
         hideShorts = c.safeDecode(Bool.self, forKey: .hideShorts, default: d.hideShorts)
         hideLiveShorts = c.safeDecode(Bool.self, forKey: .hideLiveShorts, default: d.hideLiveShorts)

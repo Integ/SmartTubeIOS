@@ -351,6 +351,9 @@ public struct HomeView: View {
         let hideVideoPremieres = store.settings.hideVideoPremieres
         let isShorts = selectedSection.type == .shorts
         let applyHideShorts = hideShorts && selectedSection.type != .history
+        // #121: History is the one place watched videos are the point — never filtered.
+        let applyHideWatched = store.settings.hideWatchedVideos && selectedSection.type != .history
+        let hideWatchedThreshold = store.settings.hideWatchedThreshold
 
         // Pinned shorts row: shown above the scrollable content for all chips
         // except the Shorts chip itself (which shows a full vertical list instead).
@@ -374,6 +377,7 @@ public struct HomeView: View {
             if applyHideShorts { videos = videos.filter { !$0.isShort } }
             if hideLiveShorts { videos = videos.filter { !($0.isLive && $0.isShort) } }
             if hideVideoPremieres { videos = videos.filter { !$0.isUpcoming } }
+            if applyHideWatched { videos = videos.filter { !$0.isWatched(threshold: hideWatchedThreshold) } }
             copy.videos = videos
             return copy
         }
@@ -388,6 +392,7 @@ public struct HomeView: View {
             .filter { !applyHideShorts || !$0.isShort }
             .filter { !hideLiveShorts || !($0.isLive && $0.isShort) }
             .filter { !hideVideoPremieres || !$0.isUpcoming }
+            .filter { !applyHideWatched || !$0.isWatched(threshold: hideWatchedThreshold) }
             .filter { isShorts || !$0.isShort }
 
         // The raw last video of the last group is the canonical pagination trigger for
