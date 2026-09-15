@@ -52,10 +52,11 @@ public struct AppSettings: Codable {
     public var hideWatchedVideos: Bool
     /// 0.0...1.0 — how far into a video counts as "watched" for `hideWatchedVideos`.
     public var hideWatchedThreshold: Double
-    /// #107: opts the app out of iOS 26's Liquid Glass tab bar via the
-    /// `UIDesignRequiresCompatibility` UserDefaults/Info.plist key, which UIKit reads
-    /// once at process launch — this setting is applied on the *next* app launch, not
-    /// live. See AppEntry.swift's init for where it's actually written.
+    /// #107/#143: opts the app out of iOS 26's Liquid Glass tab bar. Apple's documented
+    /// mechanism (`UIDesignRequiresCompatibility` in Info.plist) is build-time only and
+    /// can't back a live, per-user toggle — see `TabBarLiquidGlassConfigurator`, which
+    /// instead restyles the actual on-screen `UITabBar` instance directly. Takes effect
+    /// immediately, no restart needed.
     public var disableLiquidGlass: Bool
     /// #92: when `true`, AppEntry.swift's init() skips `FirebaseApp.configure()` entirely
     /// so the SDK makes no network calls at launch (fixes a reported startup delay when
