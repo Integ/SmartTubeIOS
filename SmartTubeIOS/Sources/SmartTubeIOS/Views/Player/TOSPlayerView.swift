@@ -583,8 +583,57 @@ public struct TOSPlayerView: View {
             }
             .padding(.top, 8)
             .padding(.leading, 16)
+
+            // Skip ±seconds + prev/next — a second row rather than crowding them into
+            // the row above (already at 4 items, see its own comment), and kept in the
+            // upper portion of the screen so it can never overlap YouTube's own bottom
+            // scrubber/controls (#140, #141). The underlying seek/navigation logic
+            // already existed (double-tap-seek via the standard player's seekRelative
+            // pattern, and playNext()/playPrevious() already backing the swipe gesture
+            // below) — these are just a discoverable, tappable equivalent.
+            HStack(spacing: 24) {
+                secondaryControlButton(symbol: "gobackward.\(store.settings.seekBackSeconds)") {
+                    vm.seekRelative(-Double(store.settings.seekBackSeconds))
+                }
+                .accessibilityIdentifier("tosPlayer.seekBackButton")
+
+                secondaryControlButton(symbol: "backward.end.fill", isEnabled: vm.hasPrevious) {
+                    vm.playPrevious()
+                }
+                .accessibilityIdentifier("tosPlayer.previousButton")
+
+                secondaryControlButton(symbol: "forward.end.fill", isEnabled: vm.hasNext) {
+                    vm.playNext()
+                }
+                .accessibilityIdentifier("tosPlayer.nextButton")
+
+                secondaryControlButton(symbol: "goforward.\(store.settings.seekForwardSeconds)") {
+                    vm.seekRelative(Double(store.settings.seekForwardSeconds))
+                }
+                .accessibilityIdentifier("tosPlayer.seekForwardButton")
+
+                Spacer()
+            }
+            .padding(.top, 12)
+            .padding(.leading, 16)
+
             Spacer()
         }
+    }
+
+    private func secondaryControlButton(
+        symbol: String, isEnabled: Bool = true, action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.title2)
+                .foregroundStyle(.white)
+                .padding(9)
+                .background(.black.opacity(0.4))
+                .clipShape(Circle())
+        }
+        .disabled(!isEnabled)
+        .opacity(isEnabled ? 1 : 0.4)
     }
     #endif
 
