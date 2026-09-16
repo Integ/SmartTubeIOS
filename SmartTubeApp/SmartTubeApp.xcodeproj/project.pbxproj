@@ -798,7 +798,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${BUILD_DIR%Build/*}SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\" -gsp \"${SRCROOT}/SmartTubeApp/GoogleService-Info.plist\"\n";
+			shellScript = "firebase_config=\"${SRCROOT}/Smart Tube/GoogleService-Info.plist\"\nif [ -f \"$firebase_config\" ]; then\n    \"${BUILD_DIR%Build/*}SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\" -gsp \"$firebase_config\"\nfi\n";
 		};
 		67F34A972FA0A6A200EA6054 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;

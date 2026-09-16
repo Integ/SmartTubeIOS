@@ -4,7 +4,7 @@ import XCTest
 //
 // Verifies the tvOS focus chain in the Home tab:
 //   Tab bar → ↓ → Chips → ↓ → Video list → (select) → Video plays
-//   Video list → Esc (Menu) → Chips (no video plays)
+//   Video list → Esc (Menu) → top of the video list (no video plays)
 //
 // Run against the "Smart Tube" tvOS target.
 // XCUIRemote simulates Siri Remote D-pad, select, and menu (back) presses.
@@ -127,41 +127,77 @@ final class TVFocusChainUITests: XCTestCase {
         )
     }
 
-    /// Pressing Esc (Menu) from the video list returns focus to chips without playing a video.
-    func testEscFromVideoListReturnsFocusToChipsWithoutPlaying() throws {
-        XCTAssertTrue(
-            chipBar.waitForExistence(timeout: 15),
-            "home.chipBar must appear"
-        )
-
-        guard waitForVideoCards(timeout: 20) else {
-            try captureAndSkip("No video cards loaded within 20 s — network unavailable or feed empty", in: app)
+    /// Menu from a scrolled video feed returns to its first row without opening a video.
+    func testMenuFromVideoListScrollsToTop() throws {
+        XCTAssertTrue(chipBar.waitForExistence(timeout: 15))
+        XCTAssertTrue(waitForVideoCards(timeout: 30), "The device must load a feed for this regression")
+        let focusedCard = app.descendants(matching: .any).matching(
+            NSPredicate(format: "identifier BEGINSWITH 'video.card.' AND hasFocus == true")
+        ).firstMatch
+        // Initial focus may be on the expanded sidebar. Move into the feed first.
+        remote.press(.down)
+        remote.press(.right)
+        for _ in 0..<8 {
+            if focusedCard.exists { break }
+            remote.press(.down)
         }
-
-        // Navigate into video list (down × 2)
-        remote.press(.down)
-        Thread.sleep(forTimeInterval: 0.6)
-        remote.press(.down)
-        Thread.sleep(forTimeInterval: 0.6)
-
-        // Menu/Esc — should return focus to chips, not navigate anywhere
+        XCTAssertTrue(focusedCard.waitForExistence(timeout: 5), "Focus must reach a video before Menu")
+        let firstCardID = focusedCard.identifier
+        let firstCard = app.descendants(matching: .any).matching(identifier: firstCardID).firstMatch
+        let firstRowY = firstCard.frame.minY
+        for _ in 0..<5 { remote.press(.down) }
+        XCTAssertNotEqual(focusedCard.identifier, firstCardID, "Move away from the first row before Back")
         remote.press(.menu)
-        Thread.sleep(forTimeInterval: 0.5)
-
-        // Chip bar must still be visible (still on Home screen)
-        XCTAssertTrue(
-            chipBar.exists,
-            "home.chipBar must still exist after pressing Menu/Esc from the video list"
-        )
-
-        // Player must NOT have opened
-        XCTAssertFalse(
-            titleLabel.exists,
-            "player.titleLabel must NOT appear — Esc from video list should NOT play a video"
-        )
+        let returnedToTop = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in
+                firstCard.exists && firstCard.isHittable && abs(firstCard.frame.minY - firstRowY) < 2
+            }, object: nil)
+        XCTAssertEqual(XCTWaiter().wait(for: [returnedToTop], timeout: 5), .completed)
+        XCTAssertTrue(focusedCard.exists, "Focus must stay in the video list")
+        XCTAssertEqual(app.state, .runningForeground)
+        XCTAssertFalse(titleLabel.exists)
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = "TV feed returned to its first row"
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 
     // MARK: - Player behaviour tests
+
+    /// Physical-device soak: no remote input while a long video plays.
+    func testPlaybackRemainsActiveWithoutRemoteInput() throws {
+        XCTAssertTrue(chipBar.waitForExistence(timeout: 15))
+        XCTAssertTrue(waitForVideoCards(timeout: 30))
+        remote.press(.down)
+        remote.press(.right)
+        let card = app.descendants(matching: .any).matching(
+            NSPredicate(format: "identifier BEGINSWITH 'video.card.' AND hasFocus == true")
+        ).firstMatch
+        for _ in 0..<8 {
+            if card.exists { break }
+            remote.press(.down)
+        }
+        XCTAssertTrue(card.waitForExistence(timeout: 5))
+        remote.press(.select)
+        XCTAssertTrue(titleLabel.waitForExistence(timeout: 30))
+        let playing = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value BEGINSWITH 'Playing,' AND value != 'Playing, 0:00'"),
+            object: titleLabel)
+        XCTAssertEqual(XCTWaiter().wait(for: [playing], timeout: 90), .completed)
+        let initialProgress = titleLabel.value as? String
+        let backgrounded = XCTNSPredicateExpectation(
+            predicate: NSPredicate { [app] _, _ in app?.state != .runningForeground }, object: nil)
+        XCTAssertEqual(XCTWaiter().wait(for: [backgrounded], timeout: 360), .timedOut)
+        XCTAssertTrue(titleLabel.exists)
+        XCTAssertTrue((titleLabel.value as? String)?.hasPrefix("Playing,") == true)
+        XCTAssertNotEqual(titleLabel.value as? String, initialProgress, "Playback must continue advancing")
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = "Apple TV after six minutes without remote input"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+        remote.press(.menu)
+        XCTAssertTrue(chipBar.waitForExistence(timeout: 5), "Back from playback must return to the feed")
+    }
 
     /// Custom-highlight navigation owns all player controls. Once the ellipsis is
     /// highlighted, one Select press must open the menu instead of transferring

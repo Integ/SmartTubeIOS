@@ -25,16 +25,12 @@ struct ChannelDestination: Identifiable, Hashable {
 // MARK: - Shared layout constants
 
 /// Adaptive grid columns used for video grids across Browse and Channel views.
-/// tvOS: fixed 4 columns (flexible) — predictable across all TV sizes.
+/// tvOS: fixed 3 columns (flexible) — predictable across all TV sizes.
 /// iOS: adaptive, ~2 columns on iPhone.
 #if os(tvOS)
-let videoGridColumns = [
-    GridItem(.flexible(), spacing: 40),
-    GridItem(.flexible(), spacing: 40),
-    GridItem(.flexible(), spacing: 40),
-    GridItem(.flexible(), spacing: 40),
-]
-let videoGridRowSpacing: CGFloat = 40
+let videoGridColumns = Array(
+    repeating: GridItem(.flexible(), spacing: TVAppearance.cardSpacing), count: TVAppearance.columnCount)
+let videoGridRowSpacing: CGFloat = TVAppearance.cardSpacing
 #else
 let videoGridColumns = [GridItem(.adaptive(minimum: 160, maximum: 200), spacing: 12)]
 /// Explicit column layouts for iOS — used in VideoGridSection to avoid the rotation
@@ -91,6 +87,7 @@ enum AppSymbol {
     static let share = "square.and.arrow.up"
     static let copyDoc = "doc.on.doc"
     static let download = "arrow.down.to.line"
+    static let refresh = "arrow.clockwise"
     static let watchLater = "clock.badge"
     static let audioOnly = "waveform.circle"
 

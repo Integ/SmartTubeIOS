@@ -146,6 +146,7 @@ public final class HomeViewModel {
 
     private let api: any InnerTubeAPIProtocol
     private var loadTask: Task<Void, Never>?
+    private var feedGeneration = UUID()
     private var hideObserverTasks: [Task<Void, Never>] = []
     /// Tracks whether a non-nil auth token has been set. Used to distinguish a
     /// sign-in event (nil → non-nil) from a token refresh (non-nil → new non-nil)
@@ -203,7 +204,45 @@ public final class HomeViewModel {
 
     // MARK: - Public API
 
+    /// Explicit "another batch" action; preserve the current feed if the request fails.
+    public func refreshRecommendations() {
+        guard !isRefreshing else { return }
+        guard let index = sections.firstIndex(where: { $0.section.type == .home }) else { return }
+        let previousIDs = Set(mergedVideos.map(\.id))
+        let token = sections[index].nextPageToken
+        let api = self.api
+        feedGeneration = UUID()
+        for i in sections.indices { sections[i].isLoadingMore = false }
+        loadTask?.cancel()
+        isRefreshing = true
+        loadTask = Task {
+            defer { if !Task.isCancelled { isRefreshing = false } }
+            do {
+                let result = try await RecommendationRefresh.fetch(
+                    excluding: previousIDs, continuationToken: token
+                ) { token in
+                    let rows = try await api.fetchHomeRows(continuationToken: token)
+                    return VideoGroup(
+                        title: "Recommended", videos: rows.flatMap(\.videos),
+                        nextPageToken: rows.last(where: { $0.nextPageToken != nil })?.nextPageToken)
+                }
+                try Task.checkCancellation()
+                guard !result.videos.isEmpty else { return }
+                sections[index].videos = result.videos
+                sections[index].nextPageToken = result.nextPageToken
+                sections[index].hasFailed = false
+                sections[index].isLoading = false
+                rebuildMergedVideos()
+                mergedVideos = RecommendationRefresh.prioritizingNew(mergedVideos, excluding: previousIDs)
+                loadedAt = Date()
+            } catch {
+                if !Task.isCancelled { homeLog.error("Recommendation refresh failed: \(error.localizedDescription)") }
+            }
+        }
+    }
+
     public func load() {
+        feedGeneration = UUID()
         loadTask?.cancel()
         shortsPreloadTask?.cancel()
         loadedAt = nil
@@ -299,6 +338,8 @@ public final class HomeViewModel {
     // MARK: - Pagination
 
     public func loadMore(sectionId: String) {
+        guard !isRefreshing else { return }
+        let generation = feedGeneration
         guard let idx = sections.firstIndex(where: { $0.id == sectionId }),
             let token = sections[idx].nextPageToken,
             !sections[idx].isLoadingMore,
@@ -308,6 +349,7 @@ public final class HomeViewModel {
         let type = sections[idx].section.type
         Task {
             let (newVideos, nextToken) = await HomeViewModel.fetchMoreVideos(type: type, token: token, api: api)
+            guard generation == feedGeneration, !Task.isCancelled else { return }
             if let idx = sections.firstIndex(where: { $0.id == sectionId }) {
                 // Use a growing set so IDs that appear multiple times within
                 // newVideos itself (same page returning the same video twice)

@@ -352,6 +352,7 @@ public struct VideoCardView: View {
         // • .focusable() between contextMenu and onTapGesture keeps the view in the
         //   focus engine so D-pad UP/DOWN can reach it.
         cardContent
+            .accessibilityElement(children: .combine)
             .focusable()
             .onTapGesture { onSelect?() }
             .focused($isFocused)
@@ -367,10 +368,15 @@ public struct VideoCardView: View {
                 }
                 #endif
             }
-            .shadow(color: isFocused ? .white.opacity(0.9) : .clear, radius: 18, x: 0, y: 0)
-            .scaleEffect(isFocused ? 1.08 : 1.0)
+            .focusEffectDisabled()
+            .overlay {
+                RoundedRectangle(cornerRadius: TVAppearance.cornerRadius)
+                    .strokeBorder(isFocused ? Color.white : Color.clear, lineWidth: 3)
+                    .padding(-7)
+            }
+            .scaleEffect(isFocused ? TVAppearance.focusScale : 1.0)
             .zIndex(isFocused ? 1 : 0)
-            .animation(.easeInOut(duration: 0.15), value: isFocused)
+            .animation(.easeOut(duration: TVAppearance.focusDuration), value: isFocused)
             .alert(item: $watchLaterAlert) { item in
                 Alert(title: Text(item.title), message: Text(item.message), dismissButton: .default(Text("OK")))
             }
@@ -440,7 +446,11 @@ public struct VideoCardView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(displayTitle)
-                    .font(.subheadline.weight(.medium))
+                    #if os(tvOS)
+                .font(.system(size: 23, weight: .semibold))
+                    #else
+                .font(.subheadline.weight(.medium))
+                    #endif
                     .lineLimit(2, reservesSpace: true)
                     .accessibilityIdentifier("video.card.title")
                 Text(video.channelTitle)

@@ -39,6 +39,28 @@ build:
 build-tvos:
     xcodebuild build -workspace {{workspace}} -scheme "Smart Tube" -destination "platform=tvOS Simulator,name={{tv_sim}}" -derivedDataPath {{derived}} CODE_SIGNING_ALLOWED=NO -quiet
 
+# Physical Apple TV only; pass the identifier from tv-devices.
+tv-devices:
+    xcrun devicectl list devices
+
+check-tv-device-build:
+    xcodebuild build -workspace {{workspace}} -scheme "Smart Tube" -destination 'generic/platform=tvOS' -derivedDataPath {{derived}} CODE_SIGNING_ALLOWED=NO -quiet
+
+build-tv-device device team bundle:
+    xcodebuild build -workspace {{workspace}} -scheme "Smart Tube" -destination 'platform=tvOS,id={{device}}' -derivedDataPath {{derived}} -allowProvisioningUpdates PRODUCT_BUNDLE_IDENTIFIER='{{bundle}}' DEVELOPMENT_TEAM='{{team}}' CODE_SIGN_STYLE=Automatic CODE_SIGN_IDENTITY="Apple Development" PROVISIONING_PROFILE_SPECIFIER= -quiet
+
+install-tv-device device:
+    xcrun devicectl device install app --device '{{device}}' '{{derived}}/Build/Products/Debug-appletvos/Smart Tube.app'
+
+launch-tv-device device bundle:
+    xcrun devicectl device process launch --device '{{device}}' '{{bundle}}'
+
+test-tv-device device team bundle test result:
+    xcodebuild test -workspace {{workspace}} -scheme "Smart Tube" -destination 'platform=tvOS,id={{device}}' -derivedDataPath {{derived}} -allowProvisioningUpdates PRODUCT_BUNDLE_IDENTIFIER='{{bundle}}' DEVELOPMENT_TEAM='{{team}}' CODE_SIGN_STYLE=Automatic CODE_SIGN_IDENTITY="Apple Development" PROVISIONING_PROFILE_SPECIFIER= -parallel-testing-enabled NO -only-testing:'SmartTubeTVUITests/{{test}}' -resultBundlePath '{{result}}' -quiet
+
+format-file path:
+    xcrun swift-format format --in-place --configuration {{root}}/.swift-format '{{path}}'
+
 test-unit:
     cd {{package}} && swift test --parallel 2>&1 | tail -30
 

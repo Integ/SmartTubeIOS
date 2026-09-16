@@ -242,9 +242,9 @@ struct VideoGridSection: View {
             #if os(tvOS)
             // LazyVGrid on tvOS causes the first row of grid items to appear
             // invisible — the focus engine cannot traverse cells that have not
-            // been laid out yet. Use LazyVStack + HStack rows (4 per row) instead,
+            // been laid out yet. Use LazyVStack + HStack rows (3 per row) instead,
             // which is the same approach BrowseView.content already uses on tvOS.
-            let columnCount = 4
+            let columnCount = TVAppearance.columnCount
             LazyVStack(alignment: .leading, spacing: videoGridRowSpacing) {
                 ForEach(Array(stride(from: 0, to: videos.count, by: columnCount)), id: \.self) { startIdx in
                     let rowVideos = Array(videos[startIdx..<min(startIdx + columnCount, videos.count)])
@@ -266,8 +266,8 @@ struct VideoGridSection: View {
                     }
                 }
             }
-            .padding(.horizontal, 0)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 20)
             #if os(tvOS)
             .focusSection()
             #endif

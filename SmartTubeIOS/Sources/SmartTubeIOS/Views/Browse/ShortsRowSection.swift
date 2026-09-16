@@ -28,9 +28,8 @@ struct ShortsRowSection: View {
     private let cardWidth: CGFloat = 120
     #endif
 
-    /// Maximum cards shown on tvOS in horizontal mode. A 1920-pt screen holds
-    /// ~9 cards at 200 pt each; capping prevents overflow and keeps focus manageable.
-    private let shortsCardMaxTVCount = 9
+    /// Leave room for the TV sidebar and focus margins without overflowing the feed.
+    private let shortsCardMaxTVCount = 5
 
     // MARK: - Body
 

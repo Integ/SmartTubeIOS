@@ -134,6 +134,38 @@ public final class BrowseViewModel {
         loadContent(for: section, refresh: true, source: "reload")
     }
 
+    /// Requests another personalised batch while keeping the current cards on failure.
+    public func refreshRecommendations() {
+        guard currentSection.type == .recommended, !isLoading else { return }
+        let previousIDs = Set(videoGroups.flatMap(\.videos).map(\.id))
+        let token = recommendedUsesSearchFallback ? nil : videoGroups.last?.nextPageToken
+        let api = self.api
+        fetchTask?.cancel()
+        enrichTask?.cancel()
+        enrichTask = nil
+        isLoadingMore = false
+        isLoading = true
+        error = nil
+        fetchTask = Task {
+            defer { if !Task.isCancelled { isLoading = false } }
+            do {
+                let result = try await RecommendationRefresh.fetch(
+                    excluding: previousIDs, continuationToken: token
+                ) { token in
+                    try await api.fetchHome(continuationToken: token)
+                }
+                try Task.checkCancellation()
+                guard !result.videos.isEmpty else { return }
+                videoGroups = [result]
+                recommendedUsesSearchFallback = false
+                isAuthRequired = false
+                loadedAt = Date()
+            } catch {
+                if !Task.isCancelled { self.error = error }
+            }
+        }
+    }
+
     /// Rebuilds the visible sections list from settings.
     /// Call this when AppSettings.enabledSections changes.
     public func configureSections(_ enabledTypes: [BrowseSection.SectionType]) {
@@ -209,6 +241,7 @@ public final class BrowseViewModel {
         // might be a Short that was filtered out). The user has reached the end of filtered
         // content as long as their last visible video appears anywhere in the last raw group.
         guard let lastGroup = videoGroups.last,
+            !isLoading,
             lastGroup.videos.contains(where: { $0.id == lastVideo.id }),
             lastGroup.nextPageToken != nil,
             !isLoadingMore

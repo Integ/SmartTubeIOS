@@ -45,7 +45,31 @@ it without more RAM.
 - `just test-ui-one <SmartTubeUITests/Suite/testMethod>` — a single UI test.
 - Device/app log capture during a test run: `docs/how-to/device-logs.md`.
 
-## Known failure
+## Physical Apple TV
+
+Pair the Apple TV in Xcode and use `just tv-devices` to find its identifier. The
+device recipes use development signing with an explicit team and bundle identifier;
+use the installed app's identifier to retain its settings and login. They do not
+start a simulator or change the project's signing settings.
+
+```bash
+just derived=/tmp/SmartTubeTVDerived build-tv-device <device> <team> <bundle>
+just derived=/tmp/SmartTubeTVDerived install-tv-device <device>
+just launch-tv-device <device> <bundle>
+just derived=/tmp/SmartTubeTVDerived test-tv-device <device> <team> <bundle> TVFocusChainUITests/testMenuFromVideoListScrollsToTop /tmp/tv-focus.xcresult
+just derived=/tmp/SmartTubeTVDerived test-tv-device <device> <team> <bundle> TVFocusChainUITests/testPlaybackRemainsActiveWithoutRemoteInput /tmp/tv-playback.xcresult
+```
+
+Use a new result path for each run. These two live tests need a signed-in account
+and a populated Home feed. The playback test needs a video longer than six minutes;
+it sends no remote input for six minutes and checks foreground state and advancing
+playback. To verify a configured screen-saver timeout, that timeout must be shorter
+than the observation interval. The test does not change system screen-saver settings.
+
+`just derived=/tmp/SmartTubeTVDerived check-tv-device-build` compiles against the
+physical tvOS SDK without signing when no development account is available.
+
+## Known unit-test failure
 
 `just test-unit` currently fails to build (pre-existing, not test-writing-related) — see
 `AGENTS.md`'s Gotchas. Native-macOS-only code in `TOSPlayerView.swift`/

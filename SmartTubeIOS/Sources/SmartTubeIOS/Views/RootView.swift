@@ -313,27 +313,113 @@ struct MainTabView: View {
     }
 }
 
-// MARK: - MainTVTabView  (tvOS)
-// Top-bar TabView is the Apple-recommended navigation pattern for Apple TV.
-// Each tab contains a NavigationStack so drill-down is available within each section.
+// MARK: - MainTVTabView (tvOS)
 
 #if os(tvOS)
 struct MainTVTabView: View {
     @State private var searchVM = SearchViewModel()
     @State private var selectedTab: AppSection = .home
+    @State private var showSignIn = false
+    private enum SidebarTarget: Hashable {
+        case section(AppSection)
+        case account
+    }
+
+    @FocusState private var focusedSidebarTarget: SidebarTarget?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var sidebarIsExpanded: Bool { focusedSidebarTarget != nil }
+    @Environment(AuthService.self) private var auth
     @Environment(\.innerTubeAPI) private var api
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            ForEach(AppSection.allCases) { section in
-                NavigationStack { section.destination(api: api) }
-                    .tabItem {
-                        Label(section.rawValue, systemImage: section.icon)
-                    }
-                    .tag(section)
+        NavigationStack {
+            HStack(alignment: .top, spacing: 0) {
+                sidebar
+                selectedTab.destination(api: api)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.horizontal, TVAppearance.contentInset)
+                    .padding(.top, TVAppearance.topInset)
+                    .focusSection()
             }
+            .background(TVAppearance.background.ignoresSafeArea())
+            .ignoresSafeArea(.container, edges: [.top, .horizontal])
+            .toolbar(.hidden, for: .navigationBar)
+            .animation(reduceMotion ? nil : .easeOut(duration: TVAppearance.focusDuration), value: sidebarIsExpanded)
         }
         .environment(searchVM)
+        .preferredColorScheme(.dark)
+        .tint(.white)
+        .sheet(isPresented: $showSignIn) { SignInView() }
+        .onReceive(NotificationCenter.default.publisher(for: .navigateToSearch)) { _ in
+            selectedTab = .search
+        }
+    }
+
+    private var sidebar: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: AppSymbol.tvPlay)
+                    .foregroundStyle(TVAppearance.accent)
+                if sidebarIsExpanded {
+                    Text("SmartTube")
+                        .font(.system(size: 26, weight: .bold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: sidebarIsExpanded ? .leading : .center)
+            .frame(height: 84)
+
+            ForEach([AppSection.search, .home, .library]) { section in
+                navigationButton(section)
+            }
+            Spacer()
+            Button {
+                if auth.isSignedIn { selectedTab = .settings } else { showSignIn = true }
+            } label: {
+                sidebarLabel(
+                    auth.isSignedIn ? (auth.accountName ?? "Account") : "Sign In", symbol: AppSymbol.personCircle)
+
+            }
+            .buttonStyle(TVControlStyle())
+            .focused($focusedSidebarTarget, equals: .account)
+            .accessibilityLabel(auth.isSignedIn ? (auth.accountName ?? "Account") : "Sign In")
+            .accessibilityIdentifier(AccessibilityID.tvAccount)
+        }
+        .padding(.horizontal, 12)
+        .padding(.bottom, 24)
+        .frame(width: sidebarIsExpanded ? TVAppearance.sidebarWidth : TVAppearance.collapsedSidebarWidth)
+        .frame(maxHeight: .infinity)
+        .background(Color.black.opacity(0.25))
+        .focusSection()
+        .accessibilityIdentifier(AccessibilityID.tvSidebar)
+        .accessibilityValue(sidebarIsExpanded ? "Expanded" : "Collapsed")
+    }
+
+    private func sidebarLabel(_ title: String, symbol: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: symbol)
+                .frame(width: 24)
+            if sidebarIsExpanded {
+                Text(title)
+                    .lineLimit(1)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: sidebarIsExpanded ? .leading : .center)
+    }
+
+    private func navigationButton(_ section: AppSection) -> some View {
+        Button {
+            selectedTab = section
+        } label: {
+            sidebarLabel(section.rawValue, symbol: section.icon)
+        }
+        .buttonStyle(TVControlStyle(selected: selectedTab == section))
+        .focused($focusedSidebarTarget, equals: .section(section))
+        .accessibilityLabel(section.rawValue)
+        .accessibilityIdentifier(AccessibilityID.tvNavigation(section.id))
+        .accessibilityAddTraits(selectedTab == section ? [.isSelected] : [])
     }
 }
 #endif

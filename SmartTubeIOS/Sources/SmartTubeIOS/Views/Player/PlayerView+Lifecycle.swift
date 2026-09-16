@@ -49,6 +49,9 @@ extension PlayerView {
                 .opacity(0)  // visually invisible (including emoji), accessible
                 .accessibilityIdentifier("player.titleLabel")
                 .accessibilityLabel(vm.playerInfo?.video.title ?? video.title)
+                #if os(tvOS)
+            .accessibilityValue("\(vm.isPlaying ? "Playing" : "Paused"), \(formatDuration(vm.currentTime))")
+                #endif
                 // macOS AX prunes opacity-0 elements by default — force the element
                 // into the accessibility tree so XCUITest can always read it.
                 .accessibilityHidden(false)
@@ -734,6 +737,9 @@ extension PlayerView {
         .onDisappear {
             swipeLog.notice("[PlayerView] onDisappear id=\(video.id) isInBackground=\(isInBackground)")
             isVisible = false
+            #if os(tvOS)
+            UIApplication.shared.isIdleTimerDisabled = false
+            #endif
             guard !isInBackground else { return }
             #if os(iOS)
             let rawOrientationOnDisappear = UIDevice.current.orientation
@@ -769,6 +775,12 @@ extension PlayerView {
                 break
             }
         }
+        #if os(tvOS)
+        .onChange(of: isVisible && scenePhase == .active && vm.isPlaying, initial: true) { _, keepAwake in
+            UIApplication.shared.isIdleTimerDisabled = keepAwake
+            swipeLog.notice("[tv] playback idle timer disabled=\(keepAwake)")
+        }
+        #endif
         #if os(iOS)
         // Create the PiP controller the first time the player actually starts
         // playing — AVPlayer must have a ready item for isPictureInPicturePossible

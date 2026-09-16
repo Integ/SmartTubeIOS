@@ -48,6 +48,7 @@ public struct HomeView: View {
     @State private var nonShortsCountAtTrigger = 0
     #if os(tvOS)
     @FocusState private var focusedSection: BrowseSection?
+    @FocusState private var refreshIsFocused: Bool
     #endif
     private var visibleSections: [BrowseSection] {
         let types = store.settings.enabledSections
@@ -77,6 +78,9 @@ public struct HomeView: View {
 
     public var body: some View {
         VStack(spacing: 0) {
+            #if os(tvOS)
+            tvHeader
+            #endif
             chipBar
             #if !os(tvOS)
             Divider()
@@ -153,18 +157,64 @@ public struct HomeView: View {
         }
     }
 
+    #if os(tvOS)
+    private var tvHeader: some View {
+        HStack(alignment: .center) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(selectedSection.title)
+                    .font(.system(size: 36, weight: .bold))
+                Text(auth.isSignedIn ? "Picked for you" : "Discover your next favorite")
+                    .font(.system(size: 18))
+                    .foregroundStyle(TVAppearance.muted)
+            }
+            Spacer()
+            Button(action: refreshCurrentFeed) {
+                Label(isRefreshingFeed ? "Refreshing…" : "Refresh", systemImage: AppSymbol.refresh)
+            }
+            .buttonStyle(TVControlStyle())
+            .focused($refreshIsFocused)
+            .onMoveCommand { direction in
+                if direction == .down { focusedSection = selectedSection }
+            }
+            .accessibilityIdentifier(AccessibilityID.tvRefresh)
+            .accessibilityValue(isRefreshingFeed ? "Loading" : "Ready")
+        }
+        .padding(.horizontal, 12)
+        .padding(.bottom, 18)
+        .focusSection()
+    }
+
+    private var isRefreshingFeed: Bool {
+        selectedSection.type == .home ? homeVM.isRefreshing : sectionVM.isLoading
+    }
+
+    private func refreshCurrentFeed() {
+        guard !isRefreshingFeed else { return }
+        subscriptionsChannelFilter = nil
+        if selectedSection.type == .home {
+            homeVM.refreshRecommendations()
+        } else if selectedSection.type == .recommended {
+            sectionVM.refreshRecommendations()
+        } else {
+            sectionVM.reload(section: selectedSection)
+        }
+    }
+    #endif
+
     // MARK: - Chip bar
 
     private var chipBar: some View {
         #if os(tvOS)
-        HStack(spacing: 8) {
-            ForEach(visibleSections) { section in
-                chipButton(section: section)
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 12) {
+                ForEach(visibleSections) { section in
+                    chipButton(section: section)
+                }
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 12)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(.ultraThinMaterial)
+        .fixedSize(horizontal: false, vertical: true)
         .focusSection()
         .defaultFocus($focusedSection, selectedSection)
         .accessibilityElement(children: .contain)
@@ -188,6 +238,12 @@ public struct HomeView: View {
         let action = {
             let isNewSection = selectedSection != section
             if isNewSection { selectedSection = section }
+            #if os(tvOS)
+            if !isNewSection {
+                refreshCurrentFeed()
+                return
+            }
+            #endif
             guard section.type != .home else { return }
             if isNewSection {
                 sectionVM.select(section: section)
@@ -199,31 +255,19 @@ public struct HomeView: View {
             }
         }
         #if os(tvOS)
-        let isFocused = focusedSection == section
         return Button(action: action) {
             Text(section.title)
-                .font(.headline)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 12)
-                .background(
-                    (isSelected || isFocused) ? Color.primary : Color.secondary.opacity(0.15),
-                    in: Capsule()
-                )
-                .foregroundStyle(
-                    (isSelected || isFocused)
-                        ? Color(white: colorScheme == .dark ? 0 : 1)
-                        : Color.primary
-                )
-                .focusEffectDisabled()
+                .lineLimit(1)
+                .fixedSize()
         }
-        .buttonStyle(.borderless)
-        .scaleEffect(isFocused ? 1.12 : 1.0)
-        .animation(.easeInOut(duration: 0.15), value: focusedSection)
-        .animation(.easeInOut(duration: 0.15), value: selectedSection)
+        .buttonStyle(TVControlStyle(selected: isSelected))
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
         .accessibilityLabel(section.title)
         .accessibilityIdentifier("chip.\(section.title)")
         .focused($focusedSection, equals: section)
+        .onMoveCommand { direction in
+            if direction == .up { refreshIsFocused = true }
+        }
         #else
         return Button(action: action) {
             Text(section.title)
@@ -304,6 +348,32 @@ public struct HomeView: View {
                 let hideShorts = store.settings.hideShorts
                 let regularVideos = homeVM.homeRegularVideos
                 let shortsVideos = hideShorts ? [] : homeVM.homeShortsVideos
+                #if os(tvOS)
+                FeedScrollView {
+                    VStack(alignment: .leading, spacing: 28) {
+                        VideoGridSection(
+                            videos: regularVideos,
+                            onSelect: { selectVideo($0, from: regularVideos) },
+                            loadMore: { homeVM.loadMoreMerged() }
+                        )
+                        if !shortsVideos.isEmpty {
+                            Text("Shorts")
+                                .font(.system(size: 28, weight: .bold))
+                                .padding(.horizontal, 12)
+                            ShortsRowSection(
+                                videos: shortsVideos,
+                                onSelect: { selectVideo($0, from: shortsVideos) },
+                                accessibilityID: "home.shortsRow",
+                                loadMore: { homeVM.loadNextShortsPage() }
+                            )
+                        }
+                        if homeVM.sections.contains(where: { $0.isLoadingMore }) {
+                            ProgressView().frame(maxWidth: .infinity).padding()
+                        }
+                    }
+                }
+                .focusSection()
+                #else
                 // ShortsRowSection is placed OUTSIDE the ScrollView so it stays
                 // pinned at the top while the video grid scrolls beneath it.
                 VStack(spacing: 0) {
@@ -336,6 +406,7 @@ public struct HomeView: View {
                     .focusSection()
                     #endif
                 }
+                #endif
             }
         }
     }
@@ -532,7 +603,7 @@ public struct HomeView: View {
                 .focusSection()
                 #endif
             } else {
-                ScrollView {
+                FeedScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         if selectedSection.type == .playlists, queueVideosCount > 0 {
                             currentQueueRow

@@ -236,6 +236,9 @@ public struct SettingsView: View {
 
     // MARK: - UI
 
+    private static let watchedThresholdRange = 0.5...1.0
+    private static let watchedThresholdStep = 0.05
+
     private var uiSection: some View {
         @Bindable var store = store
         return Section("Interface") {
@@ -257,11 +260,29 @@ public struct SettingsView: View {
             Toggle("Hide Watched Videos", isOn: $store.settings.hideWatchedVideos)
                 .accessibilityIdentifier("settings.hideWatchedVideosToggle")
             if store.settings.hideWatchedVideos {
+                #if os(tvOS)
+                Picker(
+                    "Watched threshold: \(Int(store.settings.hideWatchedThreshold * 100))%",
+                    selection: $store.settings.hideWatchedThreshold
+                ) {
+                    ForEach(
+                        Array(
+                            stride(
+                                from: Self.watchedThresholdRange.lowerBound,
+                                through: Self.watchedThresholdRange.upperBound, by: Self.watchedThresholdStep)),
+                        id: \.self
+                    ) { threshold in
+                        Text("\(Int((threshold * 100).rounded()))%").tag(threshold)
+                    }
+                }
+                #else
                 Stepper(
                     "Watched threshold: \(Int(store.settings.hideWatchedThreshold * 100))%",
-                    value: $store.settings.hideWatchedThreshold, in: 0.5...1.0, step: 0.05
+                    value: $store.settings.hideWatchedThreshold, in: Self.watchedThresholdRange,
+                    step: Self.watchedThresholdStep
                 )
                 .accessibilityIdentifier("settings.hideWatchedThresholdStepper")
+                #endif
             }
             #if os(iOS)
             if #available(iOS 26.0, *) {
