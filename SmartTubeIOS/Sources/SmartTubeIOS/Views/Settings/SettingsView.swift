@@ -288,9 +288,6 @@ public struct SettingsView: View {
             if #available(iOS 26.0, *) {
                 Toggle("Disable Liquid Glass", isOn: $store.settings.disableLiquidGlass)
                     .accessibilityIdentifier("settings.disableLiquidGlassToggle")
-                Text("Restart the app for this to take effect.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
             #endif
             NavigationLink("Visible Sections") {

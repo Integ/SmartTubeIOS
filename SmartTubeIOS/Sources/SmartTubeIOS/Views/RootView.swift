@@ -137,6 +137,7 @@ struct MainTabView: View {
     @State private var selectedTab: AppSection = .home
     @State private var tabBarBottomInset: CGFloat = 0
     @Environment(\.innerTubeAPI) private var api
+    @Environment(SettingsStore.self) private var store
     #if os(iOS)
     @Environment(PlayerStateStore.self) private var playerState
     @Environment(TOSPlayerStateStore.self) private var tosState
@@ -202,6 +203,9 @@ struct MainTabView: View {
             }
         }
         .onPreferenceChange(TabBarBottomInsetKey.self) { tabBarBottomInset = $0 }
+        #if os(iOS)
+        .background(TabBarLiquidGlassConfigurator(disableLiquidGlass: store.settings.disableLiquidGlass))
+        #endif
         .environment(searchVM)
         .onReceive(NotificationCenter.default.publisher(for: .navigateToSearch)) { _ in
             selectedTab = .search

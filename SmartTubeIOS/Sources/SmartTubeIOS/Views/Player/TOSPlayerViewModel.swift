@@ -540,6 +540,19 @@ final class TOSPlayerViewModel: NSObject {
         )
     }
 
+    /// Seeks by `delta` seconds relative to `currentTime`, clamped to `[0, duration]`.
+    /// `delta` is negative for skip-back, positive for skip-forward (#140).
+    func seekRelative(_ delta: Double) {
+        seekTo(Self.clampedSeekTarget(currentTime: currentTime, delta: delta, duration: duration))
+    }
+
+    /// Pure clamping logic behind `seekRelative`, pulled out so it's testable without a
+    /// real WKWebView (`seekTo`'s `eval()` call needs one; this doesn't).
+    nonisolated static func clampedSeekTarget(currentTime: Double, delta: Double, duration: Double) -> Double {
+        let target = currentTime + delta
+        return duration > 0 ? max(0, min(duration, target)) : max(0, target)
+    }
+
     func setPlaybackRate(_ rate: Double) {
         eval(
             "setPlaybackRate(\(rate))",
